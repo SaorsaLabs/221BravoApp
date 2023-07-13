@@ -1,0 +1,14 @@
+{
+  "backend": {
+    "ic": "meped-laaaa-aaaak-qcbsa-cai"
+  },
+  "icrc_data_processer": {
+    "ic": "26yxo-4iaaa-aaaak-qcfwa-cai"
+  },
+  "frontend": {
+    "ic": "mdocx-gyaaa-aaaak-qcbsq-cai"
+  },
+  "icp_data_processer": {
+    "ic": "ltzyb-kqaaa-aaaak-qcg4q-cai"
+  }
+}

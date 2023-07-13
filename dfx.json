@@ -1,0 +1,51 @@
+{
+	"canisters": {
+		"backend": {
+			"candid": "src/backend/backend.did",
+			"package": "backend",
+			"type": "rust"
+		  },
+		"icrc_data_processer": {
+		"candid": "src/icrc_data_processer/icrc_data_processer.did",
+		"package": "icrc_data_processer",
+		"type": "rust"
+		},
+		"icp_data_processer": {
+			"candid": "src/icp_data_processer/icp_data_processer.did",
+			"package": "icp_data_processer",
+			"type": "rust"
+			},		
+		"frontend": {
+			"dependencies": ["backend", "icrc_data_processer"],
+			"frontend": {
+				"entrypoint": "build/index.html"
+			},
+			"source": ["build/"],
+			"type": "assets"
+		},
+		"icrc_ledger_test": {
+			"type": "custom",
+			"wasm": "src/icrc_ledger_test/ic-icrc1-ledger.wasm",
+			"candid": "src/icrc_ledger_test/ledger.did"
+			}	
+	},
+	"defaults": {
+		"build": {
+			"args": "",
+			"packtool": ""
+		}
+	},
+	"dfx": "0.13.1",
+	"networks": {
+		"local": {
+			"bind": "127.0.0.1:8000",
+			"type": "ephemeral"
+		}
+	},
+	"declarations": {
+		"output": "src/declarations",
+		"node_compatibility": true
+	  },
+	"version": 1,
+	"output_env_file": ".env"
+}

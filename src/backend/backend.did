@@ -1,0 +1,32 @@
+type UserRank = variant {
+  Padawan; 
+  DataDetective; 
+  MasterSleuth; 
+  GrandMasterSleuth; 
+  Admin;
+};
+type UserData = record { user_account: text; user_name: text; user_tokens: nat32; user_rank: UserRank}; 
+type HolderData = record { nat32; text; }; 
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+type LogEntry = record {timestamp: text; text: text};
+
+service : {
+    "get_user_data": (text) -> (opt UserData) query;
+    "isauthorised": () -> (text) query;
+    "add_authorised": (text) -> (text);
+    "remove_authorised": (text) -> (text);
+    "whoami": () -> (text) query;
+    "getauthorised": () -> (vec text) query;
+    "add_new_user": (text) -> (bool);
+    "update_username": (text, text) -> (bool);
+    "update_user_tokens": (text, nat32) -> (bool);
+    "get_single_account": (text, nat32) -> (text) query;
+    "get_multiple_account": (text, nat32, nat32) -> (vec text) query;
+    "read_genesis_holders": () -> (vec HolderData) query;
+    "stop_all_timers" : () -> (text);
+    "check_and_start_genesis_timer" : (nat64) -> (text);
+    "is_genesis_holder": (text) -> (bool) query;
+    "get_cycles_balance": () -> (nat64) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "read_logs": () -> (opt vec LogEntry) query;
+}

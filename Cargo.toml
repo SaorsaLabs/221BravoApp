@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "src/backend",
+    "src/icrc_data_processer",
+    "src/icp_data_processer",
+]

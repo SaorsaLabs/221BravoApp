@@ -1,0 +1,19 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+path = "lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+ic-cdk = "0.8.1"
+ic-cdk-macros = "0.6.10"
+candid = "0.8.2"
+serde = "1.0.159"
+sha2 = "0.10.6"
+hex = { version = "0.4.3", features = ["serde"] }
+crc32fast = "1.2"
+ic-cdk-timers = "0.2.0"
