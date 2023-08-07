@@ -1,7 +1,7 @@
-const DOMAIN = "https://app221b.herokuapp.com"; //"http://localhost:3000"; //
+const DOMAIN = 'https://app221b.herokuapp.com'; //"http://localhost:3000"; //
 
 // CANVAS
-const canvas = document.getElementById("canvas1");
+const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
 var clientWidth = canvas.clientWidth;
 var clientHeight = canvas.clientHeight;
@@ -22,14 +22,14 @@ let dataLoaded = false;
 let calledOnce = false;
 
 // UI Global Settings
-let clickedToOrFrom = "X";
+let clickedToOrFrom = 'X';
 let clickedDataPosition = 0;
 let clickedTime = 0;
 let horizontalLine = false;
 let verticalLine = false;
 let mouseOnCanvas = false;
 let numAccountsSearch = 2;
-let advancedSearch =false; 
+let advancedSearch = false;
 let acToThruClick;
 let labelsOn = false;
 let check_ICP = false;
@@ -46,543 +46,555 @@ let moveTick = 2.5;
 const MAX_ZOOM = 50;
 const MIN_ZOOM = 0;
 
-// Shapes 
+// Shapes
 const DRAW_TYPE = {
-    Line : "line",
-    Circle : "circle",
-    Text : "text",
-    Diamond : "diamond"
-}
+	Line: 'line',
+	Circle: 'circle',
+	Text: 'text',
+	Diamond: 'diamond'
+};
 // job Array contains {blueprint}
 class Blueprint {
-    constructor() {
-        this.sections,
-        this.completed,
-        this.nodeArray = [] // contains Nodes
-    }
+	constructor() {
+		this.sections, this.completed, (this.nodeArray = []); // contains Nodes
+	}
 }
-// details array contains 
+// details array contains
 class DrawNode {
-    constructor() {
-        this.DrawType,
-        this.data = []
-    }
+	constructor() {
+		this.DrawType, (this.data = []);
+	}
 }
 
 // init setup
 async function init() {
-    if (dataLoaded == true){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        jobArray = [];
-        frameCounter = 0;
-        nextDrawFrame = 0;
-        drawComplete = false;
-        blueprintsCreated = false;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        cvsWidth = window.innerWidth;
-        cvsHeight = window.innerHeight;
-        artManager(dataArray);
-        //uiManager();
-    }
-    if(dataLoaded == false){
-        // LOADING ART
-        ctx.font = `Bold 25px Arial`;
-        ctx.fillStyle = "white";
-        var txt = "Visual Block Explorer";
-        let txW = ctx.measureText(txt).width;
-        ctx.fillText(txt, (clientWidth/2)-(txW/2), clientHeight/2);  
-    }
+	if (dataLoaded == true) {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		jobArray = [];
+		frameCounter = 0;
+		nextDrawFrame = 0;
+		drawComplete = false;
+		blueprintsCreated = false;
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		cvsWidth = window.innerWidth;
+		cvsHeight = window.innerHeight;
+		artManager(dataArray);
+		//uiManager();
+	}
+	if (dataLoaded == false) {
+		// LOADING ART
+		ctx.font = `Bold 25px Arial`;
+		ctx.fillStyle = 'white';
+		var txt = 'Visual Block Explorer';
+		let txW = ctx.measureText(txt).width;
+		ctx.fillText(txt, clientWidth / 2 - txW / 2, clientHeight / 2);
+	}
 }
 
-// ART MANAGER 
-function artManager(data){
-    if(blueprintsCreated == false){
-        // create blueprints
-      //  console.log(data);
-        let dataLen = data?.transactions?.length ?? 0;
-        let set2;
-        let ast;
-        for(let i=0; i<dataLen; i++){
-            ast = data.transactions[i].asset;
-            let [sX, sY] = translate(data.transactions[i].startX,  data.transactions[i].startY, false);
-            let [eX, eY] = translate(data.transactions[i].endX,  data.transactions[i].endY, false);
-            pxDataArray[i] = {
-                sX : sX, 
-                sY : sY, 
-                eX : eX, 
-                eY : eY, 
-                hash : data.transactions[i].hash
-            };
-            // colours for assets
-            if(ast == "ICP"){
-                set2 = {
-                    size: 2,
-                    startColour: [200,200,200,0.33],
-                    endColour: [200,200,200,0.33],
-                    sections : 50, // OPs 1 extra for end point
-                    curveOffset : 0.001,
-                    curveDirection : 1,
-                    curveAplitude : 180
-                };
-            }
-            if(ast == "ckBTC"){
-                set2 = {
-                    size: 2,
-                    startColour: [200,0,200,0.33],
-                    endColour: [200,0,200,0.33],
-                    sections : 50, // OPs 1 extra for end point
-                    curveOffset : 0.1,
-                    curveDirection : 1,
-                    curveAplitude : 180
-                };
-            }
-            if(ast == "WICP"){
-                set2 = {
-                    size: 2,
-                    startColour: [200,200,0,0.33],
-                    endColour: [200,200,0,0.33],
-                    sections : 50, // OPs 1 extra for end point
-                    curveOffset : 5,
-                    curveDirection : 1,
-                    curveAplitude : 180
-                };
-            }
-        
-            solidLineArtist(sX,sY,eX,eY,set2);
-           // lineAndDotsArtist(sX,sY,eX,eY,set1);
-           //dottedLineArtist(sX,sY,eX,eY,set2);
-        }
-        let set1;
-        for(let i=0; i<dataLen; i++){
-        let [sX, sY] = translate(data.transactions[i].startX,  data.transactions[i].startY, false);
-        let [eX, eY] = translate(data.transactions[i].endX,  data.transactions[i].endY, false);
-        set1 = {
-            size: 2,
-            startColour: [255,50,50,1],
-            endColour: [0,180,180,1],
-            sections : 15, // OPs 1 extra for end point
-            curveOffset : 0.001,
-            curveDirection : 1,
-            curveAplitude : 180
-        };
-        timelineArtist(sX,sY,eX,eY,set1);
-        }
+// ART MANAGER
+function artManager(data) {
+	if (blueprintsCreated == false) {
+		// create blueprints
+		//  console.log(data);
+		let dataLen = data?.transactions?.length ?? 0;
+		let set2;
+		let ast;
+		for (let i = 0; i < dataLen; i++) {
+			ast = data.transactions[i].asset;
+			let [sX, sY] = translate(data.transactions[i].startX, data.transactions[i].startY, false);
+			let [eX, eY] = translate(data.transactions[i].endX, data.transactions[i].endY, false);
+			pxDataArray[i] = {
+				sX: sX,
+				sY: sY,
+				eX: eX,
+				eY: eY,
+				hash: data.transactions[i].hash
+			};
+			// colours for assets
+			if (ast == 'ICP') {
+				set2 = {
+					size: 2,
+					startColour: [200, 200, 200, 0.33],
+					endColour: [200, 200, 200, 0.33],
+					sections: 50, // OPs 1 extra for end point
+					curveOffset: 0.001,
+					curveDirection: 1,
+					curveAplitude: 180
+				};
+			}
+			if (ast == 'ckBTC') {
+				set2 = {
+					size: 2,
+					startColour: [200, 0, 200, 0.33],
+					endColour: [200, 0, 200, 0.33],
+					sections: 50, // OPs 1 extra for end point
+					curveOffset: 0.1,
+					curveDirection: 1,
+					curveAplitude: 180
+				};
+			}
+			if (ast == 'WICP') {
+				set2 = {
+					size: 2,
+					startColour: [200, 200, 0, 0.33],
+					endColour: [200, 200, 0, 0.33],
+					sections: 50, // OPs 1 extra for end point
+					curveOffset: 5,
+					curveDirection: 1,
+					curveAplitude: 180
+				};
+			}
 
-        // UI Settings 
-        horizontalLine = false;
-        verticalLine = false;
+			solidLineArtist(sX, sY, eX, eY, set2);
+			// lineAndDotsArtist(sX,sY,eX,eY,set1);
+			//dottedLineArtist(sX,sY,eX,eY,set2);
+		}
+		let set1;
+		for (let i = 0; i < dataLen; i++) {
+			let [sX, sY] = translate(data.transactions[i].startX, data.transactions[i].startY, false);
+			let [eX, eY] = translate(data.transactions[i].endX, data.transactions[i].endY, false);
+			set1 = {
+				size: 2,
+				startColour: [255, 50, 50, 1],
+				endColour: [0, 180, 180, 1],
+				sections: 15, // OPs 1 extra for end point
+				curveOffset: 0.001,
+				curveDirection: 1,
+				curveAplitude: 180
+			};
+			timelineArtist(sX, sY, eX, eY, set1);
+		}
 
-        blueprintsCreated = true;
-    }
-     if(drawComplete == false) paintbrush(0,-1,true,jobArray);
-     requestAnimationFrame(artManager);
+		// UI Settings
+		horizontalLine = false;
+		verticalLine = false;
+
+		blueprintsCreated = true;
+	}
+	if (drawComplete == false) paintbrush(0, -1, true, jobArray);
+	requestAnimationFrame(artManager);
 }
 
 // DRAW STYLES
-function solidLineArtist(sX, sY, eX, eY, settings){
-    // load settings
-    let size = settings?.size ?? 1;
-    let sections = settings?.sections ?? 1;
-    let [sR,sG,sB,sA] = settings?.startColour ?? [255,255,255,255];
-    let [eR,eG,eB,eA] = settings?.endColour ?? [255,255,255,255];
-    let curveDirection = settings?.curveDirection ?? 1;
-    let curveOffset = settings?.curveOffset ?? 5;
-    let curveAplitude = settings?.curveAplitude ?? 180;
-    // calculate sections
-    let i;
-    let CRV = [];
-    let OP = new Blueprint;
-    OP.sections = sections; 
-    OP.completed = 0;
-    let DN;
-    CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
-    let currentColour = [0,0,0,0];
-    let [csR, csG, csB, csA] = colourSteps([sR,sG,sB,sA], [eR,eG,eB,eA], sections);
-    for(i=0; i<sections; i++){ // -1 for end xy on line draw
-        // colour tween
-        if(i == 0) currentColour = [sR,sG,sB,sA];
-        else{
-            currentColour[0] += csR;
-            currentColour[1] += csG;
-            currentColour[2] += csB;
-            currentColour[3] += csA;
-        }
-        // push nodes into node array
-        DN = new DrawNode;
-        DN.DrawType = DRAW_TYPE.Line;
-        DN.data = [{
-            "size" : size,
-            "sX" : CRV[i].x,
-            "sY" : CRV[i].y,
-            "eX" : CRV[i+1].x,
-            "eY" : CRV[i+1].y,
-            "colour" : [currentColour[0],currentColour[1],currentColour[2],currentColour[3]]
-        }];  
-        OP.nodeArray.push(DN)  
-    }
-    jobArray.push(OP);
+function solidLineArtist(sX, sY, eX, eY, settings) {
+	// load settings
+	let size = settings?.size ?? 1;
+	let sections = settings?.sections ?? 1;
+	let [sR, sG, sB, sA] = settings?.startColour ?? [255, 255, 255, 255];
+	let [eR, eG, eB, eA] = settings?.endColour ?? [255, 255, 255, 255];
+	let curveDirection = settings?.curveDirection ?? 1;
+	let curveOffset = settings?.curveOffset ?? 5;
+	let curveAplitude = settings?.curveAplitude ?? 180;
+	// calculate sections
+	let i;
+	let CRV = [];
+	let OP = new Blueprint();
+	OP.sections = sections;
+	OP.completed = 0;
+	let DN;
+	CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
+	let currentColour = [0, 0, 0, 0];
+	let [csR, csG, csB, csA] = colourSteps([sR, sG, sB, sA], [eR, eG, eB, eA], sections);
+	for (i = 0; i < sections; i++) {
+		// -1 for end xy on line draw
+		// colour tween
+		if (i == 0) currentColour = [sR, sG, sB, sA];
+		else {
+			currentColour[0] += csR;
+			currentColour[1] += csG;
+			currentColour[2] += csB;
+			currentColour[3] += csA;
+		}
+		// push nodes into node array
+		DN = new DrawNode();
+		DN.DrawType = DRAW_TYPE.Line;
+		DN.data = [
+			{
+				size: size,
+				sX: CRV[i].x,
+				sY: CRV[i].y,
+				eX: CRV[i + 1].x,
+				eY: CRV[i + 1].y,
+				colour: [currentColour[0], currentColour[1], currentColour[2], currentColour[3]]
+			}
+		];
+		OP.nodeArray.push(DN);
+	}
+	jobArray.push(OP);
 }
-function dottedLineArtist(sX, sY, eX, eY, settings){
-    // load settings
-    let size = settings?.size ?? 1;
-    let sections = settings?.sections ?? 1;
-    let [sR,sG,sB,sA] = settings?.startColour ?? [255,255,255,255];
-    let [eR,eG,eB,eA] = settings?.endColour ?? [255,255,255,255];
-    let curveDirection = settings?.curveDirection ?? 1;
-    let curveOffset = settings?.curveOffset ?? 5;
-    let curveAplitude = settings?.curveAplitude ?? 180;
-    // calculate sections
-    let i;
-    let CRV = [];
-    let OP = new Blueprint;
-    OP.completed = 0;
-    let DN;
-    CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
-    let currentColour = [0,0,0,0];
-    let [csR, csG, csB, csA] = colourSteps([sR,sG,sB,sA], [eR,eG,eB,eA], sections);
-    let altCount = 0;
-    let added = 0;
-    for(i=0; i<sections; i++){ // -1 for end xy on line draw
-        // colour tween
-        if(i == 0) currentColour = [sR,sG,sB,sA];
-        else{
-            currentColour[0] += csR;
-            currentColour[1] += csG;
-            currentColour[2] += csB;
-            currentColour[3] += csA;
-        }
-        // push nodes into node array
-        DN = new DrawNode;
-        DN.DrawType = DRAW_TYPE.Line;
-        DN.data = [{
-            "size" : size,
-            "sX" : CRV[i].x,
-            "sY" : CRV[i].y,
-            "eX" : CRV[i+1].x,
-            "eY" : CRV[i+1].y,
-            "colour" : [currentColour[0],currentColour[1],currentColour[2],currentColour[3]]
-        }];  
-        if(isEven(altCount) == true){
-            OP.nodeArray.push(DN);
-            added++;
-        }
-        altCount++;
-    }
-    OP.sections = added; 
-    jobArray.push(OP);
+function dottedLineArtist(sX, sY, eX, eY, settings) {
+	// load settings
+	let size = settings?.size ?? 1;
+	let sections = settings?.sections ?? 1;
+	let [sR, sG, sB, sA] = settings?.startColour ?? [255, 255, 255, 255];
+	let [eR, eG, eB, eA] = settings?.endColour ?? [255, 255, 255, 255];
+	let curveDirection = settings?.curveDirection ?? 1;
+	let curveOffset = settings?.curveOffset ?? 5;
+	let curveAplitude = settings?.curveAplitude ?? 180;
+	// calculate sections
+	let i;
+	let CRV = [];
+	let OP = new Blueprint();
+	OP.completed = 0;
+	let DN;
+	CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
+	let currentColour = [0, 0, 0, 0];
+	let [csR, csG, csB, csA] = colourSteps([sR, sG, sB, sA], [eR, eG, eB, eA], sections);
+	let altCount = 0;
+	let added = 0;
+	for (i = 0; i < sections; i++) {
+		// -1 for end xy on line draw
+		// colour tween
+		if (i == 0) currentColour = [sR, sG, sB, sA];
+		else {
+			currentColour[0] += csR;
+			currentColour[1] += csG;
+			currentColour[2] += csB;
+			currentColour[3] += csA;
+		}
+		// push nodes into node array
+		DN = new DrawNode();
+		DN.DrawType = DRAW_TYPE.Line;
+		DN.data = [
+			{
+				size: size,
+				sX: CRV[i].x,
+				sY: CRV[i].y,
+				eX: CRV[i + 1].x,
+				eY: CRV[i + 1].y,
+				colour: [currentColour[0], currentColour[1], currentColour[2], currentColour[3]]
+			}
+		];
+		if (isEven(altCount) == true) {
+			OP.nodeArray.push(DN);
+			added++;
+		}
+		altCount++;
+	}
+	OP.sections = added;
+	jobArray.push(OP);
 }
-function lineAndDotsArtist(sX, sY, eX, eY, settings){
-    // load settings
-    let size = settings?.size ?? 1;
-    let sections = settings?.sections ?? 1;
-    let [sR,sG,sB,sA] = settings?.startColour ?? [255,255,255,255];
-    
-    let [eR,eG,eB,eA] = settings?.endColour ?? [255,255,255,255];
-    let curveDirection = settings?.curveDirection ?? 1;
-    let curveOffset = settings?.curveOffset ?? 5;
-    let curveAplitude = settings?.curveAplitude ?? 180;
-    // calculate sections
-    let i;
-    let CRV = [];
-    let OP = new Blueprint;
-    OP.sections = sections+2; // include 2 circles 
-    OP.completed = 0;
-    let DN;
-    CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
-    let currentColour = [0,0,0,0];
-    let [csR, csG, csB, csA] = colourSteps([sR,sG,sB,sA], [eR,eG,eB,eA], sections);
-    
-    // first Circle
-    DN = new DrawNode;
-    DN.DrawType = DRAW_TYPE.Circle;
-    DN.data = [{
-        "x" : sX,
-        "y" : sY,
-        "start" : 0,
-        "end" : Math.PI * 2,
-        "radius" : size*10,
-        "colour" : [sR, sG, sB,sA],
-        "reverse" : false
-    }];  
-    OP.nodeArray.push(DN);  
+function lineAndDotsArtist(sX, sY, eX, eY, settings) {
+	// load settings
+	let size = settings?.size ?? 1;
+	let sections = settings?.sections ?? 1;
+	let [sR, sG, sB, sA] = settings?.startColour ?? [255, 255, 255, 255];
 
-    for(i=0; i<sections; i++){ // -1 for end xy on line draw
-        // colour tween
-        if(i == 0) currentColour = [sR,sG,sB,sA];
-        else{
-            currentColour[0] += csR;
-            currentColour[1] += csG;
-            currentColour[2] += csB;
-            currentColour[3] += csA;
-        }
-        // push nodes into node array
-        DN = new DrawNode;
-        DN.DrawType = DRAW_TYPE.Line;
-        DN.data = [{
-            "size" : size,
-            "sX" : CRV[i].x,
-            "sY" : CRV[i].y,
-            "eX" : CRV[i+1].x,
-            "eY" : CRV[i+1].y,
-            "colour" : [currentColour[0],currentColour[1],currentColour[2],currentColour[3]]
-        }];  
-        OP.nodeArray.push(DN)  
-    }
+	let [eR, eG, eB, eA] = settings?.endColour ?? [255, 255, 255, 255];
+	let curveDirection = settings?.curveDirection ?? 1;
+	let curveOffset = settings?.curveOffset ?? 5;
+	let curveAplitude = settings?.curveAplitude ?? 180;
+	// calculate sections
+	let i;
+	let CRV = [];
+	let OP = new Blueprint();
+	OP.sections = sections + 2; // include 2 circles
+	OP.completed = 0;
+	let DN;
+	CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
+	let currentColour = [0, 0, 0, 0];
+	let [csR, csG, csB, csA] = colourSteps([sR, sG, sB, sA], [eR, eG, eB, eA], sections);
 
-    // last Circle
-    DN = new DrawNode;
-    DN.DrawType = DRAW_TYPE.Circle;
-    DN.data = [{
-        "x" : eX,
-        "y" : eY,
-        "start" : 0,
-        "end" : Math.PI * 2,
-        "radius" : size*10,
-        "colour" : [eR, eG, eB, eA],
-        "reverse" : false
-    }];  
-    OP.nodeArray.push(DN);  
+	// first Circle
+	DN = new DrawNode();
+	DN.DrawType = DRAW_TYPE.Circle;
+	DN.data = [
+		{
+			x: sX,
+			y: sY,
+			start: 0,
+			end: Math.PI * 2,
+			radius: size * 10,
+			colour: [sR, sG, sB, sA],
+			reverse: false
+		}
+	];
+	OP.nodeArray.push(DN);
 
-    jobArray.push(OP);
+	for (i = 0; i < sections; i++) {
+		// -1 for end xy on line draw
+		// colour tween
+		if (i == 0) currentColour = [sR, sG, sB, sA];
+		else {
+			currentColour[0] += csR;
+			currentColour[1] += csG;
+			currentColour[2] += csB;
+			currentColour[3] += csA;
+		}
+		// push nodes into node array
+		DN = new DrawNode();
+		DN.DrawType = DRAW_TYPE.Line;
+		DN.data = [
+			{
+				size: size,
+				sX: CRV[i].x,
+				sY: CRV[i].y,
+				eX: CRV[i + 1].x,
+				eY: CRV[i + 1].y,
+				colour: [currentColour[0], currentColour[1], currentColour[2], currentColour[3]]
+			}
+		];
+		OP.nodeArray.push(DN);
+	}
+
+	// last Circle
+	DN = new DrawNode();
+	DN.DrawType = DRAW_TYPE.Circle;
+	DN.data = [
+		{
+			x: eX,
+			y: eY,
+			start: 0,
+			end: Math.PI * 2,
+			radius: size * 10,
+			colour: [eR, eG, eB, eA],
+			reverse: false
+		}
+	];
+	OP.nodeArray.push(DN);
+
+	jobArray.push(OP);
 }
-function timelineArtist(sX, sY, eX, eY, settings){
-    // load settings
-    let size = settings?.size ?? 1;
-    let sections = settings?.sections ?? 1;
-    let [sR,sG,sB,sA] = settings?.startColour ?? [255,255,255,255];
-    
-    let [eR,eG,eB,eA] = settings?.endColour ?? [255,255,255,255];
-    let curveDirection = settings?.curveDirection ?? 1;
-    let curveOffset = settings?.curveOffset ?? 5;
-    let curveAplitude = settings?.curveAplitude ?? 180;
-    // calculate sections
-    let i;
-    let CRV = [];
-    let OP = new Blueprint;
-    OP.sections = 2; // include 2 circles 
-    OP.completed = 0;
-    let DN;
-    //CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
-    let currentColour = [0,0,0,0];
-    let [csR, csG, csB, csA] = colourSteps([sR,sG,sB,sA], [eR,eG,eB,eA], sections);
-    
-    // first Circle
-    DN = new DrawNode;
-    DN.DrawType = DRAW_TYPE.Circle;
-    DN.data = [{
-        "x" : sX,
-        "y" : sY,
-        "start" : 0,
-        "end" : Math.PI * 2,
-        "radius" : size*10,
-        "colour" : [sR, sG, sB,sA],
-        "reverse" : false
-    }];  
-    OP.nodeArray.push(DN);  
+function timelineArtist(sX, sY, eX, eY, settings) {
+	// load settings
+	let size = settings?.size ?? 1;
+	let sections = settings?.sections ?? 1;
+	let [sR, sG, sB, sA] = settings?.startColour ?? [255, 255, 255, 255];
 
-    // last Circle
-    DN = new DrawNode;
-    DN.DrawType = DRAW_TYPE.Circle;
-    DN.data = [{
-        "x" : eX,
-        "y" : eY,
-        "start" : 0,
-        "end" : Math.PI * 2,
-        "radius" : size*10,
-        "colour" : [eR, eG, eB, eA],
-        "reverse" : false
-    }];  
-    OP.nodeArray.push(DN);  
+	let [eR, eG, eB, eA] = settings?.endColour ?? [255, 255, 255, 255];
+	let curveDirection = settings?.curveDirection ?? 1;
+	let curveOffset = settings?.curveOffset ?? 5;
+	let curveAplitude = settings?.curveAplitude ?? 180;
+	// calculate sections
+	let i;
+	let CRV = [];
+	let OP = new Blueprint();
+	OP.sections = 2; // include 2 circles
+	OP.completed = 0;
+	let DN;
+	//CRV = plotCurve(sX, sY, eX, eY, curveDirection, curveAplitude, curveOffset, sections); // OP 1 extra for end point
+	let currentColour = [0, 0, 0, 0];
+	let [csR, csG, csB, csA] = colourSteps([sR, sG, sB, sA], [eR, eG, eB, eA], sections);
 
-    jobArray.push(OP);
+	// first Circle
+	DN = new DrawNode();
+	DN.DrawType = DRAW_TYPE.Circle;
+	DN.data = [
+		{
+			x: sX,
+			y: sY,
+			start: 0,
+			end: Math.PI * 2,
+			radius: size * 10,
+			colour: [sR, sG, sB, sA],
+			reverse: false
+		}
+	];
+	OP.nodeArray.push(DN);
+
+	// last Circle
+	DN = new DrawNode();
+	DN.DrawType = DRAW_TYPE.Circle;
+	DN.data = [
+		{
+			x: eX,
+			y: eY,
+			start: 0,
+			end: Math.PI * 2,
+			radius: size * 10,
+			colour: [eR, eG, eB, eA],
+			reverse: false
+		}
+	];
+	OP.nodeArray.push(DN);
+
+	jobArray.push(OP);
 }
-function textArtist(sX, sY, settings){
-    let fontSize = settings?.fontSize ?? 12;
-    let fontType = settings?.fontType ?? "Arial";
-    let [sR,sG,sB,sA] = settings?.colour ?? [255,255,255,255];
-    let content = settings?.content ?? "Hello World";
-    let background = settings?.background ?? false;
+function textArtist(sX, sY, settings) {
+	let fontSize = settings?.fontSize ?? 12;
+	let fontType = settings?.fontType ?? 'Arial';
+	let [sR, sG, sB, sA] = settings?.colour ?? [255, 255, 255, 255];
+	let content = settings?.content ?? 'Hello World';
+	let background = settings?.background ?? false;
 
-    let OP = new Blueprint;
-    if (background == false){
-        OP.sections = 1; 
-    }
-    if (background ==  true){
-        OP.sections = 2;
-    }
-    OP.completed = 0;
+	let OP = new Blueprint();
+	if (background == false) {
+		OP.sections = 1;
+	}
+	if (background == true) {
+		OP.sections = 2;
+	}
+	OP.completed = 0;
 
-    DN = new DrawNode;
-    DN.DrawType = DRAW_TYPE.Text;
-    DN.data = [{
-        "fontSize" : fontSize,
-        "fontType" : fontType,
-        "colour" : [sR,sG,sB,sA],
-        "content" : content,
-    }];  
-    OP.nodeArray.push(DN)  
-    // ctx.font = "30px Arial";
-    // var txt = "Hello World"
-    // ctx.fillText("width:" + ctx.measureText(txt).width, 10, 50)
-    // ctx.fillText(txt, 10, 100);
-    // draw background...
+	DN = new DrawNode();
+	DN.DrawType = DRAW_TYPE.Text;
+	DN.data = [
+		{
+			fontSize: fontSize,
+			fontType: fontType,
+			colour: [sR, sG, sB, sA],
+			content: content
+		}
+	];
+	OP.nodeArray.push(DN);
+	// ctx.font = "30px Arial";
+	// var txt = "Hello World"
+	// ctx.fillText("width:" + ctx.measureText(txt).width, 10, 50)
+	// ctx.fillText(txt, 10, 100);
+	// draw background...
 }
 
 //[][]---------------------------[][]
 //            UTILS
 //[][]---------------------------[][]
-function translate(x, y, useViewport){
-    let opX, opY;
-    let inX, inY;
-    inX = parseFloat(x);
-    inY = parseFloat(y);
-    // MOVE
-    inX += globalMoveX;
-    inY += globalMoveY;
-    if(useViewport == false){
-        opX = ((cvsWidth*globalZoom)/100)*inX;
-        opY = ((cvsHeight*globalZoom)/100)*inY;
-    }
-    return [opX, opY];
+function translate(x, y, useViewport) {
+	let opX, opY;
+	let inX, inY;
+	inX = parseFloat(x);
+	inY = parseFloat(y);
+	// MOVE
+	inX += globalMoveX;
+	inY += globalMoveY;
+	if (useViewport == false) {
+		opX = ((cvsWidth * globalZoom) / 100) * inX;
+		opY = ((cvsHeight * globalZoom) / 100) * inY;
+	}
+	return [opX, opY];
 }
-function colourSteps(startColour, endColour, steps){
-    let [sR,sG,sB,sA] = startColour ?? [0,0,0,0];
-    let [eR,eG,eB,eA] = endColour ?? [255,255,255,255];
-    let R,G,B,A;
-    if(steps > 0 ){
-    R = (eR-sR)/steps;
-    G = (eG-sG)/steps;
-    B = (eB-sB)/steps;
-    A = (eA-sA)/steps;
-    }
-    else{
-        let er = "steps cannot be less than 1"
-        return er;
-    }
-    let Res = [R,G,B,A];
-    return Res;
+function colourSteps(startColour, endColour, steps) {
+	let [sR, sG, sB, sA] = startColour ?? [0, 0, 0, 0];
+	let [eR, eG, eB, eA] = endColour ?? [255, 255, 255, 255];
+	let R, G, B, A;
+	if (steps > 0) {
+		R = (eR - sR) / steps;
+		G = (eG - sG) / steps;
+		B = (eB - sB) / steps;
+		A = (eA - sA) / steps;
+	} else {
+		let er = 'steps cannot be less than 1';
+		return er;
+	}
+	let Res = [R, G, B, A];
+	return Res;
 }
-function plotCurve(sX, sY, eX, eY, direction, amplitude, shapeSize, sections){
-    let OP = [];
-    let i;
-    // start points for calcs
-    var x = sX;
-    var y = sY;
-    
-    // input line (radians) 
-    // theta is *-1 to match canvas direction
-    var polar = {
-      theta : Math.atan((eY - sY) / (eX - sX))*-1,
-      r : (Math.sqrt(Math.pow((eX - sX),2)+Math.pow((eY - sY),2))) 
-    };
+function plotCurve(sX, sY, eX, eY, direction, amplitude, shapeSize, sections) {
+	let OP = [];
+	let i;
+	// start points for calcs
+	var x = sX;
+	var y = sY;
 
-    if (eX<sX) polar.r = polar.r*-1; // rotate line direction if needed
-    var cx = sX;
-    var cy = sY;
-    var d = (amplitude/sections); // degrees per iteration 
-    var r = d * (Math.PI/180); // radians per iteration 
-    var t = 0; // current radian 
-    var shapeOffset = (polar.r/100)*shapeSize; // offset as % of length
-    
-    for(i = 0; i<=sections; i++) {
-        x = sX + (((polar.r)/sections)*i); 
-        if (direction >=0) y = sY + (shapeOffset * Math.sin(t)); 
-        if (direction < 0) y = sY - (shapeOffset * Math.sin(t)); 
+	// input line (radians)
+	// theta is *-1 to match canvas direction
+	var polar = {
+		theta: Math.atan((eY - sY) / (eX - sX)) * -1,
+		r: Math.sqrt(Math.pow(eX - sX, 2) + Math.pow(eY - sY, 2))
+	};
 
-        //change angle
-        var radians = polar.theta; // (Math.PI / 180) * 0
-        var cos = Math.cos(radians);
-        var sin = Math.sin(radians);
-        var nx = (cos * (x - cx)) + (sin * (y - cy)) + cx;
-        var ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+	if (eX < sX) polar.r = polar.r * -1; // rotate line direction if needed
+	var cx = sX;
+	var cy = sY;
+	var d = amplitude / sections; // degrees per iteration
+	var r = d * (Math.PI / 180); // radians per iteration
+	var t = 0; // current radian
+	var shapeOffset = (polar.r / 100) * shapeSize; // offset as % of length
 
-        OP[i] = {"x" : nx, "y" : ny};
-        t += r;// r*(sections/100);
-    }//i
-    return OP;
-}
-function drawLine(settings){
-    // load settings
-    let size = settings[0]?.size ?? 3;
-    let sX = settings[0]?.sX ?? -1;
-    let sY = settings[0]?.sY ?? -1;
-    let eX = settings[0]?.eX ?? -1;
-    let eY = settings[0]?.eY ?? -1;
-    let [R,G,B,A] = settings[0]?.colour ?? [255,255,255,255];
-    ctx.lineWidth = size;
-    ctx.strokeStyle = `rgba(${R},${G},${B},${A})`;
-    ctx.beginPath();
-    ctx.moveTo(sX, sY);
-    ctx.lineTo(eX, eY);
-    ctx.stroke();
-}
-function drawCircle(settings){
-    // load settings
-    let size = settings[0]?.size ?? 3;
-    let x = settings[0]?.x ?? -1;
-    let y = settings[0]?.y ?? -1;
-    let start = settings[0]?.start ?? 0;
-    let end = settings[0]?.end ?? Math.PI * 2;
-    let [R,G,B,A] = settings[0]?.colour ?? [255,255,255,255];
+	for (i = 0; i <= sections; i++) {
+		x = sX + (polar.r / sections) * i;
+		if (direction >= 0) y = sY + shapeOffset * Math.sin(t);
+		if (direction < 0) y = sY - shapeOffset * Math.sin(t);
 
-    ctx.beginPath();
-    ctx.arc(x, y, size, start, end, false);
-    ctx.fillStyle = `rgba(${R},${G},${B},${A})`;
-    ctx.fill();
+		//change angle
+		var radians = polar.theta; // (Math.PI / 180) * 0
+		var cos = Math.cos(radians);
+		var sin = Math.sin(radians);
+		var nx = cos * (x - cx) + sin * (y - cy) + cx;
+		var ny = cos * (y - cy) - sin * (x - cx) + cy;
+
+		OP[i] = { x: nx, y: ny };
+		t += r; // r*(sections/100);
+	} //i
+	return OP;
 }
-function isEven(value){
-    if (value%2 == 0)
-        return true;
-    else
-        return false;
+function drawLine(settings) {
+	// load settings
+	let size = settings[0]?.size ?? 3;
+	let sX = settings[0]?.sX ?? -1;
+	let sY = settings[0]?.sY ?? -1;
+	let eX = settings[0]?.eX ?? -1;
+	let eY = settings[0]?.eY ?? -1;
+	let [R, G, B, A] = settings[0]?.colour ?? [255, 255, 255, 255];
+	ctx.lineWidth = size;
+	ctx.strokeStyle = `rgba(${R},${G},${B},${A})`;
+	ctx.beginPath();
+	ctx.moveTo(sX, sY);
+	ctx.lineTo(eX, eY);
+	ctx.stroke();
+}
+function drawCircle(settings) {
+	// load settings
+	let size = settings[0]?.size ?? 3;
+	let x = settings[0]?.x ?? -1;
+	let y = settings[0]?.y ?? -1;
+	let start = settings[0]?.start ?? 0;
+	let end = settings[0]?.end ?? Math.PI * 2;
+	let [R, G, B, A] = settings[0]?.colour ?? [255, 255, 255, 255];
+
+	ctx.beginPath();
+	ctx.arc(x, y, size, start, end, false);
+	ctx.fillStyle = `rgba(${R},${G},${B},${A})`;
+	ctx.fill();
+}
+function isEven(value) {
+	if (value % 2 == 0) return true;
+	else return false;
 }
 
 // MAIN DRAW FUNCTION
-function paintbrush(speed, batchSize, drawAll, jobArray){
-    let i,k;
-    
-    let jaLen = batchSize;
-    let allComplete;
-    let startPoint = 0;
-    if(frameCounter >= nextDrawFrame){
-        let len = jobArray.length;
-        let done = 0;
-        let DT, param1;
-        let sections;
-        allComplete = true;
-        if (batchSize === -1) jaLen = len;
-        for(i=0; i<jaLen; i++){
-            sections = jobArray[i].sections;
-            done = jobArray[i].completed;
-            if (drawAll && done<sections){
-                allComplete = false;
-                for(k=0; k<sections; k++){
-                    DT = jobArray[i].nodeArray[k].DrawType;
-                    param1 = jobArray[i].nodeArray[k].data;
-                    if (DT === "circle") drawCircle(param1); 
-                    if (DT === "line") drawLine(param1); 
-                }
-                jobArray[i].completed = sections;
-            }
-            else if(done<sections){
-                allComplete = false;
-                DT = jobArray[i].nodeArray[done].DrawType;
-                param1 = jobArray[i].nodeArray[done].data;
-                if (DT === "line") drawLine(param1);
-                if (DT === "circle") drawCircle(param1); 
-                jobArray[i].completed = done+1;
-                if(done+1 == sections && jobArray.length > batchSize) {
-                    jobArray.splice(i, 1);
-                }
-            }
-        }
-       nextDrawFrame = frameCounter+speed;
-    }
+function paintbrush(speed, batchSize, drawAll, jobArray) {
+	let i, k;
 
-    // if not complete
-    frameCounter++;
-    if(allComplete) drawComplete = true;
+	let jaLen = batchSize;
+	let allComplete;
+	let startPoint = 0;
+	if (frameCounter >= nextDrawFrame) {
+		let len = jobArray.length;
+		let done = 0;
+		let DT, param1;
+		let sections;
+		allComplete = true;
+		if (batchSize === -1) jaLen = len;
+		for (i = 0; i < jaLen; i++) {
+			sections = jobArray[i].sections;
+			done = jobArray[i].completed;
+			if (drawAll && done < sections) {
+				allComplete = false;
+				for (k = 0; k < sections; k++) {
+					DT = jobArray[i].nodeArray[k].DrawType;
+					param1 = jobArray[i].nodeArray[k].data;
+					if (DT === 'circle') drawCircle(param1);
+					if (DT === 'line') drawLine(param1);
+				}
+				jobArray[i].completed = sections;
+			} else if (done < sections) {
+				allComplete = false;
+				DT = jobArray[i].nodeArray[done].DrawType;
+				param1 = jobArray[i].nodeArray[done].data;
+				if (DT === 'line') drawLine(param1);
+				if (DT === 'circle') drawCircle(param1);
+				jobArray[i].completed = done + 1;
+				if (done + 1 == sections && jobArray.length > batchSize) {
+					jobArray.splice(i, 1);
+				}
+			}
+		}
+		nextDrawFrame = frameCounter + speed;
+	}
+
+	// if not complete
+	frameCounter++;
+	if (allComplete) drawComplete = true;
 }
 
 //[][]---------------------------[][]
@@ -591,52 +603,50 @@ function paintbrush(speed, batchSize, drawAll, jobArray){
 
 // FIXED MOUSE POSITION
 let mouse = {
-    "x" : 0,
-    "y" : 0
+	x: 0,
+	y: 0
 };
 function getMouesPosition(canvasNumber, e) {
-    var mouseX;
-    var mouseY;
-    if(canvasNumber == 1){
-        mouseX = e.offsetX * canvas.width / canvas.clientWidth | 0;
-        mouseY = e.offsetY * canvas.height / canvas.clientHeight | 0;
-    }
-    if(canvasNumber == 2){
-        mouseX = e.offsetX * canvas2.width / canvas2.clientWidth | 0;
-        mouseY = e.offsetY * canvas2.height / canvas2.clientHeight | 0;
-    }
-    return {x: mouseX, y: mouseY};
+	var mouseX;
+	var mouseY;
+	if (canvasNumber == 1) {
+		mouseX = ((e.offsetX * canvas.width) / canvas.clientWidth) | 0;
+		mouseY = ((e.offsetY * canvas.height) / canvas.clientHeight) | 0;
+	}
+	if (canvasNumber == 2) {
+		mouseX = ((e.offsetX * canvas2.width) / canvas2.clientWidth) | 0;
+		mouseY = ((e.offsetY * canvas2.height) / canvas2.clientHeight) | 0;
+	}
+	return { x: mouseX, y: mouseY };
 }
-window.addEventListener("resize", function(event){
-    event.preventDefault();
-    clientWidth = canvas.clientWidth;
-    clientHeight = canvas.clientHeight;
-    canvas.width = clientWidth;
-    canvas.height = clientHeight;
-    cvsWidth = clientWidth;
-    cvsHeight = clientHeight;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    dataLoaded = true;
-    jobArray = [];
-    frameCounter = 0;
-    nextDrawFrame = 0;
-    drawComplete = false;
-    blueprintsCreated = false;
-    artManager(dataArray);
+window.addEventListener('resize', function (event) {
+	event.preventDefault();
+	clientWidth = canvas.clientWidth;
+	clientHeight = canvas.clientHeight;
+	canvas.width = clientWidth;
+	canvas.height = clientHeight;
+	cvsWidth = clientWidth;
+	cvsHeight = clientHeight;
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	dataLoaded = true;
+	jobArray = [];
+	frameCounter = 0;
+	nextDrawFrame = 0;
+	drawComplete = false;
+	blueprintsCreated = false;
+	artManager(dataArray);
 });
 
-
-if(calledOnce == false){
-    init();// setup
-    calledOnce = true;
+if (calledOnce == false) {
+	init(); // setup
+	calledOnce = true;
 }
-
 
 // window.addEventListener('click',
 //     function(event) {
 //         if(mouseOnCanvas == true){
 //             ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-//             labelsOn = false; // update other show all label state 
+//             labelsOn = false; // update other show all label state
 
 //             mouse.x = event.offsetX;
 //             mouse.y = event.offsetY;
@@ -652,13 +662,13 @@ if(calledOnce == false){
 //             // ctx3.arc(newX, newY, 3, 0, Math.PI*2, false);
 //             // ctx3.fillStyle = 'rgba(255,50,100,255)';
 //             // ctx3.fill();
-            
+
 //             // datafromTX
 //             ctx2.beginPath();
 //             ctx2.arc(ts_cX, ts_cY, 5, 0, Math.PI*2, false);
 //             ctx2.fillStyle = 'rgba(255, 255, 0, 1)';
 //             ctx2.fill();
-            
+
 //             // SHOW Account Name
 //             if(closestResult.whatClick == "from"){
 //                 showShortName(ts_cX,ts_cY,closestResult.fromName, 'rgba(255, 255, 0, 1)');
@@ -678,7 +688,7 @@ if(calledOnce == false){
 //                 $('#ACmodal').modal('toggle');
 //                 document.getElementById("ACmodalBody").innerHTML = `
 //                 <iframe src="AccountSearch.html" width="100%" height="100%" frameBorder="0">Browser not compatible.</iframe>`;
-//             });  
+//             });
 
 //         }// on canvas
 //     });
@@ -692,7 +702,6 @@ if(calledOnce == false){
 //         let newX = getMouesPosition(2,event).x;
 //         let newY = getMouesPosition(2,event).y;
 //         let bound = canvas.getBoundingClientRect();
-
 
 //         // is mouse on the canvas
 //         if(rawX < (bound.x+10) || rawX >= bound.right) mouseOnCanvas = false;
@@ -723,7 +732,6 @@ if(calledOnce == false){
 //         }// on canvas
 //     }
 // );
-
 
 //     let url = DOMAIN+"/blockVisualMulti";
 //     let sData = {
@@ -764,11 +772,11 @@ if(calledOnce == false){
 //             if (data.length == 20000){
 //                 error = 'Note: Result has been limited to 10,000 blocks';
 //                 document.getElementById("searchErrors").innerHTML = error;
-//                 //returnError = false; <= still show the result! 
+//                 //returnError = false; <= still show the result!
 //             }
 
 //             let iBox = document.getElementById("infoBox");
-//                 iBox.removeAttribute("hidden"); 
+//                 iBox.removeAttribute("hidden");
 
 //                 clientWidth = canvas.clientWidth;
 //                 clientHeight = canvas.clientHeight;
@@ -795,8 +803,6 @@ if(calledOnce == false){
 //     });
 // }
 
-
-
 // async function blockSearch(start, end, user){
 //     ctx.clearRect(0, 0, canvas.width, canvas.height);
 //     ctx2.clearRect(0, 0, canvas.width, canvas.height);
@@ -804,7 +810,7 @@ if(calledOnce == false){
 //     ctx2.fillStyle = "white";
 //     var txt = "Loading...";
 //     let txW = ctx2.measureText(txt).width;
-//     ctx2.fillText(txt, (clientWidth/2)-(txW/2), clientHeight/2);  
+//     ctx2.fillText(txt, (clientWidth/2)-(txW/2), clientHeight/2);
 
 //     document.getElementById("searchErrors").innerHTML = "";
 
@@ -812,4 +818,3 @@ if(calledOnce == false){
 //     if(check_ICP == true) assets.push("ICP");
 //     if(check_ckBTC == true) assets.push("ckBTC");
 //     if(check_WICP == true) assets.push("WICP");
-

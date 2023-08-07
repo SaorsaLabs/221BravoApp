@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
-    import { createBlueprints } from '../../code/txArtistAnimated.js';
+    import { createBlueprints } from '../../code/txArtistUtilsHome.js';
+    import { browser } from '$app/environment';
 
     // CANVAS
     let canvas;
@@ -13,14 +14,11 @@
     var stopped = false;
 
     // DATA
-    let workbasket = [];
     let drawArray = [];
     let blueprints; 
-    let bpComplete = false;
     let bpLen = 0;
     let startDraw = false;
-    let sections = 60; // change in txArtistAnimated as well. 
-    let tokenSelection = 2;
+    let tokenSelection = 2; // test data
     let data = {
         transactions: [
             {
@@ -51,18 +49,25 @@
         let i;
         let r1, r2, r3, r4;
         let res = [];
-        for(i=0; i<250; i++){
+        let xx = 5;
+        let yy = 5;
+        for(i=0; i<150; i++){
+            // if(xx>85){
+            //     xx=5;
+            //     yy+=15;
+            // }
             r1 = Math.floor(Math.random() * 85)+5;
             r2 = Math.floor(Math.random() * 85)+5;
-            r3 = Math.floor(Math.random() * 85)+5;
-            r4 = Math.floor(Math.random() * 85)+5;
+            r3 = Math.floor(Math.random() * 85)+5; //xx;//
+            r4 = Math.floor(Math.random() * 85)+5; //yy;//
             res.push({          
-                startX: 50,
-                startY: 50,
+                startX: r1,
+                startY: r2,
                 endX: r3,
                 endY: r4,
                 token: tokenSelection
             });
+          //  xx+=1.92;
         }
         data.transactions = res;
     }
@@ -87,11 +92,11 @@
         c3Dir=1;
         animate();
     }
-
+    if(browser){
+        window.addEventListener("resize", function(){resize();}, true);
+    }
     function resize(){
-        workbasket = [];
         drawArray = [];
-        expandTX = 0;
         totAddedTx = 0;
         canvas.width = cvsHolder.clientWidth;
         canvas.height = cvsHolder.clientHeight;
@@ -104,83 +109,29 @@
         blueprints = createBlueprints(data);
         bpLen = blueprints?.length ?? 0;
         startDraw = false;
+        populateDrawArray(blueprints);
     }
 
-    function populateDrawArray(){
-        let i,k;
-        let wbLen = workbasket?.length ?? 0;
-        let drawnTo; 
-        if(wbLen > 0){
-            for(i=0; i<wbLen; i++){
-                drawnTo = workbasket[i].completed;
-                if(drawnTo<sections){
-                    drawArray.push(workbasket[i].nodeArray[drawnTo]);
-                    workbasket[i].completed++;
-                }
-            }
+    // draw aray settings
+    let addedTo = 0;
+    function populateDrawArray(blueprints){
+        let bpLen = blueprints?.length ?? 0;
+        if(bpLen > 0 && addedTo < bpLen){
+            drawArray.push(blueprints[addedTo]);
+            addedTo++;
+        }
         startDraw = true;
-        }
-    }
-
-    // mutate settings
-    let pruneCounter = 0;
-    let alphaReduce = 0.045;
-    let sizeReduce = 5;
-    let pruneTrigger = 50;
-
-    function mutateAndPrune(){
-        let i, daLen;
-        
-        daLen = drawArray?.length ?? 0;
-        let alpha, size;
-        let smAlpha = 999999999;
-        // mutate
-        for(i=0; i<daLen; i++){
-            // alpha
-            alpha = drawArray[i].data[0].colour[3];
-           
-            //if(alpha < smAlpha) smAlpha = alpha;
-           // console.log(smAlpha);
-            if(alpha>= alphaReduce && alpha>0) drawArray[i].data[0].colour[3] -= alphaReduce;
-            
-            //size
-            size = drawArray[i].data[0].radius;
-            if(size>((size/100)*sizeReduce)) drawArray[i].data[0].radius -= ((size/100)*sizeReduce);
-
-            // "x" : CRV[i].x,
-            // "y" : CRV[i].y,
-            // "start" : 0,
-            // "end" : Math.PI * 2,
-            // "radius" : size*10,
-            // "colour" : [currentColour[0],currentColour[1],currentColour[2],currentColour[3]],
-            // "reverse" : false
-        }
-
-        // prune 
-        if(pruneCounter >= pruneTrigger){
-            let maxZero = 0;
-            for(i=0; i<daLen; i++){
-                if(drawArray[i].data[0].colour[3] <= alphaReduce/2){
-                    if(i>maxZero) maxZero = i;
-                }
-            }
-            drawArray.splice(0, maxZero-250);
-            pruneCounter = 0;
-        }
-
-        pruneCounter++;
     }
 
     // animate settings
     let count = 0;
     let addTX = 0;
-    let expandTX = 0;
     let mutateTX = 0;
     let textColourTX =0;
     let totAddedTx = 0;
     let drawTX = 0;
     let daLen = 0;
-    let showText = false;
+    let showText = true;
     let c1 = 255;
     let c2 = 255;
     let c3 = 255;
@@ -188,68 +139,63 @@
     let i;
 
     //SPEED SETTINGS
-    let addNewTransaction = 5;
-    let expandSection = 2;
-    let mutate = 5;
-    let textColour = 2;
+    let addNewTransaction = 2;
+    let textColour = 1;
+    let mutate = 2;
 
+    // Mutate Settings
+    let alphaChange = 0.05; 
+    let maxAlpha = 0.4;
+
+    function mutateAndPrune(){
+        let i, daLen;
+        daLen = drawArray?.length ?? 0;
+        let alpha;
+        let stop = true;
+        for(i=0; i<daLen; i++){
+            // alpha
+            alpha = drawArray[i].nodeArray[0].data[0].colour[3];
+            if(alpha < maxAlpha) {
+                stop = false;
+                drawArray[i].nodeArray[0].data[0].colour[3] += alphaChange;
+                drawArray[i].nodeArray[1].data[0].colour[3] += alphaChange;
+                drawArray[i].nodeArray[2].data[0].colour[3] += alphaChange;
+            }
+        }
+     //   if(stop) startDraw = false;
+    }
+
+
+    // main loop
     function animate(){
         ctx.clearRect(0, 0, clientWidth, clientHeight);
-
         // resize
-        if(cvsHolder.clientWidth != initWidth || cvsHolder.clientHeight != initHeight){
-            resize();
-        } 
-
-        // add TX
-        if(addTX>=addNewTransaction){
-            if(totAddedTx<bpLen){
-                workbasket.push(blueprints[totAddedTx]);
-                totAddedTx++;
-                if(totAddedTx >= bpLen*0.025) showText = true;
-                if(totAddedTx >= bpLen-2) {
-                    // bpComplete = true;
-                    console.log("Fetching More Data!");
-                    tokenSelection = 2;
-                    createData();
-                    workbasket = [];
-                    blueprints = createBlueprints(data);
-                    bpLen = blueprints?.length ?? 0;
-                    populateDrawArray();
-                    expandTX = 0;
-                    totAddedTx = 0;
-                }
-            }
+        // if(canvas.width != initWidth || canvas.height != initHeight){
+            
+        // } 
+        // add TX (Speed adjustable)
+        if(addTX>=addNewTransaction ){
+            populateDrawArray(blueprints);
             addTX = 0;
         }
-
-        // expand
-        if(expandTX>=expandSection){
-            populateDrawArray();
-            expandTX = 0;
-        }
-        
         // draw
         if(startDraw){
+            
             daLen = drawArray.length ?? 0;
-            for(i=0; i<daLen; i++){
-                drawCircle(drawArray[i].data[0]);
-            }
+            paintbrush(drawArray);
             drawTX = 0;
         }
-
         // mutate
         if(mutateTX>=mutate){
             mutateAndPrune();
             mutateTX = 0;
         }
-
         // text colour
         if(textColourTX>textColour){
             if(c1 >=220) c1Dir = -1;
             if(c1 <=0) c1Dir = 1;
             if(c1Dir == 1){
-                c1+= 2.5;
+                c1+= 15.5;
             }
             if(c1Dir == -1){
                 c1-= 1;
@@ -274,14 +220,11 @@
             }
             textColourTX = 0;
         }
-
         count++;
         addTX++;
-        expandTX++;
         drawTX++;
         mutateTX++;
         textColourTX++;
-
         if(showText){
             let tSize = (clientWidth/100)*5;
             ctx.font = `${tSize}px Verdana`;
@@ -292,26 +235,55 @@
             ctx.shadowColor = "rgba(0,0,0,0.5)";
             ctx.shadowBlur = 4;
             ctx.fillStyle = `rgba(${c1},${c2},${c3},1)`; //'rgba(250,255,250,1)';// 
-            ctx.fillText(txt, (clientWidth/2)-(txW/2), (clientHeight/2)+(tSize/4)); 
+            ctx.fillText(txt, (clientWidth/2)-(txW/2), (clientHeight*.10)+(tSize/4)); 
+            //ctx.fillText(txt, (clientWidth/2)-(txW/2), (clientHeight/2)+(tSize/4)); CENTRE
             ctx.shadowColor = "transparent";
         }
         if(!stopped) requestAnimationFrame(animate);
     }
 
-    // UTILS for animate
-    function drawCircle(settings){
 
-        // load settings
-        let size = settings?.radius ?? 3;
-        let x = settings?.x ?? -1;
-        let y = settings?.y ?? -1;
-        let start = settings?.start ?? 0;
-        let end = settings?.end ?? Math.PI * 2;
-        let [R,G,B,A] = settings?.colour ?? [255,255,255,1];
-        ctx.beginPath();
-        ctx.arc(x, y, size, start, end, false);
-        ctx.fillStyle = `rgba(${R},${G},${B},${A})`;
-        ctx.fill();
+    // UTILS for animate
+
+    function paintbrush(blueprints){
+        let i,k;
+        let bpLen = blueprints?.length ?? 0;
+        let bpSections = 0;
+        let size, sX, sY, eX, eY, R,G,B,A;
+        let start = 0; 
+        let end = Math.PI * 2;
+        for(i=0;i<bpLen; i++){
+            
+            bpSections = blueprints[i].sections;
+            for(k=0; k<bpSections; k++){
+                // draw types
+                if(blueprints[i].nodeArray[k].drawType == 'line'){
+                    size = blueprints[i].nodeArray[k].data[0].size;
+                    sX = blueprints[i].nodeArray[k].data[0].sX;
+                    sY = blueprints[i].nodeArray[k].data[0].sY;
+                    eX = blueprints[i].nodeArray[k].data[0].eX;
+                    eY = blueprints[i].nodeArray[k].data[0].eY;
+                    [R,G,B,A] = blueprints[i].nodeArray[k].data[0].colour ?? [255,255,255,255];
+                    ctx.lineWidth = size;
+                    ctx.strokeStyle = `rgba(${R},${G},${B},${A})`;
+                    ctx.beginPath();
+                    ctx.moveTo(sX, sY);
+                    ctx.lineTo(eX, eY);
+                    ctx.stroke();
+                }
+                else if(blueprints[i].nodeArray[k].drawType == 'circle'){
+                    size = blueprints[i].nodeArray[k].data[0].size*2;
+                    sX = blueprints[i].nodeArray[k].data[0].x;
+                    sY = blueprints[i].nodeArray[k].data[0].y;
+                    [R,G,B,A] = blueprints[i].nodeArray[k].data[0].colour ?? [255,255,255,255];
+                    ctx.beginPath();
+                    ctx.arc(sX, sY, size, start, end, false);
+                    ctx.fillStyle = `rgba(${R},${G},${B},${A})`;
+                    ctx.fill();
+                }                
+            }
+        }
+
     }
 
 </script>

@@ -1,13 +1,13 @@
-// The following Code is from https://github.com/dfinity/ic-repl/blob/master/src/account_identifier.rs 
-// and forms part of the ic-repl repo created by Dfinity. 
+// The following Code is from https://github.com/dfinity/ic-repl/blob/master/src/account_identifier.rs
+// and forms part of the ic-repl repo created by Dfinity.
 
 #![allow(clippy::all)]
 
-use candid::{CandidType, Principal};
-use serde::{de, de::Error, Deserialize, Serialize};
-use sha2::{Digest, Sha224, Sha256};
-use std::convert::{TryFrom, TryInto};
-use std::fmt::{Display, Formatter};
+use candid::{ CandidType, Principal };
+use serde::{ de, de::Error, Deserialize, Serialize };
+use sha2::{ Digest, Sha224, Sha256 };
+use std::convert::{ TryFrom, TryInto };
+use std::fmt::{ Display, Formatter };
 use std::str::FromStr;
 
 const SUB_ACCOUNT_ZERO: Subaccount = Subaccount([0; 32]);
@@ -52,11 +52,13 @@ impl AccountIdentifier {
             Ok(h) => h,
             Err(_) => {
                 let hex_str = hex::encode(v);
-                return Err(format!(
-                    "{} has a length of {} but we expected a length of 64",
-                    hex_str,
-                    hex_str.len()
-                ));
+                return Err(
+                    format!(
+                        "{} has a length of {} but we expected a length of 64",
+                        hex_str,
+                        hex_str.len()
+                    )
+                );
             }
         };
         check_sum(*hex)
@@ -92,10 +94,7 @@ impl FromStr for AccountIdentifier {
 }
 
 impl Serialize for AccountIdentifier {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
         self.to_hex().serialize(serializer)
     }
 }
@@ -103,9 +102,7 @@ impl Serialize for AccountIdentifier {
 impl<'de> Deserialize<'de> for AccountIdentifier {
     // This is the canonical way to read a this from string
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        D::Error: de::Error,
+        where D: serde::Deserializer<'de>, D::Error: de::Error
     {
         let hex: [u8; 32] = hex::serde::deserialize(deserializer)?;
         check_sum(hex).map_err(D::Error::custom)
@@ -127,12 +124,14 @@ fn check_sum(hex: [u8; 32]) -> Result<AccountIdentifier, String> {
     if expected_checksum == found_checksum {
         Ok(account_id)
     } else {
-        Err(format!(
-            "Checksum failed for {}, expected check bytes {} but found {}",
-            hex::encode(&hex[..]),
-            hex::encode(expected_checksum),
-            hex::encode(found_checksum),
-        ))
+        Err(
+            format!(
+                "Checksum failed for {}, expected check bytes {} but found {}",
+                hex::encode(&hex[..]),
+                hex::encode(expected_checksum),
+                hex::encode(found_checksum)
+            )
+        )
     }
 }
 
@@ -143,8 +142,7 @@ impl CandidType for AccountIdentifier {
     }
 
     fn idl_serialize<S>(&self, serializer: S) -> Result<(), S::Error>
-    where
-        S: candid::types::Serializer,
+        where S: candid::types::Serializer
     {
         self.to_hex().idl_serialize(serializer)
     }

@@ -1,10 +1,13 @@
 <script>
   import copy from "$lib/images/copyIcon_sml.png";
+  import copy2 from "$lib/images/copyIcon_sml_white.png";
   export let text = '';
   export let text2 = '';
   export let icrcAccount;
+  export let modeLight = false;
 
   let bgChange = false;
+  
 
     function setClipboard(text, text2, icrcAccount) {
     const type = "text/plain";
@@ -34,7 +37,11 @@
   </script>
   
   <button on:click={() => setClipboard(text, text2, icrcAccount)}>
-    <img class="copy" src={copy} class:BG={bgChange} alt="copyText" width="20px" style="margin-left:5px"/>
+    {#if modeLight == false}
+      <img class="copy" src={copy} class:BG={bgChange} alt="copyText" width="20px" style="margin-left:5px"/>
+    {:else}
+      <img class="copy" src={copy2} class:BG={bgChange} alt="copyText" width="20px" style="margin-left:5px"/>
+    {/if}
   </button>
 
   

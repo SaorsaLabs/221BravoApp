@@ -12,7 +12,17 @@ type HolderBalance = record {holder: text; balance: nat};
 
 type TopHolderResponse = record {top_accounts: vec HolderBalance; top_principals: vec HolderBalance};
 
-type WorkingStats = record {total_downloaded: nat; tx_completed_to: nat; next_tx: nat};
+type WorkingStats = record {
+    total_downloaded: nat; 
+    tx_completed_to: nat; 
+    next_tx: nat;
+    hr_stats_complete_to: nat;
+    day_stats_complete_to: nat;
+    stats_return_length: nat32;
+    is_upto_date: bool;
+    is_busy: bool;
+    task_id: nat32;
+    };
 
 type MostActive = record {text; nat64};
 
@@ -49,7 +59,7 @@ type TimeStats = record {
     most_active_principals: vec MostActive;
     burn_stats: TotCntAvg;
     mint_stats: TotCntAvg;
-    trasaction_stats: TotCntAvg;
+    transaction_stats: TotCntAvg;
     count_over_time: vec TimeChunkStats;
     top_mints: vec ProcessedTX;
     top_burns: vec ProcessedTX;
@@ -57,10 +67,9 @@ type TimeStats = record {
 }
 
 service : {
-    "isauthorised": () -> (text) query;
     "add_authorised": (text) -> (text);
     "remove_authorised": (text) -> (text);
-    "getauthorised": () -> (vec text) query;
+    "get_all_authorised": () -> (vec text) query;
     "get_cycles_balance": () -> (nat64) query;
     "get_memory_stats": () -> (MemoryStats) query;
     "read_logs": () -> (opt vec LogEntry) query;
@@ -69,10 +78,14 @@ service : {
     "get_total_holders": () -> (TotalHolderResponse) query;
     "get_top_holders": (nat64) -> (TopHolderResponse) query;
     "get_working_stats": () -> (WorkingStats) query;
-    "set_target_canister": (text) -> (text);
-    "get_account_balance" : (text) -> (text) query;
-    "update_stats_timescales": (nat64, nat64) -> (text); //hours, days
     "get_hourly_stats": () -> (TimeStats) query;
     "get_daily_stats": () -> (TimeStats) query;
+    "get_canister_name": () -> (text) query; 
+    "set_target_canister": (text) -> (text);
+    "get_account_balance" : (text) -> (text) query;
+    "set_stats_timescales": (nat64, nat64) -> (text); //hours, days
+    "set_stats_public": (bool) -> (text);
+    "set_stats_return_length": (nat64) -> (text);
+    "set_canister_name": (text) -> (text);
 }
 

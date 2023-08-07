@@ -1,37 +1,40 @@
-use candid::{CandidType, Deserialize, Nat, Principal};
+use candid::{ CandidType, Deserialize, Nat, Principal };
 use serde::Serialize;
 use std::marker::PhantomData;
 use serde_bytes::ByteBuf;
 use std::fmt;
 
 // [][] --- Types for processed stats --- [][]
+pub type IDKey = [u8; 3];
+
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct TotalHoldersResponse {
     pub principals: u64,
-    pub accounts: u64
+    pub accounts: u64,
 }
 
 #[derive(CandidType, Serialize, Clone, Deserialize, Debug)]
 pub struct TopHoldersResponse {
     pub top_principals: Vec<HolderBalance>,
-    pub top_accounts: Vec<HolderBalance>
+    pub top_accounts: Vec<HolderBalance>,
 }
 #[derive(CandidType, Serialize, Clone, Deserialize, Debug)]
 pub struct HolderBalance {
     pub holder: String,
-    pub balance: u128 
+    pub balance: u128,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct WorkingStats {
     pub total_downloaded: u128,
     pub tx_completed_to: u128,
-    pub next_tx: u128
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
-pub struct ResultsData {
-    pub work_in_progress: u64,
+    pub next_tx: u128,
+    pub hr_stats_complete_to: u128,
+    pub day_stats_complete_to: u128,
+    pub stats_return_length: u32,
+    pub is_upto_date: bool,
+    pub is_busy: bool,
+    pub task_id: u32,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug, Copy)]
@@ -43,19 +46,19 @@ pub struct EntityData {
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct DailyStats {
     pub data: TimeStats,
-    pub last_update: u64
+    pub last_update: u64,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct HourlyStats {
     pub data: TimeStats,
-    pub last_update: u64
+    pub last_update: u64,
 }
 
 #[derive(PartialEq)]
 pub enum StatsType {
     Hourly,
-    Daily
+    Daily,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
@@ -65,14 +68,14 @@ pub struct TimeChunkStats {
     pub total_count: u64,
     pub mint_count: u64,
     pub transaction_count: u64,
-    pub burn_count: u64
+    pub burn_count: u64,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
-pub struct TotCntAvg{
+pub struct TotCntAvg {
     pub total_value: u128,
     pub count: u128,
-    pub average: f64
+    pub average: f64,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
@@ -86,7 +89,7 @@ pub struct TimeStats {
     pub most_active_principals: Vec<(String, u64)>,
     pub burn_stats: TotCntAvg,
     pub mint_stats: TotCntAvg,
-    pub trasaction_stats: TotCntAvg,
+    pub transaction_stats: TotCntAvg,
     pub count_over_time: Vec<TimeChunkStats>,
     pub top_mints: Vec<ProcessedTX>,
     pub top_burns: Vec<ProcessedTX>,
@@ -98,7 +101,10 @@ pub struct CanisterSettings {
     pub hours_to_calculate: u64,
     pub days_to_calcualte: u64,
     pub transaction_fee: u64,
-    pub target_canister: String
+    pub target_canister: String,
+    pub stats_are_public: bool,
+    pub stats_return_length: usize,
+    pub canister_name: String,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone)]
@@ -108,7 +114,7 @@ pub enum TransactionType {
     Burn,
 }
 impl TransactionType {
-    pub fn to_string (&self) -> String {
+    pub fn to_string(&self) -> String {
         match self {
             TransactionType::Transaction => "Transaction".to_string(),
             TransactionType::Mint => "Mint".to_string(),
@@ -127,7 +133,7 @@ pub struct ProcessedTX {
     pub to_principal: String,
     pub to_account: String,
     pub tx_value: Nat,
-    pub tx_time: u64
+    pub tx_time: u64,
 }
 impl fmt::Display for ProcessedTX {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -142,15 +148,15 @@ impl fmt::Display for ProcessedTX {
             self.to_principal,
             self.to_account,
             self.tx_value,
-            self.tx_time,
+            self.tx_time
         )
     }
 }
 // [][] --- Types for Utils --- [][]
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct MemoryData {
-   pub memory: u64,
-   pub heap_memory: u64,
+    pub memory: u64,
+    pub heap_memory: u64,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
@@ -158,7 +164,6 @@ pub struct LogEntry {
     pub timestamp: String,
     pub text: String,
 }
-
 
 // [][] --- ICRC Ledger Types --- [][]
 // Defines types for interacting with the DFINITY implementation of the ICRC-1 / ICRC-3 fungible token standards
@@ -264,11 +269,11 @@ impl<Input: CandidType, Output: CandidType> Clone for QueryArchiveFn<Input, Outp
 }
 
 impl<Input: CandidType, Output: CandidType> From<QueryArchiveFn<Input, Output>>
-    for candid::types::reference::Func
-{
+for candid::types::reference::Func {
     fn from(archive_fn: QueryArchiveFn<Input, Output>) -> Self {
-        let p: &Principal = &Principal::try_from(archive_fn.canister_id.as_ref())
-            .expect("could not deserialize principal");
+        let p: &Principal = &Principal::try_from(archive_fn.canister_id.as_ref()).expect(
+            "could not deserialize principal"
+        );
         Self {
             principal: *p,
             method: archive_fn.method,
@@ -277,12 +282,12 @@ impl<Input: CandidType, Output: CandidType> From<QueryArchiveFn<Input, Output>>
 }
 
 impl<Input: CandidType, Output: CandidType> TryFrom<candid::types::reference::Func>
-    for QueryArchiveFn<Input, Output>
-{
+for QueryArchiveFn<Input, Output> {
     type Error = String;
     fn try_from(func: candid::types::reference::Func) -> Result<Self, Self::Error> {
-        let canister_id = Principal::try_from(func.principal.as_slice())
-            .map_err(|e| format!("principal is not a canister id: {}", e))?;
+        let canister_id = Principal::try_from(func.principal.as_slice()).map_err(|e|
+            format!("principal is not a canister id: {}", e)
+        )?;
         Ok(QueryArchiveFn {
             canister_id,
             method: func.method,
@@ -301,8 +306,7 @@ impl<Input: CandidType, Output: CandidType> CandidType for QueryArchiveFn<Input,
     }
 
     fn idl_serialize<S>(&self, serializer: S) -> Result<(), S::Error>
-    where
-        S: candid::types::Serializer,
+        where S: candid::types::Serializer
     {
         candid::types::reference::Func::from(self.clone()).idl_serialize(serializer)
     }
@@ -341,10 +345,9 @@ impl std::cmp::PartialOrd for Account {
 
 impl std::cmp::Ord for Account {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.owner.cmp(&other.owner).then_with(|| {
-            self.effective_subaccount()
-                .cmp(other.effective_subaccount())
-        })
+        self.owner
+            .cmp(&other.owner)
+            .then_with(|| { self.effective_subaccount().cmp(other.effective_subaccount()) })
     }
 }
 
@@ -373,7 +376,19 @@ impl From<Principal> for Account {
     }
 }
 
-#[derive(Serialize, Deserialize, CandidType, Clone, Hash, Debug, PartialEq, Eq, PartialOrd, Ord, Default,)]
+#[derive(
+    Serialize,
+    Deserialize,
+    CandidType,
+    Clone,
+    Hash,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Default
+)]
 #[serde(transparent)]
 pub struct Memo(pub ByteBuf);
 
@@ -400,4 +415,3 @@ impl From<Memo> for ByteBuf {
         memo.0
     }
 }
-

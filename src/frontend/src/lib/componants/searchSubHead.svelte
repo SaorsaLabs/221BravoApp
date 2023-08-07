@@ -1,5 +1,3 @@
-
-
 <script>
 	import Button from "../shared/button.svelte";
     import SubHead from "../shared/subHead.svelte";
@@ -7,7 +5,7 @@
     export let selected = 0;
 
     // underline selected
-    let numButtons = 6;
+    let numButtons = 7;
     let opAR = [];
     for(let i = 0; i<numButtons; i++){
         if(selected == i+1){
@@ -78,6 +76,26 @@
                         noBG={true}
                         on:click={() => resetCheck(5)}>
                             SNS-Kinic
+                        </Button>
+                    </a>
+                    <span class="pad"></span>
+                    <a href="/search/hot" class={opAR[5]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}
+                        on:click={() => resetCheck(6)}>
+                            SNS-HotOrNot
+                        </Button>
+                    </a>
+                    <span class="pad"></span>
+                    <a href="/search/ghost" class={opAR[6]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}
+                        on:click={() => resetCheck(7)}>
+                            SNS-Ghost
                         </Button>
                     </a>
                                         <!--<span class="pad"></span>

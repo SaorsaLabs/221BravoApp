@@ -1,9 +1,11 @@
 <script>
   import saveIcon from "$lib/images/saveIcon.png";
+  import saveIcon2 from "$lib/images/saveIcon_white.png";
   import Modal from "./modal.svelte";
   export let text = '';
   export let text2 = '';
   export let icrcAccount;
+  export let modeLight = false;
 
   function saveAccount(text, text2, isICRC){
     showPopup = true;
@@ -21,7 +23,12 @@
   </script>
   
   <button on:click={() => saveAccount(text, text2, icrcAccount)}>
-    <img class="save" src={saveIcon} alt="SaveIcon" width="16px" style="margin-left:5px"/>
+    {#if modeLight == false} 
+      <img class="save" src={saveIcon} alt="SaveIcon" width="16px" style="margin-left:5px"/>
+    {:else}
+      <img class="save" src={saveIcon2} alt="SaveIcon" width="16px" style="margin-left:5px"/>
+    {/if}
+    
   </button>
 
   <Modal open={showPopup} title={"Save Account"} size={"large"} onClosed={() => onPopupClose()}> 

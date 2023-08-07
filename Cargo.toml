@@ -3,4 +3,6 @@ members = [
     "src/backend",
     "src/icrc_data_processer",
     "src/icp_data_processer",
+    "src/snapshot_canister",
+    "src/icp_snapshot_canister",
 ]

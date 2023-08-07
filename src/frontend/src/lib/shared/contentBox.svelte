@@ -1,8 +1,10 @@
 <script>
     export let type = "standard-shaddow-dark";
+    export let addedTopMargin = false; 
     export let hidden = false;
+
 </script>
-<div class={type} class:hidden={hidden}>
+<div class={type} class:hidden={hidden} class:topMargin={addedTopMargin}>
     <slot></slot>
 </div>
 <style>
@@ -64,5 +66,8 @@
     }
     .hidden{
         visibility: hidden;
+    }
+    .topMargin{
+        margin-top: 30px;
     }
 </style>

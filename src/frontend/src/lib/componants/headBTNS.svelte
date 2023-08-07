@@ -4,7 +4,7 @@
     import login from '../images/login.png';
     import logout from '../images/logout.png';
     import Modal from "../shared/modal.svelte";
-    import LoginForm from "../componants/loginForm.svelte";
+    import LoginForm from "./loginForm.svelte";
     import { browser } from '$app/environment';
     import {authStore, authTrigger} from "../stores/authStore.js";
     
@@ -30,6 +30,7 @@
             }
             if(value>=1){
                 showPopup = false;
+                authStore.check();
                 let x = authStore.read();
                 LS = x.data.loggedIn;
             }

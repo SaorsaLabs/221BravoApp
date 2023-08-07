@@ -1,0 +1,78 @@
+// Snapshot canister
+
+type LogEntry = record {timestamp: text; text: text};
+
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+
+type MostActive = record {text; nat64};
+
+type TotCntAvg = record {total_value: nat; count: nat; average: float64};
+
+type ProcessedTX = record {
+    block: nat;
+    hash: text;
+    tx_type: text;
+    from_account: text;
+    to_account: text;
+    tx_value: nat;
+    tx_time: nat64
+};
+
+type TimeChunkStats = record {
+    start_time: nat64;
+    end_time: nat64;
+    total_count: nat64;
+    mint_count: nat64;
+    transaction_count: nat64;
+    burn_count: nat64;
+};
+
+type TimeStats = record {
+    snapshot_time: nat64;
+    total_transaction_count: nat;
+    total_transaction_value: nat;
+    total_transaction_average: float64;
+    total_unique_accounts: nat64;
+    most_active_accounts: vec MostActive;
+    burn_stats: TotCntAvg;
+    mint_stats: TotCntAvg;
+    transaction_stats: TotCntAvg;
+    count_over_time: vec TimeChunkStats;
+    top_mints: vec ProcessedTX;
+    top_burns: vec ProcessedTX;
+    top_transactions: vec ProcessedTX;
+    total_account_holders: nat64;
+};
+
+type QsRecord = record {nat; nat64};
+
+type QuickStats = record {
+    total_transaction_count: vec QsRecord;
+    total_transaction_value: vec QsRecord;
+    total_unique_accounts: vec QsRecord;
+    total_account_holders: vec QsRecord;
+};
+
+type WorkingStats  = record {
+    data_collections: vec text;
+    last_processed_time: nat64;
+}
+
+service : {
+    "add_authorised": (text) -> (text);
+    "add_collection": (text, text) -> (text); // key (max 10 chars), canister_id
+    "remove_authorised": (text) -> (text);
+    "set_canister_name": (text) -> (text);
+    "get_cycles_balance": () -> (nat64) query;
+    "get_all_authorised": () -> (vec text) query;
+    "get_canister_name": () -> (text) query; 
+    "get_logs": () -> (opt vec LogEntry) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "get_standard_snapshots": (text, nat) -> (opt vec TimeStats) query;  // key, number to return
+    "get_quickstats": (text, nat) -> (opt QuickStats) query;  // key, number to return
+    "check_and_start_processing_timer": () -> (text);
+    "stop_all_timers": () -> (text);
+    "get_working_stats": () -> (WorkingStats) query;
+}
+
+

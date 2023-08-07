@@ -36,38 +36,52 @@
 				<p> WORK IN PROGRESS... <span style="color: aqua;">Transaction Search:</span></p>
 				<p style="padding-bottom: 10px;">
 				<a href="/search/icp">
-					<Button type="orange" 
+					<Button type="blueTP" 
 					flat={false} 
 					noBG={true}>
 					ICP Transactions
 					</Button>
 					</a>
 				<a href="/search/ckbtc">
-					<Button type="orange" 
+					<Button type="blueTP" 
 					flat={false} 
 					noBG={true}>
 					ckBTC Transactions
 					</Button>
 				</a>
 				<a href="/search/sns1">
-					<Button type="orange" 
+					<Button type="blueTP" 
 					flat={false} 
 					noBG={true}>
 					SNS-Dragginz Transactions
 					</Button>
 				</a>
 				<a href="/search/chat">
-					<Button type="orange" 
+					<Button type="blueTP" 
 					flat={false} 
 					noBG={true}>
 					CHAT Transactions
 					</Button>
 				</a>
 				<a href="/search/kinic">
-					<Button type="orange" 
+					<Button type="blueTP" 
 					flat={false} 
 					noBG={true}>
 					Kinic Transactions
+					</Button>
+				</a>
+				<a href="/search/hot">
+					<Button type="blueTP" 
+					flat={false} 
+					noBG={true}>
+					Hot Token Transactions
+					</Button>
+				</a>
+				<a href="/search/ghost">
+					<Button type="blueTP" 
+					flat={false} 
+					noBG={true}>
+					Ghost Token Transactions
 					</Button>
 				</a>
 				</p>
@@ -111,14 +125,79 @@
 					Latest Kinic
 					</Button>
 				</a>
+				<a href="/explore/visualblocks/hot">
+					<Button type="orange" 
+					flat={false} 
+					noBG={true}>
+					Latest Hot Token
+					</Button>
+				</a>
+				<a href="/explore/visualblocks/ghost">
+					<Button type="orange" 
+					flat={false} 
+					noBG={true}>
+					Latest Ghost Token
+					</Button>
+				</a>
 				</p>
 			</ContentBox>
 
 			<ContentBox>
 				<p> WORK IN PROGRESS... <span style="color: aqua;">Token Stats/ Metrics</span></p>
 				<p style="padding-bottom: 10px;">
-
+						<a href="/explore/stats/ckbtc">
+							<Button type="blueTP" 
+							flat={false} 
+							noBG={true}>
+							ckBTC Stats
+							</Button>
+						</a>
+						<a href="/explore/stats/icp">
+							<Button type="blueTP" 
+							flat={false} 
+							noBG={true}>
+							ICP Stats
+							</Button>
+						</a>
+						<a href="/explore/stats/chat">
+							<Button type="blueTP" 
+							flat={false} 
+							noBG={true}>
+							CHAT Stats
+							</Button>
+						</a>
+						<a href="/explore/stats/sns1">
+							<Button type="blueTP" 
+							flat={false} 
+							noBG={true}>
+							Draggonz Stats
+							</Button>
+						</a>
+						<a href="/explore/stats/kinic">
+							<Button type="blueTP" 
+							flat={false} 
+							noBG={true}>
+							Kinic Stats
+							</Button>
+						</a>
+						<a href="/explore/stats/hot">
+							<Button type="blueTP" 
+							flat={false} 
+							noBG={true}>
+							Hot Stats
+							</Button>
+						</a>
+						<a href="/explore/stats/ghost">
+							<Button type="blueTP" 
+							flat={false} 
+							noBG={true}>
+							Ghost Stats
+							</Button>
+						</a>
 				</p>
+
+
+
 			</ContentBox>
 
 			<ContentBox>

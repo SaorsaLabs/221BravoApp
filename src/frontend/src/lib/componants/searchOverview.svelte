@@ -13,17 +13,26 @@
     let laDate = "Date";
     let afTime = "Time";
     let laTime = "Time";
+    const fmtOptionsValue = { style: 'decimal', maximumFractionDigits: 8, minimumFractionDigits: 0 };
 
     export let token = 'Token';
-    export let data = {
-        sentValue,
-        receivedValue,
-        balance,
-        sentTX,
-        receivedTX,
-        activeFrom,
-        lastActive
-    };
+    export let data = {};
+
+    // -- DATA Should have the following
+    // { 
+    //     sentValue,
+    //     receivedValue,
+    //     balance: 
+    //     sentTX,
+    //     receivedTX,
+    //     activeFrom,
+    //     lastActive
+    // };
+
+    let sV, rV, bA;
+    sV = data.sentValue.toLocaleString('en-US', fmtOptionsValue);
+    rV = data.receivedValue.toLocaleString('en-US', fmtOptionsValue);
+    bA = data.balance.toLocaleString('en-US', fmtOptionsValue);
     
     $: laDate = millisToDate(data.lastActive);
     $: laTime = millisToTime(data.lastActive);
@@ -37,17 +46,17 @@
       <div class="row">
         <div class="col cText">
           <p>{token} Sent</p>
-          <h3 class="textC3">{data.sentValue}</h3>
+          <h3 class="textC3">{sV}</h3>
           <p class="textC3">{data.sentTX} TXs</p>
         </div>
         <div class="col cText">
           <p>{token} Received</p>
-          <h3 class="textC2">{data.receivedValue}</h3>
+          <h3 class="textC2">{rV}</h3>
           <p class="textC2">{data.receivedTX} TXs</p>
         </div>
         <div class="col cText">
           <p>{token} Balance</p>
-          <h3 class="textC1">{data.balance}</h3>
+          <h3 class="textC1">{bA}</h3>
           <p class="textC1">Total: {totalTX} TXs</p>
         </div>
       </div>

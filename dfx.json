@@ -4,19 +4,29 @@
 			"candid": "src/backend/backend.did",
 			"package": "backend",
 			"type": "rust"
-		  },
+		},
 		"icrc_data_processer": {
-		"candid": "src/icrc_data_processer/icrc_data_processer.did",
-		"package": "icrc_data_processer",
-		"type": "rust"
+			"candid": "src/icrc_data_processer/icrc_data_processer.did",
+			"package": "icrc_data_processer",
+			"type": "rust"
 		},
 		"icp_data_processer": {
 			"candid": "src/icp_data_processer/icp_data_processer.did",
 			"package": "icp_data_processer",
 			"type": "rust"
-			},		
+		},
+		"snapshot_canister": {
+			"candid": "src/snapshot_canister/snapshot_canister.did",
+			"package": "snapshot_canister",
+			"type": "rust"
+		},
+		"icp_snapshot_canister": {
+			"candid": "src/icp_snapshot_canister/icp_snapshot_canister.did",
+			"package": "icp_snapshot_canister",
+			"type": "rust"
+		},
 		"frontend": {
-			"dependencies": ["backend", "icrc_data_processer"],
+			"dependencies": [],
 			"frontend": {
 				"entrypoint": "build/index.html"
 			},
@@ -27,7 +37,7 @@
 			"type": "custom",
 			"wasm": "src/icrc_ledger_test/ic-icrc1-ledger.wasm",
 			"candid": "src/icrc_ledger_test/ledger.did"
-			}	
+		}
 	},
 	"defaults": {
 		"build": {
@@ -45,7 +55,7 @@
 	"declarations": {
 		"output": "src/declarations",
 		"node_compatibility": true
-	  },
+	},
 	"version": 1,
 	"output_env_file": ".env"
 }

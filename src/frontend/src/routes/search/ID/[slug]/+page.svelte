@@ -80,6 +80,18 @@
 			icrcToggle = true;
 			showSubACInput = true;
 		}
+		if(_slugData.token == "HOT") {
+			headSelected = 6;
+			txTableType = "icrc";
+			icrcToggle = true;
+			showSubACInput = true;
+		}
+		if(_slugData.token == "GHOST") {
+			headSelected = 7;
+			txTableType = "icrc";
+			icrcToggle = true;
+			showSubACInput = true;
+		}
 		// if(_slugData.token == "CKETH") {
 		// 	headSelected = 3;
 		// }
@@ -129,11 +141,7 @@
 <LayoutCombine>
 	<span slot="head">
 		<Head/>
-		{#if headSelected == 1} <SearchSubHead selected="1"/> {/if}
-		{#if headSelected == 2} <SearchSubHead selected="2"/> {/if}
-		{#if headSelected == 3} <SearchSubHead selected="3"/> {/if}
-		{#if headSelected == 4} <SearchSubHead selected="4"/> {/if}
-		{#if headSelected == 5} <SearchSubHead selected="5"/> {/if}
+		<SearchSubHead selected={headSelected}/>
 	</span>
 
 	<span slot="body">

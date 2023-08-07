@@ -1,5 +1,5 @@
 <script>
-    export let type = 'standard'; // standard, grey, white, orange
+    export let type = 'standard'; // standard, grey, white, orange blueTP
     export let flat = false;
     export let noBG = false;
     export let slim = false;
@@ -83,9 +83,7 @@
       color: white;
     }
     button.orange:hover {
-      background: #89318f;  /* fallback for old browsers */
-		  background: -webkit-linear-gradient(to right, #f1e909, #b78d00);  /* Chrome 10-25, Safari 5.1-6 */
-		  background: linear-gradient(to right, #f1e909, #b78d00); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+      background: #b68604;  /* fallback for old browsers */
     }
     button.orange:active {
       /* background-color: yellow; */
@@ -93,6 +91,17 @@
 		  background: -webkit-linear-gradient(to right, #f1e909, #b78d00);  /* Chrome 10-25, Safari 5.1-6 */
 		  background: linear-gradient(to right, #f1e909, #b78d00); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
       color: rgb(74, 97, 141);
+    }
+    /*  */
+    .blueTP{
+      background: #f1f1f129;
+      border: #8f8f8f;
+      border-width: 1px;
+      border-style: solid;
+      color: white;
+    }
+    button.blueTP:hover {
+      background: #049eb6;  /* fallback for old browsers */
     }
     .head{
       color: white;

@@ -2,13 +2,19 @@
   "backend": {
     "ic": "meped-laaaa-aaaak-qcbsa-cai"
   },
-  "icrc_data_processer": {
-    "ic": "26yxo-4iaaa-aaaak-qcfwa-cai"
-  },
   "frontend": {
     "ic": "mdocx-gyaaa-aaaak-qcbsq-cai"
   },
   "icp_data_processer": {
     "ic": "ltzyb-kqaaa-aaaak-qcg4q-cai"
+  },
+  "icp_snapshot_canister": {
+    "ic": "4qqcx-cqaaa-aaaak-qcjnq-cai"
+  },
+  "icrc_data_processer": {
+    "ic": ""
+  },
+  "snapshot_canister": {
+    "ic": "7hcof-tiaaa-aaaak-qcjfa-cai"
   }
 }

@@ -6,7 +6,7 @@
     export let selected = 0;
 
     // underline selected
-    let numButtons = 6;
+    let numButtons = 7;
     let opAR = [];
     for(let i = 0; i<numButtons; i++){
         if(selected == i+1){
@@ -60,6 +60,22 @@
                         flat={true} 
                         noBG={true}>
                             SNS-Kinic
+                        </Button>
+                    </a>
+                    <a href="/explore/visualblocks/hot" class={opAR[5]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            SNS-HotOrNot
+                        </Button>
+                    </a>
+                    <a href="/explore/visualblocks/ghost" class={opAR[6]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            SNS-Ghost
                         </Button>
                     </a>
                     <!--<span class="pad"></span>

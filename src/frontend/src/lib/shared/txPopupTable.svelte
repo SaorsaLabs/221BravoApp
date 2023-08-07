@@ -52,7 +52,7 @@ if (data.direction == 'out') {
                     From: {data.longID}
                     {#if data.longID != null && data.longID != "null"}
                         <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.longID}/>
+                        <CopyButton text={data.longID} icrcAccount={false}/>
                         <SaveButton text={data.longID} icrcAccount={false}/>
                     {/if}
                     {#if data.shortID != undefined && !data?.shortID?.includes("...")}
@@ -63,7 +63,7 @@ if (data.direction == 'out') {
                     A/C: {data.longSubID}
                     {#if data.longSubID != null && data.longSubID != "null"}
                         <a href="/search/ID/{data.token}?id={data.longSubID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.longSubID}/>
+                        <CopyButton text={data.longSubID} icrcAccount={false}/>
                         <SaveButton text={data.longSubID} icrcAccount={false}/>
                     {/if}
                     {#if data.subName != undefined && !data?.subName?.includes("...")}
@@ -74,7 +74,7 @@ if (data.direction == 'out') {
                     From: {data.target}
                     {#if data.target != null && data.target != "null"}
                         <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.target}/>
+                        <CopyButton text={data.target} icrcAccount={false}/>
                         <SaveButton text={data.target} icrcAccount={false}/>
                     {/if}
                     {#if data.targetName != undefined}
@@ -85,7 +85,7 @@ if (data.direction == 'out') {
                     A/C: {data.targetSub}
                     {#if data.targetSub != null && data.targetSub != "null"}
                         <a href="/search/ID/{data.token}?id={data.targetSub}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.targetSub}/>
+                        <CopyButton text={data.targetSub} icrcAccount={false}/>
                         <SaveButton text={data.targetSub} icrcAccount={false}/>
                     {/if}
                     {#if data.targetSubName != undefined}
@@ -103,7 +103,7 @@ if (data.direction == 'out') {
                     To: {data.target}
                     {#if data.target != null && data.target != "null"}
                         <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.target}/>
+                        <CopyButton text={data.target} icrcAccount={false}/>
                         <SaveButton text={data.target} icrcAccount={false}/>
                     {/if}
                     {#if data.targetName != undefined}
@@ -114,7 +114,7 @@ if (data.direction == 'out') {
                     A/C: {data.targetSub}
                     {#if data.targetSub != null && data.targetSub != "null"}
                         <a href="/search/ID/{data.token}?id={data.targetSub}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.targetSub}/>
+                        <CopyButton text={data.targetSub} icrcAccount={false}/>
                         <SaveButton text={data.targetSub} icrcAccount={false}/>
                     {/if}
                     {#if data.targetSubName != undefined}
@@ -125,7 +125,7 @@ if (data.direction == 'out') {
                     To: {data.longID}
                     {#if data.longID != null && data.longID != "null"}
                         <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.longID}/>
+                        <CopyButton text={data.longID} icrcAccount={false}/>
                         <SaveButton text={data.longID} icrcAccount={false}/>
                     {/if}
                     {#if data.shortID != undefined && !data?.shortID?.includes("...")}
@@ -136,7 +136,7 @@ if (data.direction == 'out') {
                     A/C: {data.longSubID}
                     {#if data.longSubID != null && data.longSubID != "null"}
                         <a href="/search/ID/{data.token}?id={data.longSubID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.longSubID}/>
+                        <CopyButton text={data.longSubID} icrcAccount={false}/>
                         <SaveButton text={data.longSubID} icrcAccount={false}/>
                     {/if}
                     {#if data.subName != undefined && !data?.subName?.includes("...")}
@@ -189,7 +189,7 @@ if (data.direction == 'out') {
                             From: {data.longID}
                             {#if data.longID != null && data.longID != "null"}
                                 <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                                <CopyButton text={data.longID}/>
+                                <CopyButton text={data.longID} icrcAccount={false}/>
                                 <SaveButton text={data.longID} icrcAccount={false}/>
                             {/if}
                             {#if data.shortID != undefined && !data?.shortID?.includes("...")}
@@ -200,7 +200,7 @@ if (data.direction == 'out') {
                             From: {data.target}
                             {#if data.target != null && data.target != "null"}
                                 <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                                <CopyButton text={data.target}/>
+                                <CopyButton text={data.target} icrcAccount={false}/>
                                 <SaveButton text={data.target} icrcAccount={false}/>
                             {/if}
                             {#if data.targetName != undefined}
@@ -218,7 +218,7 @@ if (data.direction == 'out') {
                             To: {data.target}
                             {#if data.target != null && data.target != "null"}
                                 <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                                <CopyButton text={data.target}/>
+                                <CopyButton text={data.target} icrcAccount={false}/>
                                 <SaveButton text={data.target} icrcAccount={false}/>
                             {/if}
                             {#if data.targetName != undefined}
@@ -229,7 +229,7 @@ if (data.direction == 'out') {
                             To: {data.longID}
                             {#if data.longID != null && data.longID != "null"}
                                 <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                                <CopyButton text={data.longID}/>
+                                <CopyButton text={data.longID} icrcAccount={false}/>
                                 <SaveButton text={data.longID} icrcAccount={false}/>
                             {/if}
                             {#if data.shortID != undefined && !data?.shortID?.includes("...")}
@@ -281,7 +281,7 @@ if (data.direction == 'out') {
                             From: {data.fromAccount}
                             {#if data.fromAccount != null && data.fromAccount != "null"}
                                 <a href="/search/ID/{data.token}?id={data.fromAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                                <CopyButton text={data.fromAccount}/>
+                                <CopyButton text={data.fromAccount} icrcAccount={false}/>
                                 <SaveButton text={data.fromAccount} icrcAccount={false}/>
                             {/if}
                             {#if data.fromAccountName != undefined}
@@ -297,7 +297,7 @@ if (data.direction == 'out') {
                             To: {data.toAccount}
                             {#if data.toAccount != null && data.toAccount != "null"}
                                 <a href="/search/ID/{data.token}?id={data.toAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                                <CopyButton text={data.toAccount}/>
+                                <CopyButton text={data.toAccount} icrcAccount={false}/>
                                 <SaveButton text={data.toAccount} icrcAccount={false}/>
                             {/if}
                             {#if data.toAccountName != undefined}
@@ -352,7 +352,7 @@ if (data.direction == 'out') {
                     {/if}
                     {#if data.fromPrincipal != null && data.fromPrincipal != "null" && data.fromPrincipal != "N/A"}
                         <a href="/search/ID/{data.token}?id={data.fromPrincipal}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.fromPrincipal}/>
+                        <CopyButton text={data.fromPrincipal} icrcAccount={false}/>
                         <SaveButton text={data.fromPrincipal} icrcAccount={false}/>
                     {/if}
                     {#if data.fromPrincipalName != undefined}
@@ -363,7 +363,7 @@ if (data.direction == 'out') {
                     A/C: {data.fromAccount}
                     {#if data.fromAccount != null && data.fromAccount != "null" && data.fromAccount != "N/A"}
                         <a href="/search/ID/{data.token}?id={data.fromAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.fromAccount}/>
+                        <CopyButton text={data.fromAccount} icrcAccount={false}/>
                         <SaveButton text={data.fromAccount} icrcAccount={false}/>
                     {/if}
                     {#if data.fromAccountName != undefined}
@@ -383,7 +383,7 @@ if (data.direction == 'out') {
                     {/if}
                     {#if data.toPrincipal != null && data.toPrincipal != "null" && data.toPrincipal != "N/A"}
                         <a href="/search/ID/{data.token}?id={data.toPrincipal}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.toPrincipal}/>
+                        <CopyButton text={data.toPrincipal} icrcAccount={false}/>
                         <SaveButton text={data.toPrincipal} icrcAccount={false}/>
                     {/if}
                     {#if data.toPrincipalName != undefined}
@@ -394,7 +394,7 @@ if (data.direction == 'out') {
                     A/C: {data.toAccount}
                     {#if data.toAccount != null && data.toAccount != "null" && data.toAccount != "N/A"}
                         <a href="/search/ID/{data.token}?id={data.toAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                        <CopyButton text={data.toAccount}/>
+                        <CopyButton text={data.toAccount} icrcAccount={false}/>
                         <SaveButton text={data.toAccount} icrcAccount={false}/>
                     {/if}
                     {#if data.toAccountName != undefined}
@@ -446,7 +446,7 @@ if (data.direction == 'out') {
                         From: {data?.longAC ?? "Mint Account"}
                         {#if data.longAC != null && data.longAC != "null"}
                             <a href="/search/ID/{data.token}?id={data.longAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.longAC}/>
+                            <CopyButton text={data.longAC} icrcAccount={false}/>
                             <SaveButton text={data.longAC} icrcAccount={false}/>
                         {/if}
                         {#if data.shortAC != "Unknown" && !data?.shortAC?.includes("...")}
@@ -457,7 +457,7 @@ if (data.direction == 'out') {
                             {@html "<br>"}
                             {data.longPR}
                             <a href="/search/ID/{data.token}?id={data.longPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.longPR}/>
+                            <CopyButton text={data.longPR} icrcAccount={false}/>
                             <SaveButton text={data.longPR} icrcAccount={false}/>
                         {/if}
                         {#if data.shortPR != "Unknown" && !data?.shortPR?.includes("...")}
@@ -468,7 +468,7 @@ if (data.direction == 'out') {
                         From: {data?.targetAC ?? "Mint Account"}
                         {#if data.targetAC != null && data.targetAC != "null"}
                             <a href="/search/ID/{data.token}?id={data.targetAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.targetAC}/>
+                            <CopyButton text={data.targetAC} icrcAccount={false}/>
                             <SaveButton text={data.targetAC} icrcAccount={false}/>
                         {/if}
                         {#if data.targetACName != "Unknown"}
@@ -479,7 +479,7 @@ if (data.direction == 'out') {
                             {@html "<br>"}
                             {data.targetPR}
                             <a href="/search/ID/{data.token}?id={data.targetPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.targetPR}/>
+                            <CopyButton text={data.targetPR} icrcAccount={false}/>
                             <SaveButton text={data.targetPR} icrcAccount={false}/>
                         {/if}
                         {#if data.targetPRName != "Unknown"}
@@ -498,7 +498,7 @@ if (data.direction == 'out') {
                         To: {data?.targetAC ?? "Burn Account"}
                         {#if data.targetAC != null && data.targetAC != "null"}
                             <a href="/search/ID/{data.token}?id={data.targetAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.targetAC}/>
+                            <CopyButton text={data.targetAC} icrcAccount={false}/>
                             <SaveButton text={data.targetAC} icrcAccount={false}/>
                         {/if}
                         {#if data.targetACName != "Unknown"}
@@ -509,7 +509,7 @@ if (data.direction == 'out') {
                             {@html "<br>"}
                             {data.targetPR}
                             <a href="/search/ID/{data.token}?id={data.targetPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.targetPR}/>
+                            <CopyButton text={data.targetPR} icrcAccount={false}/>
                             <SaveButton text={data.targetPR} icrcAccount={false}/>
                         {/if}
                         {#if data.targetPRName != "Unknown"}
@@ -520,7 +520,7 @@ if (data.direction == 'out') {
                         To: {data?.longAC ??  "Burn Account"}
                         {#if data.longAC != null && data.longAC != "null"}
                             <a href="/search/ID/{data.token}?id={data.longAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.longAC}/>
+                            <CopyButton text={data.longAC} icrcAccount={false}/>
                             <SaveButton text={data.longAC} icrcAccount={false}/>
                         {/if}
                         {#if data.shortAC != "Unknown" && !data?.shortAC?.includes("...")}
@@ -531,7 +531,7 @@ if (data.direction == 'out') {
                             {@html "<br>"}
                             {data.longPR}
                             <a href="/search/ID/{data.token}?id={data.longPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
-                            <CopyButton text={data.longPR}/>
+                            <CopyButton text={data.longPR} icrcAccount={false}/>
                             <SaveButton text={data.longPR} icrcAccount={false}/>
                         {/if}
                         {#if data.shortPR != "Unknown" && !data?.shortPR?.includes("...")}

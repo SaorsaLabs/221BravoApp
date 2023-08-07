@@ -41,7 +41,7 @@
                   {title}
                 </td>
                 <td class="btnDiv">
-                  <Button  on:click={() => modalClose('close')}> 
+                  <Button type={"blueTP"} on:click={() => modalClose('close')}> 
                     X</Button>
                 </td>
               </tr>
