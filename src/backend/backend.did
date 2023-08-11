@@ -9,10 +9,11 @@ type UserData = record { user_account: text; user_name: text; user_tokens: nat32
 type HolderData = record { nat32; text; }; 
 type MemoryStats = record {memory: nat64; heap_memory: nat64};
 type LogEntry = record {timestamp: text; text: text};
+type AddressEntry = record {text; text; text}; // owner, saved account, saved name; 
+type PublicAddressEntry = record {text; text}; // saved account, saved name;
 
 service : {
     "get_user_data": (text) -> (opt UserData) query;
-    "isauthorised": () -> (text) query;
     "add_authorised": (text) -> (text);
     "remove_authorised": (text) -> (text);
     "whoami": () -> (text) query;
@@ -29,4 +30,10 @@ service : {
     "get_cycles_balance": () -> (nat64) query;
     "get_memory_stats": () -> (MemoryStats) query;
     "read_logs": () -> (opt vec LogEntry) query;
+    "get_user_named_accounts": (text) -> (opt vec AddressEntry) query; 
+    "add_user_named_accounts": (text, text, text) -> (text); // owner a/c, save a/c, save name;
+    "remove_user_named_account": (text, text) -> (text); // owner a/c, save a/c;
+    "get_public_named_accounts": () -> (opt vec PublicAddressEntry) query; 
+    "add_public_named_accounts": (text, text) -> (text); // save a/c, save name;
+    "remove_public_named_account": (text) -> (text); // save a/c;
 }

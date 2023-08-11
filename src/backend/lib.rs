@@ -3,19 +3,19 @@ mod utils;
 mod account_identifier;
 
 use ic_cdk_macros::*;
-use candid::{ CandidType };
+use candid::CandidType;
 use ic_cdk::export::{ serde, Principal };
 use serde::Deserialize;
-use std::{ cell::RefCell };
+use std::cell::RefCell;
 use std::collections::BTreeMap;
-use types::{ UserData, UserRank, MemoryData, LogEntry };
+use types::{ UserData, UserRank, MemoryData, LogEntry, CanisterSettings };
 use utils::{
     validate_caller,
     get_subaccount_from_principal,
     get_multiple_subaccounts_from_principal,
 };
 use ic_cdk_timers::TimerId;
-use std::{ time::Duration };
+use std::time::Duration;
 
 //[][] ---- State Manamgement ---- [][]
 thread_local! {
@@ -40,8 +40,64 @@ struct Data {
     authorised: Vec<String>,
     users: BTreeMap<String, UserData>,
     genesis_holders: Vec<(u32, String)>,
+    public_accounts: Vec<(String, String)>,
     genesis_updating: bool,
+    canister_settings: CanisterSettings, 
 }
+impl Data {
+    fn check_authorised(&self, principal_id: String) {
+        let auth_vec: &Vec<String> = &self.authorised;
+        let mut auth: bool = false;
+        if auth_vec.contains(&principal_id) {
+            auth = true;
+        }
+        match auth {
+            true => (),
+            _ => ic_cdk::trap("Caller Not Authorised"),
+        }
+    }
+
+    fn add_authorised(&mut self, principal_id: String) -> String {
+        let auth_vec: &mut Vec<String> = &mut self.authorised;
+        if auth_vec.contains(&principal_id) {
+            let rtn: String = String::from("Principal is already authorised");
+            return rtn;
+        } else {
+            auth_vec.push(principal_id);
+        }
+        let rtn: String = String::from("Admin Added");
+        return rtn;
+    }
+
+    fn remove_authorised(&mut self, principal_id: String) -> String {
+        let auth_vec: &mut Vec<String> = &mut self.authorised;
+        if auth_vec.contains(&principal_id) {
+            auth_vec.retain(|x: &String| x != &principal_id);
+        } else {
+            let rtn: String = String::from("Can't remove - Principal isn't in the list of admins");
+            return rtn;
+        }
+        let rtn: String = String::from("Admins Principal Removed");
+        return rtn;
+    }
+
+    fn get_all_authorised(&self) -> Vec<String> {
+        let auth_vec: &Vec<String> = &self.authorised;
+        return auth_vec.to_owned();
+    }
+
+    fn set_canister_name(&mut self, name: String) -> String {
+        self.canister_settings.canister_name = name;
+        return "Canister name set".to_string();
+    }
+
+    fn get_canister_name(&self) -> String {
+        let name = &self.canister_settings.canister_name;
+        return name.to_owned();
+    }
+
+}
+
 
 struct LogsState {
     pub data: LoggingData,
@@ -108,11 +164,17 @@ fn post_upgrade() {
 
 #[query]
 fn get_user_data(user_account: String) -> Option<UserData> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state| get_user_data_impl(user_account, &state.borrow()))
 }
 fn get_user_data_impl(user_account: String, runtime_state: &RuntimeState) -> Option<UserData> {
-    let v = runtime_state.data.authorised.clone();
-    validate_caller(ic_cdk::caller().to_text(), v); // is authorised?
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     let mut ud: UserData = UserData::default();
     let mut result: bool = false;
     match runtime_state.data.users.get(&user_account) {
@@ -132,8 +194,148 @@ fn get_user_data_impl(user_account: String, runtime_state: &RuntimeState) -> Opt
     }
 }
 
+// Get user named accounts
+#[query]
+fn get_user_named_accounts(user_account: String) -> Option<Vec<(String, String, String)>> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    RUNTIME_STATE.with(|state| get_user_named_accounts_impl(user_account, &state.borrow()))
+}
+fn get_user_named_accounts_impl(user_account: String, runtime_state: &RuntimeState) -> Option<Vec<(String, String, String)>> {
+    match runtime_state.data.users.get(&user_account) {
+        Some(value) => {
+            let ud = value.user_saved_accounts.to_owned();
+            return Some(ud);
+        }
+        None => {
+            return None
+        }
+    }
+}
+
+// add user named account
+#[update]
+fn add_user_named_accounts(owner_account: String, save_account: String, save_name:String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    RUNTIME_STATE.with(|state| add_user_named_accounts_impl(owner_account, save_account, save_name, &mut state.borrow_mut()))
+}
+fn add_user_named_accounts_impl(owner_account: String, save_account: String, save_name: String, runtime_state: &mut RuntimeState) -> String {
+    
+    let user_ac = runtime_state.data.users.get_mut(&owner_account);
+    match user_ac {
+        Some(value) => {
+           
+            let is_new = value.user_saved_accounts.iter().any(|(a, b, _c)| a == &owner_account && b == &save_account);
+            ic_cdk::println!("{}",is_new);
+            match is_new {
+                true => {
+                    return "ID is already saved in your address book".to_string();
+                },
+                false => {
+                    if save_name.len() <= 50 {
+                        value.user_saved_accounts.push((owner_account, save_account, save_name));
+                        return "Address book updated with new entry".to_string();
+                    } else {
+                        let mut short_name = save_name.to_owned(); 
+                        short_name.truncate(50);
+                        value.user_saved_accounts.push((owner_account, save_account, short_name));
+                        return "Address book updated with new entry".to_string();
+                    }
+                },
+            }
+        }
+        None => {
+            return "Unknown User Account".to_string();
+        }
+    }
+}
+
+// delete user named account
+#[update]
+fn remove_user_named_account(owner_account: String, save_account: String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    RUNTIME_STATE.with(|state| remove_user_named_accounts_impl(owner_account, save_account, &mut state.borrow_mut()))
+}
+fn remove_user_named_accounts_impl(owner_account: String, save_account: String, runtime_state: &mut RuntimeState) -> String {
+    match runtime_state.data.users.get_mut(&owner_account) {
+        Some(value) => {
+            let is_new = value.user_saved_accounts.iter().any(|(a, b, _c)| a == &owner_account && b == &save_account);
+            match is_new {
+                true => {
+                    value.user_saved_accounts.retain(|(a, b, _c)| a != &owner_account && b != &save_account);
+                    return "ID removed".to_string();
+                },
+                false => {
+                    return "Error: Cannot delete ID as it does not exist".to_string();
+                },
+            }
+        }
+        None => {
+            return "Unknown User Account".to_string();
+        }
+    }
+}
+
+// get public named accounts
+#[query]
+fn get_public_named_accounts() -> Option<Vec<(String, String)>> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    RUNTIME_STATE.with(|state| get_public_named_accounts_impl(&state.borrow()))
+}
+fn get_public_named_accounts_impl(runtime_state: &RuntimeState) -> Option<Vec<(String, String)>> {
+    let res = runtime_state.data.public_accounts.to_owned();
+    if res.len() == 0 {
+        return None;
+    } else {
+        return Some(res);
+    }
+}
+
+// add public named account
+#[update]
+fn add_public_named_accounts(save_account: String, save_name:String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    RUNTIME_STATE.with(|state| add_public_named_accounts_impl(save_account, save_name, &mut state.borrow_mut()))
+}
+fn add_public_named_accounts_impl(save_account: String, save_name: String, runtime_state: &mut RuntimeState) -> String {
+    runtime_state.data.public_accounts.push((save_account, save_name));
+    return "ID added to public account list".to_string();
+}
+
+// delete public named account
+#[update]
+fn remove_public_named_account(save_account: String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    RUNTIME_STATE.with(|state| remove_public_named_accounts_impl(save_account, &mut state.borrow_mut()))
+}
+fn remove_public_named_accounts_impl(save_account: String, runtime_state: &mut RuntimeState) -> String {
+    runtime_state.data.public_accounts.retain(|(a, _)| a != &save_account);
+    return "ID Removed from public account list".to_string();
+}
+
 #[update]
 fn add_new_user(user_account: String) -> bool {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state| add_new_user_impl(user_account, &mut state.borrow_mut()))
 }
 fn add_new_user_impl(user_account: String, runtime_state: &mut RuntimeState) -> bool {
@@ -150,6 +352,7 @@ fn add_new_user_impl(user_account: String, runtime_state: &mut RuntimeState) -> 
                 user_name: String::from("Unknown User"),
                 user_tokens: 0,
                 user_rank: UserRank::Padawan,
+                user_saved_accounts: Vec::new()
             };
             runtime_state.data.users.insert(user_account.clone(), ud);
             return true;
@@ -159,6 +362,10 @@ fn add_new_user_impl(user_account: String, runtime_state: &mut RuntimeState) -> 
 
 #[update]
 fn update_username(user_account: String, user_name: String) -> bool {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state|
         update_username_impl(user_account, user_name, &mut state.borrow_mut())
     )
@@ -186,6 +393,10 @@ fn update_username_impl(
 
 #[update]
 fn update_user_tokens(user_account: String, user_tokens: u32) -> bool {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state|
         update_user_tokens_impl(user_account, user_tokens, &mut state.borrow_mut())
     )
@@ -212,67 +423,56 @@ fn update_user_tokens_impl(
 }
 
 #[query]
-fn isauthorised() -> String {
-    let clr: String = ic_cdk::caller().to_text();
-    RUNTIME_STATE.with(|state| isauthorised_impl(clr, &mut state.borrow_mut()))
-}
-fn isauthorised_impl(principal_id: String, runtime_state: &mut RuntimeState) -> String {
-    if runtime_state.data.authorised.contains(&principal_id) {
-        let ret = String::from("authorised");
-        return ret;
-    } else {
-        let ret = String::from("negative");
-        return ret;
-    }
-}
-
-#[query]
-fn getauthorised() -> Vec<String> {
-    RUNTIME_STATE.with(|state| getauthorised_impl(&state.borrow()))
-}
-fn getauthorised_impl(runtime_state: &RuntimeState) -> Vec<String> {
-    let v = runtime_state.data.authorised.clone();
-    validate_caller(ic_cdk::caller().to_text(), v); // is authorised?
-    let ret = runtime_state.data.authorised.to_owned();
-    return ret;
+fn get_all_authorised() -> Vec<String> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+        s.data.get_all_authorised()
+    })
 }
 
 #[update]
 fn add_authorised(principal_id: String) -> String {
-    RUNTIME_STATE.with(|state| add_authorised_impl(principal_id, &mut state.borrow_mut()))
-}
-fn add_authorised_impl(principal_id: String, runtime_state: &mut RuntimeState) -> String {
-    let v = runtime_state.data.authorised.clone();
-    validate_caller(ic_cdk::caller().to_text(), v); // is authorised?
-    if runtime_state.data.authorised.contains(&principal_id) {
-        let rtn: String = String::from("Principal is already authorised");
-        return rtn;
-    } else {
-        runtime_state.data.authorised.push(principal_id);
-    }
-    let rtn: String = String::from("Admin Added");
-    return rtn;
+    RUNTIME_STATE.with(|state| {
+        let mut s = state.borrow_mut();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+        s.data.add_authorised(principal_id)
+    })
 }
 
 #[update]
 fn remove_authorised(principal_id: String) -> String {
-    RUNTIME_STATE.with(|state| remove_authorised_impl(principal_id, &mut state.borrow_mut()))
+    RUNTIME_STATE.with(|state| {
+        let mut s = state.borrow_mut();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+        s.data.remove_authorised(principal_id)
+    })
 }
-fn remove_authorised_impl(principal_id: String, runtime_state: &mut RuntimeState) -> String {
-    let v = runtime_state.data.authorised.clone();
-    validate_caller(ic_cdk::caller().to_text(), v); // is authorised?
-    if runtime_state.data.authorised.contains(&principal_id) {
-        runtime_state.data.authorised.retain(|x| x != &principal_id);
-    } else {
-        let rtn: String = String::from("Can't remove - Principal isn't in the list of admins");
-        return rtn;
-    }
-    let rtn: String = String::from("Admin Principal Removed");
-    return rtn;
+
+#[query]
+fn get_canister_name() -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+        s.data.get_canister_name()
+    })
+}
+
+#[update]
+fn set_canister_name(name: String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let mut s = state.borrow_mut();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+        s.data.set_canister_name(name)
+    })
 }
 
 #[query]
 fn get_single_account(input_principal: String, input_subaccount: u32) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state|
         get_single_account_impl(input_principal, input_subaccount as u8, &state.borrow())
     )
@@ -290,6 +490,10 @@ fn get_single_account_impl(
 
 #[query]
 fn get_multiple_account(input_principal: String, start: u32, get_number: u32) -> Vec<String> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state|
         get_multiple_account_impl(input_principal, start as u8, get_number as u8, &state.borrow())
     )
@@ -308,6 +512,10 @@ fn get_multiple_account_impl(
 
 #[query]
 fn is_genesis_holder(input_id: String) -> bool {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state| is_genesis_holder_impl(input_id, &state.borrow()))
 }
 fn is_genesis_holder_impl(input_id: String, runtime_state: &RuntimeState) -> bool {
@@ -328,6 +536,10 @@ fn is_genesis_holder_impl(input_id: String, runtime_state: &RuntimeState) -> boo
 
 #[query]
 fn read_genesis_holders() -> Vec<(u32, String)> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     RUNTIME_STATE.with(|state| read_genesis_holders_impl(&state.borrow()))
 }
 fn read_genesis_holders_impl(runtime_state: &RuntimeState) -> Vec<(u32, String)> {
@@ -337,23 +549,17 @@ fn read_genesis_holders_impl(runtime_state: &RuntimeState) -> Vec<(u32, String)>
     return ret;
 }
 
-#[query]
-fn whoami() -> String {
-    let clr: String = ic_cdk::caller().to_text();
-    return clr;
-}
-
 // [][] ------------------------- [][]
 // [][] ---- Timer Functions ---- [][]
 // [][] ------------------------- [][]
 
 #[update]
 fn stop_all_timers() -> String {
-    // is authorised?
     RUNTIME_STATE.with(|state| {
-        let v = &state.borrow().data.authorised;
-        validate_caller(ic_cdk::caller().to_text(), v.to_owned());
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
     });
+
     TIMER_IDS.with(|timer_ids| {
         let vec1: &mut std::cell::RefMut<Vec<TimerId>> = &mut timer_ids.borrow_mut();
         for i in vec1.iter() {
@@ -372,10 +578,9 @@ fn stop_all_timers() -> String {
 
 #[update]
 fn check_and_start_genesis_timer(secs: u64) -> String {
-    // is authorised?
     RUNTIME_STATE.with(|state| {
-        let v = &state.borrow().data.authorised;
-        validate_caller(ic_cdk::caller().to_text(), v.to_owned());
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
     });
 
     let ret: String;
@@ -399,6 +604,11 @@ fn check_and_start_genesis_timer(secs: u64) -> String {
 }
 
 fn start_genesis_holder_timer(secs: u64) {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+
     let secs = Duration::from_secs(secs);
     let timer_id = ic_cdk_timers::set_timer_interval(secs, || ic_cdk::spawn(get_genesis_holders()));
     TIMER_IDS.with(|timer_ids| timer_ids.borrow_mut().push(timer_id));
@@ -429,6 +639,10 @@ fn update_genesis_holders(latest_holders: Vec<(u32, String)>, runtime_state: &mu
 // [][] ------------------------ [][]
 #[query]
 fn get_cycles_balance() -> u64 {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
     let cycles: u64 = ic_cdk::api::canister_balance();
     return cycles;
 }
@@ -436,6 +650,11 @@ fn get_cycles_balance() -> u64 {
 #[query]
 #[cfg(target_arch = "wasm32")]
 fn get_memory_stats() -> MemoryData {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+
     let WASM_PAGE_SIZE: u64 = 65536;
     let m: u64 =
         (ic_cdk::api::stable::stable64_size() as u64) * WASM_PAGE_SIZE +
@@ -450,10 +669,9 @@ fn get_memory_stats() -> MemoryData {
 
 #[query]
 fn read_logs() -> Option<Vec<LogEntry>> {
-    // Is authorised?
     RUNTIME_STATE.with(|state| {
-        let v = &state.borrow().data.authorised;
-        validate_caller(ic_cdk::caller().to_text(), v.to_owned());
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
     });
     let mut ret: Option<Vec<LogEntry>> = None;
     LOGS_STATE.with(|state| {

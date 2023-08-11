@@ -7,6 +7,12 @@ pub struct UserData {
     pub user_name: String,
     pub user_tokens: u32,
     pub user_rank: UserRank,
+    pub user_saved_accounts: Vec<(String, String, String)>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
+pub struct CanisterSettings {
+    pub canister_name: String,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default)]

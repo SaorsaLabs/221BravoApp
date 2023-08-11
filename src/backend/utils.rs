@@ -6,12 +6,7 @@ use crate::account_identifier::{ AccountIdentifier, Subaccount };
 // Check if admin/authorised
 pub fn validate_caller(principalID: String, admins: Vec<String>) {
     let mut auth: bool = false;
-    let st: String = String::from(
-        "pdwl5-wayx6-vn7cb-cq7nq-7yojw-oczeb-dvfbv-gkayl-6pkgf-l6g3g-cae"
-    ); // Saorsa Admin
-    if principalID == st {
-        auth = true;
-    } else if admins.contains(&principalID) {
+    if admins.contains(&principalID) {
         auth = true;
     }
     match auth {
