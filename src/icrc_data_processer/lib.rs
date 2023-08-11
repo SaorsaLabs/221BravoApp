@@ -9,7 +9,7 @@ use ic_cdk_macros::*;
 use serde::Deserialize;
 use std::borrow::BorrowMut;
 use std::cell::RefCell;
-use std::collections::{ BTreeMap, VecDeque };
+use std::collections::{ BTreeMap, VecDeque, HashMap };
 use std::ops::Deref;
 use std::time::Duration;
 use utils::{
@@ -325,14 +325,33 @@ fn get_account_balance(id: String) -> String {
         }
     });
 
-    let accounts: BTreeMap<String, EntityData> = with_runtime(|rts| {
-        rts.data.account_holders.to_owned()
+    let ac_balance: String = with_runtime(|rts| {
+        let ret = rts.data.account_holders.get(&id);
+        match ret {
+            Some(v) => { return format!("{:?}",v.balance)},
+            None => {return "Cannot find balance for that Account".to_string()},
+        }
     });
-    if let Some(item) = accounts.iter().find(|(&ref std, &_ed)| std.to_owned() == id.to_owned()) {
-        return format!("{:?}", item);
-    } else {
-        return "not found".to_string();
-    }
+    return ac_balance;
+}
+
+#[query]
+fn get_principal_balance(id: String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s: std::cell::Ref<'_, RuntimeState> = state.borrow();
+        if !s.data.are_stats_public() {
+            s.data.check_authorised(ic_cdk::caller().to_text())
+        }
+    });
+
+    let pr_balance: String = with_runtime(|rts| {
+        let ret = rts.data.principal_holders.get(&id);
+        match ret {
+            Some(v) => { return format!("{:?}",v.balance)},
+            None => {return "Cannot find balance for that Principal".to_string()},
+        }
+    });
+    return pr_balance;
 }
 
 #[query]
@@ -803,6 +822,7 @@ async fn calc_most_active() -> bool {
     });
     return true;
 }
+
 
 //[][] ----------------------------------- [][]
 //[][] ---- Data Download/ Processing ---- [][]
@@ -1631,81 +1651,47 @@ async fn most_active(process_from: u64, return_number: usize) -> bool {
         let mut to_combined: String;
         let mut most_active_acs: Vec<(String, u64)> = Vec::new();
         let mut most_active_prs: Vec<(String, u64)> = Vec::new();
-        let mut count: u64;
+        let mut all_acs: HashMap<String, u64> = HashMap::new();
+        let mut all_prs: HashMap<String, u64> = HashMap::new();
 
-        let mut fm_acs: Vec<String> = Vec::new();
-        let mut to_acs: Vec<String> = Vec::new();
-        let mut fm_prs: Vec<String> = Vec::new();
-        let mut to_prs: Vec<String> = Vec::new();
-        let mut all_acs: Vec<String> = Vec::new();
-        let mut all_prs: Vec<String> = Vec::new();
-
+        // process from 
         for tx in array {
             if tx.tx_time >= process_from {
                 from_combined = format!("{}.{}", tx.from_principal, tx.from_account);
+                
+                let a = all_acs.entry(from_combined).or_insert(0);
+                *a += 1; // add 1 to count
+
+                let p = all_prs.entry(tx.from_principal.clone()).or_insert(0);
+                *p += 1; // add 1 to count
+            }
+        }
+
+        // process to 
+        for tx in array {
+            if tx.tx_time >= process_from {
                 to_combined = format!("{}.{}", tx.to_principal, tx.to_account);
-                fm_acs.push(from_combined.to_owned());
-                to_acs.push(to_combined.to_owned());
-                fm_prs.push(tx.from_principal.to_owned());
-                to_prs.push(tx.to_principal.to_owned());
-                all_acs.push(from_combined);
-                all_acs.push(to_combined);
-                all_prs.push(tx.from_principal.to_owned());
-                all_prs.push(tx.to_principal.to_owned());
+                
+                let a = all_acs.entry(to_combined).or_insert(0);
+                *a += 1; // add 1 to count
+
+                let p = all_prs.entry(tx.to_principal.clone()).or_insert(0);
+                *p += 1; // add 1 to count
             }
         }
 
-        fm_acs.sort();
-        to_acs.sort();
-        fm_prs.sort();
-        to_prs.sort();
-
-        let mut unique_accounts: Vec<String> = get_unique_string_values(all_acs);
-        unique_accounts.retain(|s| s != "ICRC_LEDGER.ICRC_LEDGER"); // remove txs made by the ledger
-        let mut unique_principals: Vec<String> = get_unique_string_values(all_prs);
-        unique_principals.retain(|s| s != "ICRC_LEDGER"); // remove txs made by the ledger
-
-        for st in unique_accounts {
-            count = 0;
-            for st2 in &fm_acs {
-                if &st == st2 {
-                    count += 1;
-                }
-                if st2 > &st {
-                    break;
-                }
+        // accounts to vec
+        for (ac, value) in &all_acs {
+            if ac != "ICRC_LEDGER.ICRC_LEDGER" {
+                most_active_acs.push((ac.to_owned(), value.to_owned()));
             }
-            for st2 in &to_acs {
-                if &st == st2 {
-                    count += 1;
-                }
-                if st2 > &st {
-                    break;
-                }
-            }
-            most_active_acs.push((st, count));
         }
 
-        // most active principals
-        for st in unique_principals {
-            count = 0;
-            for st2 in &fm_prs {
-                if &st == st2 {
-                    count += 1;
-                }
-                if st2 > &st {
-                    break;
-                }
+        // principals to vec
+        for (pr, value) in &all_prs {
+            if pr != "ICRC_LEDGER" {
+                most_active_prs.push((pr.to_owned(), value.to_owned()));
             }
-            for st2 in &to_prs {
-                if &st == st2 {
-                    count += 1;
-                }
-                if st2 > &st {
-                    break;
-                }
-            }
-            most_active_prs.push((st, count));
         }
 
         // most active accounts

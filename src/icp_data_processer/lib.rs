@@ -10,7 +10,7 @@ use ic_cdk_macros::*;
 use serde::{Deserialize, Serialize};
 use std::borrow::{ BorrowMut };
 use std::cell::RefCell;
-use std::collections::{ BTreeMap, VecDeque };
+use std::collections::{ BTreeMap, VecDeque, hash_set, HashMap };
 use std::ops::Deref;
 use std::time::Duration;
 use utils::{
@@ -179,7 +179,7 @@ fn with_runtime_mut<R>(f: impl FnOnce(&mut RuntimeState) -> R) -> R {
 fn init() {
     // itit main data state
     let mut data = Data::default();
-    data.authorised.push("2vxsx-fae".to_string()); 
+    data.authorised.push("2vxsx-fae".to_string()); // ***************************  TESTING ONLY!!
     data.first_run = true;
     data.canister_settings.stats_are_public = true;
     data.canister_settings.canister_name = "Name me please!".to_string();
@@ -734,7 +734,7 @@ async fn calc_most_active() -> bool {
     let hour_start_time: u64 = with_runtime(|rts| {
         time_now - rts.data.canister_settings.hours_to_calculate * HOUR_AS_NANOS
     });
-    let ma_stats: bool = most_active(hour_start_time).await;
+    most_active(hour_start_time).await;
     with_runtime_mut(|rts| {
         rts.data.working_stats.is_busy = false;
     });
@@ -1691,52 +1691,34 @@ async fn calculate_time_stats(
     return fn_return;
 }
 
-async fn most_active(process_from: u64) -> bool {
-    let fn_return: bool;
-    fn_return = RUNTIME_STATE.with(|state| {
+async fn most_active(process_from: u64) -> () {
+    RUNTIME_STATE.with(|state| {
         let mut rts: std::cell::RefMut<'_, RuntimeState> = state.borrow_mut();
         let array: &VecDeque<ProcessedTX> = &rts.data.retained_blocks;
 
         let mut most_active_acs: Vec<(String, u64)> = Vec::new();
-        let mut count: u64;
+        let mut all_acs: HashMap<String, u64> = HashMap::new();
 
-        let mut fm_acs: Vec<String> = Vec::new();
-        let mut to_acs: Vec<String> = Vec::new();
-        let mut all_acs: Vec<String> = Vec::new();
-
+        // from accounts
         for tx in array {
             if tx.tx_time >= process_from {
-                fm_acs.push(tx.from_account.to_owned());
-                to_acs.push(tx.to_account.to_owned());
-                all_acs.push(tx.from_account.to_owned());
-                all_acs.push(tx.to_account.to_owned());
+            let a = all_acs.entry(tx.from_account.clone()).or_insert(0);
+            *a += 1; // add 1 to count
             }
         }
 
-        fm_acs.sort();
-        to_acs.sort();
-
-        let unique_accounts: Vec<String> = get_unique_string_values(all_acs);
-
-        for st in unique_accounts {
-            count = 0;
-            for st2 in &fm_acs {
-                if &st == st2 {
-                    count += 1;
-                }
-                if st2 > &st {
-                    break;
-                }
+        // to accounts
+        for tx in array {
+            if tx.tx_time >= process_from {
+            let c = all_acs.entry(tx.to_account.clone()).or_insert(0);
+            *c += 1; // add 1 to count
             }
-            for st2 in &to_acs {
-                if &st == st2 {
-                    count += 1;
-                }
-                if st2 > &st {
-                    break;
-                }
+        }
+
+        for (ac, value) in &all_acs {
+            if ac != "ICP_LEDGER" {
+                most_active_acs.push((ac.to_owned(), value.to_owned()));
             }
-            most_active_acs.push((st, count));
         }
 
         // most active accounts
@@ -1745,10 +1727,10 @@ async fn most_active(process_from: u64) -> bool {
         // update
         rts.data.hourly_stats.data.most_active_accounts = top_active_acs;
 
-        log("Most Active Accounts + Principals Updated");
-        return true;
+        log("Most Active Accounts updated");
+        return;
     });
-    return true;
+    return;
 }
 
 //[][] ------------------------- [][]

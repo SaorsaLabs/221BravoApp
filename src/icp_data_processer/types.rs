@@ -78,7 +78,7 @@ pub struct TotCntAvg {
     pub average: f64,
 }
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug,)]
 pub struct TimeStats {
     pub total_transaction_count: u128,
     pub total_transaction_value: u128,

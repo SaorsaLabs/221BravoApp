@@ -83,6 +83,7 @@ service : {
     "get_canister_name": () -> (text) query; 
     "set_target_canister": (text) -> (text);
     "get_account_balance" : (text) -> (text) query;
+    "get_principal_balance" : (text) -> (text) query;
     "set_stats_timescales": (nat64, nat64) -> (text); //hours, days
     "set_stats_public": (bool) -> (text);
     "set_stats_return_length": (nat64) -> (text);
