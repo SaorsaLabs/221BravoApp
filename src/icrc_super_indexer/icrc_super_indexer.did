@@ -1,0 +1,116 @@
+// ICRC Indexer - Saorsa Labs    
+// NOTE - Remember set target canisters and authorise indexer on store. 
+
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+
+type LogEntry = record {timestamp: text; text: text};
+
+type ProcessedTX = record {
+    block: nat;
+    hash: text;
+    tx_type: text;
+    from_account: text;
+    to_account: text;
+    tx_value: nat;
+    tx_time: nat64
+};
+
+type OverviewTuple = record {nat32; nat64};
+
+type Overview = record {
+    first_active: nat64;
+    last_active: nat64;
+    sent: OverviewTuple;
+    received: OverviewTuple;
+    balance: nat64
+};
+
+type LinkData = record {
+   linked_from: nat64;
+   linked_id: nat32;
+    number_txs: nat32;
+    gross: nat64;
+    net: int64
+};
+
+type LinkDataResponse = record {
+    linked_from: nat64;
+    linked_id: text;
+    number_txs: nat32;
+    gross: nat64;
+    net: int64
+};
+
+type FullDataResponse = record {
+    account_ref: text;
+    overview: Overview;
+    links: vec LinkDataResponse;
+    blocks: vec ProcessedTX
+};
+
+type FullDataResponseRaw = record {
+    account_ref: nat32;
+    overview: Overview;
+    links: vec LinkData;
+    blocks: vec nat32
+};
+
+type WorkingStats = record {
+    total_downloaded: nat;
+    tx_completed_to: nat;
+    next_tx: nat;
+    timer_set: bool;
+    is_upto_date: bool;
+    is_busy: bool;
+    task_id: nat8;
+}
+
+service : {
+    // Canister Management
+    "add_authorised": (text) -> (text);
+    "remove_authorised": (text) -> (text);
+    "get_all_authorised": () -> (vec text) query;
+    "get_canister_name": () -> (text) query;
+    "set_canister_name": (text) -> (text);
+    "are_stats_public": () -> (bool) query;
+    "set_stats_public": (bool) -> (text); 
+    "get_canister_logs": () -> (vec LogEntry) query;
+    "get_cycles_balance": () -> (nat64) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "get_working_stats": () -> (WorkingStats) query;
+
+    // Index Methods
+    "set_target_canister": (text, text) -> (text);         // ledger: mxzaz-hqaaa-aaaar-qaada-cai / store: ewlou-viaaa-aaaak-qaknq-cai
+    "get_latest_transactions": (nat32) -> (vec ProcessedTX) query;
+    "get_tx": (nat32) -> (opt ProcessedTX);                // update to query after candid upgrade to 0.9.0
+    "get_multiple_tx": (vec nat32) -> (vec ProcessedTX);   // update to query after candid upgrade to 0.9.0
+    "get_full_from_ref": (nat32) -> (opt FullDataResponse);  // update to query after candid upgrade to 0.9.0
+    "get_full_from_ref_raw": (nat32) -> (opt FullDataResponseRaw) query;
+    "get_full_from_id": (text) -> (opt FullDataResponse);       // update to query after candid upgrade to 0.9.0
+    "get_full_from_id_raw": (text) -> (opt FullDataResponseRaw) query;
+    "get_overview_by_id": (text) -> (opt Overview) query;
+    "get_overview_by_ref": (nat32) -> (opt Overview) query;
+    "get_links_from_id": (text) -> (opt vec LinkDataResponse) query;
+    "get_links_from_id_raw": (text) -> (opt vec LinkData) query; 
+    "get_links_from_ref": (nat32) -> (opt vec LinkDataResponse) query;
+    "get_links_from_ref_raw": (nat32) -> (opt vec LinkData) query;
+    "get_transactions_from_id": (text) -> (opt vec ProcessedTX); // returns max 10K blocks  // update to query after candid upgrade to 0.9.0
+    "get_transactions_from_id_raw": (text) -> (opt vec nat32) query;
+    "get_transactions_from_ref": (nat32) -> (opt vec ProcessedTX); // returns max 10K blocks // update to query after candid upgrade to 0.9.0
+    "get_transactions_from_ref_raw": (nat32) -> (opt vec nat32) query;
+    "get_id_from_ref": (nat32) -> (opt text) query;
+    "get_ref_from_id": (text) -> (opt nat32) query;
+
+    // Timer Methods
+    "stop_all_timers": () -> (text);
+    "check_and_start_processing_timer": (nat64) -> (text);
+
+    // Test Methods
+    "test_call_1": () -> (text);
+    "test_call_1A": (text) -> (text);
+    "test_Small_tx_2": () -> (text); 
+    "test_send_tx": () -> (text);
+    "test_index_stx_3": () -> (text);
+    "test_get_alldata": (nat32) -> (text) query;
+}
+

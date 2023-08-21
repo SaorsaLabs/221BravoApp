@@ -5,4 +5,10 @@ members = [
     "src/icp_data_processer",
     "src/snapshot_canister",
     "src/icp_snapshot_canister",
+    "src/kyt_module/test_canister",
+    "src/kyt_module/test_canister2",
+    "src/icp_super_indexer",
+    "src/icp_tx_store",
+    "src/icrc_super_indexer",
+    "src/icrc_tx_store",
 ]

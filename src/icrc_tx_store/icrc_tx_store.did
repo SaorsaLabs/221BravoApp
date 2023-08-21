@@ -1,0 +1,31 @@
+// ICP TX Store (Small TX Format)
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+
+type LogEntry = record {timestamp: text; text: text};
+
+type SmallTX = record {
+    block: nat32;
+    time: nat64;
+    from: opt nat32; 
+    to: opt nat32;
+    tx_type: nat8;
+    value: nat64;
+}
+
+service : {
+    "add_authorised": (text) -> (text);
+    "remove_authorised": (text) -> (text);
+    "get_all_authorised": () -> (vec text) query;
+    "get_canister_name": () -> (text) query;
+    "set_canister_name": (text) -> (text);
+    "are_stats_public": () -> (bool) query;
+    "set_stats_public": (bool) -> (text); 
+    "get_cycles_balance": () -> (nat64) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "get_canister_logs": () -> (vec LogEntry) query;
+    "get_tx_from_store": (nat32) -> (opt SmallTX) query;
+    "get_multiple_tx_from_store": (vec nat32) -> (vec opt SmallTX) query;
+    "add_txs_to_store": (vec SmallTX) -> (bool);
+    "get_total_transactions": () -> (nat32) query;
+}
+

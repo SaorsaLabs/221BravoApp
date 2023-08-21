@@ -11,10 +11,28 @@
   "icp_snapshot_canister": {
     "ic": "4qqcx-cqaaa-aaaak-qcjnq-cai"
   },
+  "icp_super_indexer": {
+    "ic": ""
+  },
+  "icp_tx_store": {
+    "ic": ""
+  },
   "icrc_data_processer": {
     "ic": ""
   },
+  "icrc_super_indexer": {
+    "ic": "4lv6s-yiaaa-aaaak-qcjpa-cai"
+  },
+  "icrc_tx_store": {
+    "ic": "ewlou-viaaa-aaaak-qaknq-cai"
+  },
   "snapshot_canister": {
     "ic": "7hcof-tiaaa-aaaak-qcjfa-cai"
+  },
+  "test_canister": {
+    "ic": ""
+  },  
+  "test_canister2": {
+    "ic": ""
   }
 }

@@ -1,0 +1,82 @@
+// Test Canister
+
+type HolderData = record {nat32; text;};
+
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+
+type LogEntry = record {timestamp: text; text: text};
+
+type TotalHolderResponse = record {accounts: nat64};
+
+type HolderBalance = record {holder: text; balance: nat};
+
+type TopHolderResponse = record {top_accounts: vec HolderBalance};
+
+type WorkingStats = record {
+    total_downloaded: nat; 
+    tx_completed_to: nat; 
+    next_tx: nat;
+    is_upto_date: bool;
+    is_busy: bool;
+    task_id: nat32;
+};
+
+type MostActive = record {text; nat64};
+
+type TotCntAvg = record {total_value: nat; count: nat; average: float64};
+
+type ProcessedTX = record {
+    block: nat;
+    hash: text;
+    tx_type: text;
+    from_account: text;
+    to_account: text;
+    tx_value: nat;
+    tx_time: nat64
+};
+
+type TimeChunkStats = record {
+    start_time: nat64;
+    end_time: nat64;
+    total_count: nat64;
+    mint_count: nat64;
+    transaction_count: nat64;
+    burn_count: nat64;
+};
+
+type TimeStats = record {
+    total_transaction_count: nat;
+    total_transaction_value: nat;
+    total_transaction_average: float64;
+    total_unique_accounts: nat64;
+    most_active_accounts: vec MostActive;
+    burn_stats: TotCntAvg;
+    mint_stats: TotCntAvg;
+    transaction_stats: TotCntAvg;
+    count_over_time: vec TimeChunkStats;
+    top_mints: vec ProcessedTX;
+    top_burns: vec ProcessedTX;
+    top_transactions: vec ProcessedTX;
+};
+
+service : {
+    "add_authorised": (text) -> (text);
+    "remove_authorised": (text) -> (text);
+    "get_all_authorised": () -> (vec text) query;
+    "get_cycles_balance": () -> (nat64) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "read_logs": () -> (opt vec LogEntry) query;
+    "stop_all_timers" : () -> (text);
+    "check_and_start_processing_timer" : (nat64) -> (text);
+//   "get_total_holders": () -> (TotalHolderResponse) query;
+//   "get_top_holders": (nat64) -> (TopHolderResponse) query;
+    "get_working_stats": () -> (WorkingStats) query;
+    "set_target_canister": () -> (text);
+ //   "get_account_balance" : (text) -> (text) query;
+    "get_canister_name": () -> (text) query; 
+    "set_canister_name": (text) -> (text);
+    "set_stats_public": (bool) -> (text);
+    "test_call": () -> (text);
+    "test_call2": () -> (text);
+}
+

@@ -10,6 +10,16 @@
 			"package": "icrc_data_processer",
 			"type": "rust"
 		},
+		"icrc_super_indexer": {
+			"candid": "src/icrc_super_indexer/icrc_super_indexer.did",
+			"package": "icrc_super_indexer",
+			"type": "rust"
+		},
+		"icrc_tx_store": {
+			"candid": "src/icrc_tx_store/icrc_tx_store.did",
+			"package": "icrc_tx_store",
+			"type": "rust"
+		},
 		"icp_data_processer": {
 			"candid": "src/icp_data_processer/icp_data_processer.did",
 			"package": "icp_data_processer",
@@ -23,6 +33,26 @@
 		"icp_snapshot_canister": {
 			"candid": "src/icp_snapshot_canister/icp_snapshot_canister.did",
 			"package": "icp_snapshot_canister",
+			"type": "rust"
+		},
+		"icp_super_indexer": {
+			"candid": "src/icp_super_indexer/icp_super_indexer.did",
+			"package": "icp_super_indexer",
+			"type": "rust"
+		},
+		"icp_tx_store": {
+			"candid": "src/icp_tx_store/icp_tx_store.did",
+			"package": "icp_tx_store",
+			"type": "rust"
+		},
+		"test_canister": {
+			"candid": "src/kyt_module/test_canister/test_canister.did",
+			"package": "test_canister",
+			"type": "rust"
+		},
+		"test_canister2": {
+			"candid": "src/kyt_module/test_canister2/test_canister2.did",
+			"package": "test_canister2",
 			"type": "rust"
 		},
 		"frontend": {

@@ -141,6 +141,12 @@ fn init() {
     let icrc_quickstats_collections = BTreeMap::default();
     // add state
     mgmt_data.authorised.push("2vxsx-fae".to_string());
+    mgmt_data.authorised.push(
+        "e3uc3-o4g2j-bdkhp-yi4p4-wzfdy-glkas-zlhqf-n2jm2-ehxiv-fnjkc-2ae".to_string()
+    ); // Saorsa Dev (Remove on REPO)
+    mgmt_data.authorised.push(
+        "ztewi-mzfkq-w57f2-xtl6i-kacap-n2gg6-dxyzu-p3oql-aikxf-rsivy-aqe".to_string()
+    ); // frontend  (Remove on REPO)
     mgmt_data.canister_settings.stats_are_public = true;
     mgmt_data.canister_settings.canister_name = "Name me please!".to_string();
     mgmt_data.first_run = true;
