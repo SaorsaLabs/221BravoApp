@@ -1,4 +1,4 @@
-// ICRC Indexer - Saorsa Labs    
+// ICRC Indexer - Saorsa Labs  v 0.3.1
 // NOTE - Remember set target canisters and authorise indexer on store. 
 
 type MemoryStats = record {memory: nat64; heap_memory: nat64};
@@ -56,6 +56,7 @@ type FullDataResponseRaw = record {
 };
 
 type WorkingStats = record {
+    version: text;
     total_downloaded: nat;
     tx_completed_to: nat;
     next_tx: nat;
@@ -63,7 +64,13 @@ type WorkingStats = record {
     is_upto_date: bool;
     is_busy: bool;
     task_id: nat8;
-}
+};
+
+type timeSearchArgs = record {
+    id: text;
+    start: nat64; 
+    end: nat64;
+};
 
 service : {
     // Canister Management
@@ -80,7 +87,7 @@ service : {
     "get_working_stats": () -> (WorkingStats) query;
 
     // Index Methods
-    "set_target_canister": (text, text) -> (text);         // ledger: mxzaz-hqaaa-aaaar-qaada-cai / store: ewlou-viaaa-aaaak-qaknq-cai
+    "set_target_canister": (text, text, text) -> (text);         // icrc ledger, tx store, self
     "get_latest_transactions": (nat32) -> (vec ProcessedTX) query;
     "get_tx": (nat32) -> (opt ProcessedTX);                // update to query after candid upgrade to 0.9.0
     "get_multiple_tx": (vec nat32) -> (vec ProcessedTX);   // update to query after candid upgrade to 0.9.0
@@ -95,6 +102,7 @@ service : {
     "get_links_from_ref": (nat32) -> (opt vec LinkDataResponse) query;
     "get_links_from_ref_raw": (nat32) -> (opt vec LinkData) query;
     "get_transactions_from_id": (text) -> (opt vec ProcessedTX); // returns max 10K blocks  // update to query after candid upgrade to 0.9.0
+    "get_transactions_time_id": (timeSearchArgs) -> (opt vec ProcessedTX); // id, start, end // returns max 10K blocks  // update to query after candid upgrade to 0.9.0
     "get_transactions_from_id_raw": (text) -> (opt vec nat32) query;
     "get_transactions_from_ref": (nat32) -> (opt vec ProcessedTX); // returns max 10K blocks // update to query after candid upgrade to 0.9.0
     "get_transactions_from_ref_raw": (nat32) -> (opt vec nat32) query;
@@ -104,13 +112,5 @@ service : {
     // Timer Methods
     "stop_all_timers": () -> (text);
     "check_and_start_processing_timer": (nat64) -> (text);
-
-    // Test Methods
-    "test_call_1": () -> (text);
-    "test_call_1A": (text) -> (text);
-    "test_Small_tx_2": () -> (text); 
-    "test_send_tx": () -> (text);
-    "test_index_stx_3": () -> (text);
-    "test_get_alldata": (nat32) -> (text) query;
 }
 

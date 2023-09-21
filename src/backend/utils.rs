@@ -1,6 +1,7 @@
 use core::num;
 
-use ic_cdk::export::Principal;
+use candid::Principal;
+
 use crate::account_identifier::{ AccountIdentifier, Subaccount };
 
 // Check if admin/authorised
@@ -15,27 +16,6 @@ pub fn validate_caller(principalID: String, admins: Vec<String>) {
     }
 }
 
-// INCORRECT !
-// pub fn number_to_array(input: u32) -> [u8; 32] {
-//     let mut array: [u8; 32] = [0; 32];
-//     let digits: Vec<u8> = input
-//         .to_string()
-//         .chars()
-//         .map(|c| c.to_digit(10).unwrap() as u8)
-//         .collect();
-
-//     let num_digits = digits.len();
-//     let start_index;
-//     if num_digits > 32 {return array}
-//     else{
-//         start_index = 32-num_digits;
-//     };
-
-//     for (i, digit) in digits.iter().enumerate() {
-//         array[i+start_index] = *digit;
-//     }
-//     array
-// }
 
 pub fn get_subaccount_from_principal(principal_id: String, subaccount: u8) -> String {
     let pncpl = Principal::from_text(principal_id).expect("Could not decode the principal.");

@@ -267,7 +267,7 @@
 </script>
 <svelte:head>
 	<title>Stats : {token}</title>
-	<meta name="description" content="Home for the fam" />
+	<meta name="description" content="Internet Computer Statistics" />
 </svelte:head>
 
 <LayoutCombine>
@@ -508,10 +508,6 @@
 		border-radius: 5px;
 		border-width: 1px;
 		padding: 5px;
-	}
-	.mBContentLeft{
-		text-align: left;
-		padding-left: 10px;
 	}
 	.mBContentCentre{
 		text-align: center;

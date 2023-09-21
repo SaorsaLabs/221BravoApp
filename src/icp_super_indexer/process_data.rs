@@ -51,7 +51,7 @@ pub async fn send_stx_to_store() -> bool {
     }
 }
 
-pub fn process_smtx_to_index(){ 
+pub async fn process_smtx_to_index(){ 
     let blocks = RUNTIME_STATE.with(|s|{s.borrow().temp_vec_stx.clone()});
 
     for tx in blocks {

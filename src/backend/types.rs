@@ -1,5 +1,8 @@
+use std::collections::BTreeMap;
+
 use candid::{ CandidType };
 use serde::{ Deserialize, Serialize };
+
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default)]
 pub struct UserData {
@@ -7,7 +10,7 @@ pub struct UserData {
     pub user_name: String,
     pub user_tokens: u32,
     pub user_rank: UserRank,
-    pub user_saved_accounts: Vec<(String, String, String)>,
+    pub user_saved_accounts: BTreeMap<String, String> // account, name. 
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]

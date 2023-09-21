@@ -56,7 +56,28 @@ type QuickStats = record {
 type WorkingStats  = record {
     data_collections: vec text;
     last_processed_time: nat64;
-}
+};
+
+type ExchangeOverviewTotal = record {
+    name: text; 
+    total_balance: nat64;
+    num_transactions: nat64;
+    total_sent: nat64;
+    num_sent: nat64;
+    total_received: nat64;
+    num_received: nat64;
+};
+
+type ExchangeCollection = record {
+    binance: ExchangeOverviewTotal;
+    kucoin: ExchangeOverviewTotal; 
+    gate: ExchangeOverviewTotal;
+    coinex: ExchangeOverviewTotal;
+    kraken: ExchangeOverviewTotal;
+    bitfinex: ExchangeOverviewTotal;
+    coinbase: ExchangeOverviewTotal; 
+    huobi: ExchangeOverviewTotal
+};
 
 service : {
     "add_authorised": (text) -> (text);
@@ -73,6 +94,7 @@ service : {
     "check_and_start_processing_timer": () -> (text);
     "stop_all_timers": () -> (text);
     "get_working_stats": () -> (WorkingStats) query;
+    "get_exchange_snapshots": (nat32) -> (opt vec ExchangeCollection) query;
 }
 
 

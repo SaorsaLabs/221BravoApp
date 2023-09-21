@@ -2,14 +2,13 @@
 import Button from "../shared/button.svelte";
 import Modal from "../shared/modal.svelte";
 import search from "$lib/images/search.png";
-import icpLogo from '$lib/images/icpLogo.png';
-import ckBTCLogo from '$lib/images/ckBTC_logo.svg';
-import chatLogo from '$lib/images/Openchat_logo.png';
-import sns1Logo from '$lib/images/SNS1_Logo.png';
 import SaveButton from "../shared/saveButton.svelte";
 import CopyButton from "../shared/copyButton.svelte";
+import LinkedTokenCarousel from "../shared/linkedTokenCarousel.svelte";
+import { parsePrincipalSubAccountString } from '../code/utils.js';
 
 export let flagData = {};
+console.log("Flag DATA :: ", flagData);
 
 let showPrincipal = false;
 let showSubAccount = false;
@@ -18,25 +17,50 @@ let showMinting = false;
 let showKnownName = false;
 let showUserKnownName = false; 
 let showLinkedTokens = false;
+let showReports = false;
 
-if(flagData.linkedTokens?.principal) showPrincipal = true;
-if(flagData.nfts?.number > 0) showNFT = true;
+// check if linked ICRC tokens
+let keys;
+keys = Object.keys(flagData.linkedTokens.ICRC);
+let keyLen = keys?.length ?? 0;
+for(let i=0; i<keyLen; i++){
+    if(flagData.linkedTokens.ICRC[keys[i]] == true){
+        showLinkedTokens = true;
+        break;
+    }
+}
+let rep = flagData.reports.length ?? 0;
+if( rep > 0 ) showReports = true;
+if( flagData.linkedTokens?.principal ) showPrincipal = true;
+if( flagData.nfts?.number > 0 ) showNFT = true;
 let subACLen = 0;
 let uniqueSA = [];
-if(flagData.linkedTokens?.ICP.length > 0) {
-    subACLen = flagData.linkedTokens.ICP.length;
-    for(let i = 0; i<subACLen; i++){
-        if(flagData.linkedTokens.ICP[i].account != flagData.linkedTokens.searched &&
-           flagData.linkedTokens.ICP[i].active == true) uniqueSA.push(flagData.linkedTokens.ICP[i]);
-    }
-    subACLen = uniqueSA.length;
-    if(subACLen == 0) showSubAccount = false;
-    else showSubAccount = true;
-}
+let icpLinksLen = flagData.linkedTokens.ICP?.length ?? 0;
+
+// if(flagData.linkedTokens?.ICP.length > 0) {
+//     subACLen = flagData.linkedTokens.ICP.length;
+//     for(let i = 0; i<subACLen; i++){
+//         if(flagData.linkedTokens.ICP[i].account != flagData.linkedTokens.searched &&
+//            flagData.linkedTokens.ICP[i].active == true) uniqueSA.push(flagData.linkedTokens.ICP[i]);
+//     }
+//     subACLen = uniqueSA.length;
+//     if(subACLen == 0) showSubAccount = false;
+//     else showSubAccount = true;
+// }
 if(flagData.knownAccount != "") showKnownName = true;
 if(flagData.userKnownAccount != "") showUserKnownName = true;
-if(flagData.mintRewards.value > 0) showMinting = true;
-if(flagData.linkedTokens != "") showLinkedTokens = true;
+if(flagData.mintRewards?.value > 0) showMinting = true;
+
+let sP, sSA;
+let isPrincipal = flagData?.searched?.includes("-");
+if (isPrincipal == true){
+    let parsed = parsePrincipalSubAccountString(flagData.searched);
+    sP = parsed.principal;
+    sSA = parsed.subaccount;
+}else{
+    sP = flagData.searched;
+    sSA = "";
+}
 
 // MODAL STUFF
 let showPopup = false;
@@ -70,6 +94,15 @@ const onPopupClose = (data) => {
                 {flagData.userKnownAccount}
             </td>
         </tr>
+        {/if}
+        {#if showReports == true}
+            <tr class="subBox">
+                <td class="contentLeft" style="color:aqua;">
+                    Reports : 
+                <td class="contentRight" style="color:aqua;">
+                    {flagData.reports}
+                </td>
+            </tr>
         {/if}
         {#if showPrincipal == true}
             <tr class="subBox">
@@ -129,48 +162,31 @@ const onPopupClose = (data) => {
             <td class="contentLeft">
                 Linked Tokens : 
             <td class="contentRight">
-                <div class="row">
-                    {#if flagData.linkedTokens?.ICP?.length > 0}
-                    <div class="col">
-                        <img class="logoAlign" style="padding-top:11px" src={icpLogo} alt="ICP Logo" width="40px"/>
-                        <div style="padding-left:15px">
-                        ICP
-                        <a href="/search/ID/ICP?id={flagData.linkedTokens.searched}" target="_blank"> <img class="search" src={search} alt="search" width="20px" /> </a>
-                        </div>
-                    </div>
-                    {/if}
-                    {#if flagData.linkedTokens.ckBTC == true}
-                    <div class="col">
-                        <img class="logoAlign" src={ckBTCLogo} alt="CKBTC Logo" width="35px"/>
-                        <div style="padding-left:5px">
-                        ckBTC
-                        <a href="/search/ID/CKBTC?id={flagData.linkedTokens.searched}" target="_blank"> <img class="search" src={search} alt="search" width="20px" /> </a>
-                        </div>
-                    </div>
-                    {/if}
-                    {#if flagData.linkedTokens.CHAT == true}
-                    <div class="col">
-                        <img class="logoAlign" src={chatLogo} alt="Chat Logo" width="35px"/>
-                        <div style="padding-left:8px">
-                        Chat
-                        <a href="/search/ID/CHAT?id={flagData.linkedTokens.searched}" target="_blank"> <img class="search" src={search} alt="search" width="20px" /> </a>
-                        </div>
-                    </div>
-                    {/if}
-                    {#if flagData.linkedTokens.SNS1 == true}
-                    <div class="col">
-                        <img class="logoAlign" src={sns1Logo} alt="SNS1 Logo" width="35px"/>
-                        <div style="padding-left:8px">
-                        SNS1
-                        <a href="/search/ID/SNS1?id={flagData.linkedTokens.searched}" target="_blank"> <img class="search" src={search} alt="search" width="20px" /> </a>
-                        </div>
-                    </div>
-                    {/if}
-                </div>
+                <LinkedTokenCarousel 
+                    linkedTokenData={flagData.linkedTokens.ICRC}
+                    mode={"clickThrough"}
+                    searchedPrincipal={sP}
+                    searchedSubAccount={sSA}
+                />
             </td>
         </tr>
         {/if}
     </table>
+
+    <!-- NOTHING TO SHOW -->
+    {#if showPrincipal==false 
+        && showSubAccount==false
+        && showNFT==false
+        && showMinting==false
+        && showKnownName==false
+        && showUserKnownName==false
+        && showLinkedTokens==false
+        && showReports==false
+    }
+    [][]-- This account has no flags --[][]
+    {/if}
+
+
 </div>
 
 <Modal open={showPopup} title={"ICP Sub-Accounts :"} size={"large"} onClosed={() => onPopupClose()}> 

@@ -1,6 +1,8 @@
 <script>
 	import Button from "../../lib/shared/button.svelte";
     import { createEventDispatcher } from 'svelte';
+    import { DEFAULT_SUBACCOUNT } from "../code/constants";
+    import SaveButton from "../shared/saveButton.svelte";
 
     export let inputType = 'both'; // 'principalOnly' or 'both' or 'accountOnly'
     export let subAcEnabled = false; 
@@ -22,6 +24,7 @@
     let btnClicked = '';
     let labelText, inputText;
     let disableUserSearch = false;
+    let saveAccount = "";
 
     if(inputType == 'both'){
         labelText = 'Account or Principal :';
@@ -39,6 +42,7 @@
         labelText = 'Searched ID :';
         inptAC = pushID;
         disabled = true;
+        searchActive = true;
         if( pushSUB != '' 
             && pushSUB != null 
             && pushSUB != "0000000000000000000000000000000000000000000000000000000000000000"
@@ -48,6 +52,7 @@
         } else {
             subAcEnabled = false;
         }
+        saveAccount = formatSave(inptAC, inptSA);
     }
 
     function search() {
@@ -94,6 +99,7 @@
         inptAC = inptAC.replace(/\s/g, ''); // remove whitespace;
         
         if(!error){
+            saveAccount = formatSave(inptAC, inptSA);
             searchActive = true;
             btnClicked = 'search';
             dispatch('click', {
@@ -110,6 +116,7 @@
     function reset() {
         searchActive = false;
         inptAC = "";
+        inptSA = "";
         minValue = 0.0;
         maxValue = 0.0;
         startDate = 0;
@@ -122,6 +129,24 @@
         dispatch('click', {
             btnClicked
         });
+    }
+
+    function formatSave(input, subAC){
+        let res = "";
+        
+        if(input.includes("-") && subAC != ""){
+            res = input+"."+subAC;
+        }
+        else if(input.includes("-") && input.includes(".") && subAC == ""){
+           res = input;
+        }
+        else if(input.includes("-") && subAC == ""){
+           res = input+"."+DEFAULT_SUBACCOUNT;
+        }
+        else {
+            res = input;
+        }
+        return res;
     }
 </script>
 <form class="mainAlign">
@@ -157,10 +182,11 @@
         <div class="col-sm-3"></div>
         <div class="col-sm-9">
             {#if disabled == false}
-            <label>
+            <!-- TODO! -->
+            <!-- <label>
                 <input class="form-check-input" type=checkbox bind:checked={advanced}>
                 Advanced Search
-            </label>
+            </label> -->
             {/if}
         </div>
     </div>
@@ -260,10 +286,21 @@
                 <Button type="grey" on:click={() => search()}>Search</Button>
                 {#if searchActive == true}
                     <Button type="orange" on:click={() => reset()}>Reset</Button>
+                    <SaveButton icrcAccount={false} text={saveAccount} modeLight={true}/>
                 {/if}
             </div>
             <div class="warnText">{outputText}</div>
         </div>
+    {:else}
+    <div class="form-group row smlPadTB">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-9 ">
+            {#if searchActive == true}
+                <SaveButton icrcAccount={false} text={saveAccount} modeLight={true}/>
+            {/if}
+        </div>
+        <div class="warnText">{outputText}</div>
+    </div>
     {/if}
 </form>
 

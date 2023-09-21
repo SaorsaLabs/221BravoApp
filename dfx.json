@@ -25,8 +25,8 @@
 			"package": "icp_data_processer",
 			"type": "rust"
 		},
-		"snapshot_canister": {
-			"candid": "src/snapshot_canister/snapshot_canister.did",
+		"icrc_snapshot_canister": {
+			"candid": "src/icrc_snapshot_canister/snapshot_canister.did",
 			"package": "snapshot_canister",
 			"type": "rust"
 		},
@@ -45,14 +45,14 @@
 			"package": "icp_tx_store",
 			"type": "rust"
 		},
-		"test_canister": {
-			"candid": "src/kyt_module/test_canister/test_canister.did",
-			"package": "test_canister",
+		"dynamic_content": {
+			"candid": "src/dynamic_content/dynamic_content.did",
+			"package": "dynamic_content",
 			"type": "rust"
 		},
-		"test_canister2": {
-			"candid": "src/kyt_module/test_canister2/test_canister2.did",
-			"package": "test_canister2",
+		"flags_canister": {
+			"candid": "src/flags_canister/flags_canister.did",
+			"package": "flags_canister",
 			"type": "rust"
 		},
 		"frontend": {
@@ -63,10 +63,11 @@
 			"source": ["build/"],
 			"type": "assets"
 		},
-		"icrc_ledger_test": {
-			"type": "custom",
-			"wasm": "src/icrc_ledger_test/ic-icrc1-ledger.wasm",
-			"candid": "src/icrc_ledger_test/ledger.did"
+		"assets_canister": {
+			"type": "assets",
+			"source": [
+				"src/assets_canister"
+			]
 		}
 	},
 	"defaults": {
@@ -89,3 +90,5 @@
 	"version": 1,
 	"output_env_file": ".env"
 }
+
+

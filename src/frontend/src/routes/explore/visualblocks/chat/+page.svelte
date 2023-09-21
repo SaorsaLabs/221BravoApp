@@ -9,35 +9,43 @@
 	import {getVisualBlockData} from '../../../../lib/code/searchRequest.js';
 	import {visualBlockSubTable} from '../../../../lib/code/searchRequest.js';
 	import {combinePrincipalSubAccount} from '../../../../lib/code/utils.js';
+	import HiddenContent from "../../../../lib/componants/hiddenContent.svelte";
+	import { authStore } from "../../../../lib/stores/authStore";
+	import Loading from "../../../../lib/shared/loading.svelte";
 
 	// SETTINGS FOR TX ARTIST
 	let data;
 	let loadedTXS;
+	let LS;
 	async function loadStuff(){
-		let x = await getVisualBlockData("CHAT", 0, 0, 0, 0);
-		loadedTXS = x.blocks;
-		//console.log(loadedTXS);
-		data = {
-        settings: [{
-            token: "CHAT",
-            lineColour: [255,255,255,0.25],
-            dotColour: [50,230,255,0.75],
-            size: 1.5, 
-        }],
-        transactions: loadedTXS,
-        globalData: {
-            canvasWidth: 0,
-            canvasHeight: 0,
-            canvasBGColour: [0,0,0,0.666],
-            globalZoom: 1,
-            inX: 1,
-            inY: 1,
-            globalMoveX: 0,
-            globalMoveY: 0,
-			text: "Chat Token: Latest Transactions"
-        }
-        };
-		return x;
+		let aS = authStore.read();
+        LS = aS.data.loggedIn;
+		if (LS == "true" || LS == true){
+			let x = await getVisualBlockData("CHAT", 0, 0, 0, 0);
+			loadedTXS = x.blocks;
+			//console.log(loadedTXS);
+			data = {
+			settings: [{
+				token: "CHAT",
+				lineColour: [255,255,255,0.25],
+				dotColour: [50,230,255,0.75],
+				size: 1.5, 
+			}],
+			transactions: loadedTXS,
+			globalData: {
+				canvasWidth: 0,
+				canvasHeight: 0,
+				canvasBGColour: [0,0,0,0.666],
+				globalZoom: 1,
+				inX: 1,
+				inY: 1,
+				globalMoveX: 0,
+				globalMoveY: 0,
+				text: "CHAT: Latest Transactions"
+			}
+			};
+			return x;
+		}
 	}
 	let promise = loadStuff();
 	let clickedID = "X";
@@ -73,7 +81,7 @@
 </script>
 <svelte:head>
 	<title>Latest Blocks: CHAT Token</title>
-	<meta name="description" content="Home for the fam" />
+	<meta name="description" content="visual block explorer" />
 </svelte:head>
 
 <LayoutCombine>
@@ -84,21 +92,27 @@
 	</span>
 
 	<span slot="body">
-		<div>
-			{#await promise}
-				<p class="cntr">Loading Visual Map for CHAT Token... </p>
-			{:then}
-				<div><TxArtistGeneric data={data} on:click={handleNodeClick}/></div>
-			{/await}
-		</div>
-		<div>
-			<ContentBox>
-				{#if clickedID != "X"}
-				<TxArtistSubDiv tx={outputData} is_icrc={true} popupType={"visualMapIcrc"}/>
-				{/if}
+		{#if LS == "false" || LS == false}
+			<ContentBox type="standard-shaddow-dark-padding">	
+				<HiddenContent>Become a member to access the Visual Block Explorer</HiddenContent>
+				<Loading/>
 			</ContentBox>
-		</div>
-
+		{:else}
+			<div>
+				{#await promise}
+					<p class="cntr">Loading Visual Map for CHAT Token... </p>
+				{:then}
+					<div><TxArtistGeneric data={data} on:click={handleNodeClick}/></div>
+				{/await}
+			</div>
+			<div>
+				<ContentBox>
+					{#if clickedID != "X"}
+					<TxArtistSubDiv tx={outputData} is_icrc={true} popupType={"visualMapIcrc"}/>
+					{/if}
+				</ContentBox>
+			</div>
+		{/if}
 	</span>
 
 	<span slot="foot">

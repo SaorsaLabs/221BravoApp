@@ -1,9 +1,18 @@
 {
+  "assets_canister": {
+    "ic": "bxg2g-wiaaa-aaaak-qclla-cai"
+  },
   "backend": {
     "ic": "meped-laaaa-aaaak-qcbsa-cai"
   },
+  "dynamic_content": {
+    "ic": "a5jy4-uyaaa-aaaak-qclma-cai"
+  },
+  "flags_canister": {
+    "ic": ""
+  },
   "frontend": {
-    "ic": "mdocx-gyaaa-aaaak-qcbsq-cai"
+    "ic": ""
   },
   "icp_data_processer": {
     "ic": "ltzyb-kqaaa-aaaak-qcg4q-cai"
@@ -12,27 +21,30 @@
     "ic": "4qqcx-cqaaa-aaaak-qcjnq-cai"
   },
   "icp_super_indexer": {
-    "ic": ""
+    "ic": "mx6pc-wyaaa-aaaak-qckaa-cai"
   },
   "icp_tx_store": {
-    "ic": ""
+    "ic": "mq7jw-3aaaa-aaaak-qckaq-cai"
   },
   "icrc_data_processer": {
     "ic": ""
   },
+  "icrc_snapshot_canister": {
+    "ic": "7hcof-tiaaa-aaaak-qcjfa-cai"
+  },
   "icrc_super_indexer": {
-    "ic": "4lv6s-yiaaa-aaaak-qcjpa-cai"
+    "ic": ""
   },
   "icrc_tx_store": {
-    "ic": "ewlou-viaaa-aaaak-qaknq-cai"
-  },
-  "snapshot_canister": {
-    "ic": "7hcof-tiaaa-aaaak-qcjfa-cai"
+    "ic": ""
   },
   "test_canister": {
     "ic": ""
-  },  
+  },
   "test_canister2": {
+    "ic": ""
+  },
+  "tracking_canister": {
     "ic": ""
   }
 }

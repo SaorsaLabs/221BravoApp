@@ -26,6 +26,7 @@ pub struct HolderBalance {
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct WorkingStats {
+    pub version: String,
     pub total_downloaded: u128,
     pub tx_completed_to: u128,
     pub next_tx: u128,

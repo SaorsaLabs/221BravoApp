@@ -34,11 +34,12 @@ pub fn state_init(){
     stable_memory_init();
     // init stable state
     let mut stable_data: Main = Main::default();
-    let default_admin: IDKey = string_to_idkey(&"2vxsx-fae".to_string()).unwrap();
-    let saorsa_admin:IDKey = string_to_idkey(&"e3uc3-o4g2j-bdkhp-yi4p4-wzfdy-glkas-zlhqf-n2jm2-ehxiv-fnjkc-2ae".to_string()).unwrap();
-    let default_canister_name: IDKey = string_to_idkey(&"Name Me Please!".to_string()).unwrap();
-    stable_data.canister_data.authorised.push(default_admin).expect("Out of memory");
-    stable_data.canister_data.authorised.push(saorsa_admin).expect("Out of memory");
+    let default_authorised = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
+    let saorsa_admin:IDKey = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
+    let default_canister_name = string_to_idkey(&"Name Me Please!".to_string()).unwrap();
+    stable_data.canister_data.authorised.push(default_authorised).expect("Out of memory");
+    stable_data.canister_data.authorised.push(saorsa_admin.clone()).expect("Out of memory");
+    stable_data.canister_data.admin.push(saorsa_admin).expect("Out of memory");
     stable_data.canister_data.canister_name = default_canister_name;
     STABLE_STATE.with(|state: &RefCell<Option<Main>>| {
         *state.borrow_mut() = Some(stable_data);

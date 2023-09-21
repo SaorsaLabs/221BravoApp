@@ -1,8 +1,8 @@
 <script>
 	import LayoutCombine from "../lib/componants/layoutCombine.svelte";
 	import Head from "../lib/componants/head.svelte";
+	import SubHead from "../lib/shared/subHead.svelte";
 	import Footer from "../lib/componants/footer.svelte";
-	import TxArtistHome from "../lib/componants/txArtistHome.svelte";
 	import ContentBox from '../lib/shared/contentBox.svelte';
 	import DoubleContentBox from "../lib/shared/doubleContentBox.svelte";
 	import nftMedia from '$lib/media/Genesis_NFT_Wide.gif';
@@ -10,69 +10,157 @@
 	import nftBanner from '$lib/images/NFT_banner.png';
  	import Button from "../lib/shared/button.svelte";
 	import SnsCarousel from "../lib/componants/SNSCarousel.svelte";
+	import NewsCarousel from "../lib/componants/newsCarousel.svelte";
+	import LinkTokenSearch from "../lib/componants/linkTokenSearch.svelte";
+	import { basicBlockTableTX } from '../lib/code/searchRequest';
+	import { getLatestBlockData } from '../lib/code/searchRequest_v2.js';
+	import TxBlockTable from "../lib/componants/txBlockTable.svelte";
+	import { canister_ids } from '../lib/code/constants.js';
+  	import Loading from "../lib/shared/loading.svelte";
 
 	let screenSize; 
+	let tokenSelected = "ICP";
+	let blockTableProcessed;
+	let blockTableLoading = true;
+	let promise = loadStuff();
+	async function loadStuff(){
+		await latestBlocksClick(tokenSelected);
+		blockTableLoading = false;
+	}
+
+	async function latestBlocksClick(token){
+		blockTableLoading = true;
+		let blockSearchResults = await getLatestBlockData(500,token);
+		blockTableProcessed = basicBlockTableTX(blockSearchResults.blocks,token, true);
+		tokenSelected = token;
+		blockTableLoading = false;
+	}
+
 </script>
 <!-- SCREEN SIZE FOR VID SWAP -->
 <svelte:window bind:innerWidth={screenSize} />
 
 <svelte:head>
-	<title>TEST - Home</title>
-	<meta name="description" content="Home for the fam" />
+	<title>Home - 221Bravo App</title>
+	<meta name="description" content="Home for ICP Data-Detectives" />
 </svelte:head>
 
 <LayoutCombine>
 
 	<span slot="head">
 		<Head/>
+		<SubHead>
+			<span class="pad">|</span>
+			<a href="#LatestNews">Latest News</a>
+			<span class="pad">|</span>
+			<a href="#SearchTokens">Search Tokens</a>
+			<span class="pad">|</span>
+			<a href="./explore">Explore Ecosystem</a>
+			<span class="pad">|</span>
+			<a href="#GetMembership">Get Membership</a>
+			<span class="pad">|</span>
+			<a href="./members">Report Fraud</a>
+			<span class="pad">|</span>
+		</SubHead>
 	</span>
 
 	<span slot="body">
-		<div style="height: 100px;">
-			<TxArtistHome/>
-		</div>
-		<ContentBox>
-			<h4>Latest News:</h4>
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Sit amet facilisis magna etiam tempor. Eget aliquet nibh praesent tristique magna 
-			sit amet purus gravida. Porta non pulvinar neque laoreet suspendisse interdum consectetur libero. Id venenatis a condimentum vitae sapien. Nunc non blandit massa enim nec dui nunc mattis enim. In fermentum posuere urna nec tincidunt praesent. Egestas diam in arcu cursus euismod quis viverra. Velit scelerisque in dictum non consectetur a erat. Senectus et netus et malesuada. Mattis pellentesque id nibh tortor. In metus vulputate eu scelerisque. Fermentum posuere urna nec tincidunt praesent semper feugiat nibh.
-			At varius vel pharetra vel turpis nunc eget. Ut porttitor leo a diam sollicitudin tempor. Aliquet risus feugiat in ante. Facilisi nullam vehicula ipsum a arcu cursus vitae. Posuere sollicitudin aliquam ultrices sagittis orci a scelerisque. Integer enim neque volutpat ac tincidunt vitae semper quis lectus. Leo vel fringilla est ullamcorper eget nulla facilisi etiam. Orci sagittis eu volutpat odio facilisis mauris. Vel orci porta non pulvinar neque laoreet. Quis viverra nibh cras pulvinar mattis nunc sed blandit. Montes nascetur ridiculus mus mauris vitae ultricies leo integer malesuada.
+		<!-- Latest News -->
+		<ContentBox type="standard-shaddow-black" addedTopMargin=true id="LatestNews">
+			<div style="text-align: center; padding: 4px">
+				<h3 id="LatestNews" class="gradient-text"> <b> Latest News</b></h3>
+			</div>
+		</ContentBox>
+		<ContentBox type="light-shaddow-dark">
+			<NewsCarousel/>
 		</ContentBox>
 
 		<!-- Coins/ Tokens Section -->
-		<ContentBox type="standard-shaddow-light" addedTopMargin=true>
-			<div style="text-align: center; padding: 5px">
-				<h2 class="gradient-text"> <b> Search Accounts and Blocks</b></h2>
+		<ContentBox type="standard-shaddow-black" addedTopMargin=true>
+			<div style="text-align: center; padding: 4px">
+				<h3 class="gradient-text" id="SearchTokens"> <b> Search Accounts and Blocks</b></h3>
 			</div>
 		</ContentBox>
 
-		<ContentBox>
-			<SnsCarousel titleText="" linkTypes="search"/>
+		<ContentBox type="standard-shaddow-dark" >
+			<LinkTokenSearch/>
+		</ContentBox>
+
+		<ContentBox type="standard-shaddow-dark">
+			{#await promise}
+			{:then}
+			<div style="padding:5px; padding-top:10px">
+				<table style="width: 100%;">
+					<tr>
+						<td>
+							{#each canister_ids as BTN}
+								<span style="padding: 5px;">
+									{#if BTN.token == "SNS1"}
+										{#if BTN.token == tokenSelected}
+											<Button slim={true} type={"orange"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"DRAGGINZ"}</Button>
+										{:else}
+											<Button slim={true} type={"blueTP"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"DRAGGINZ"}</Button>
+										{/if}
+									{:else if BTN.token == "CAT"}
+										{#if BTN.token == tokenSelected}
+											<Button slim={true} type={"orange"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"CATALYZE"}</Button>
+										{:else}
+											<Button slim={true} type={"blueTP"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"CATALYZE"}</Button>
+										{/if}
+									{:else}
+										{#if BTN.token == tokenSelected}
+											<Button slim={true} type={"orange"} on:click={()=>{latestBlocksClick(BTN.token)}}>{BTN.token}</Button>
+										{:else}
+											<Button slim={true} type={"blueTP"} on:click={()=>{latestBlocksClick(BTN.token)}}>{BTN.token}</Button>
+										{/if}
+									{/if}
+								</span>
+							{/each}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							{#if blockTableLoading == true}
+								<div style="padding:40px"><Loading/></div>
+							{:else}
+								{#if tokenSelected != "ICP"}
+								<TxBlockTable txData={blockTableProcessed.blocks} perPage={5} is_icrc={true} popupType={'icrcBlock'}/>
+								{:else}
+								<!-- not icrc but needs is_icrc true to show a/c -->
+								<TxBlockTable 
+									txData={blockTableProcessed.blocks} 
+									popupType={'noPrincipalBlock'}
+									usePrincipal={false}
+									is_icrc={false} 
+									perPage={5}
+								/>	
+								{/if}
+							{/if}
+						</td>
+					</tr>
+				</table>
+			</div>
+			{/await}
 		</ContentBox>
 
 		<!-- Coins/ Tokens Section -->
-		<ContentBox type="standard-shaddow-light" addedTopMargin=true>
-			<div style="text-align: center; padding: 5px">
-				<h2 class="gradient-text"> <b> Explore ICP Coins and Tokens  </b></h2>
+		<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+			<div style="text-align: center; padding: 4px">
+				<h3 class="gradient-text"> <b> Explore Top ICP Coins and Tokens  </b></h3>
 			</div>
 		</ContentBox>
 
-		<DoubleContentBox>
-			<span slot="leftContent"> 
-				DIP 20, EXT, 
-			</span>
-			<span slot="rightContent"> 
-				SNS / ICRC-1 Tokens
-			</span>
-		</DoubleContentBox>
+		<!-- Search Accounts Carousel -->
+		<SnsCarousel titleText="" linkTypes="stats"/>
 
 		<!-- Membership Section -->
-		<ContentBox type="standard-shaddow-light" addedTopMargin=true>
-			<div style="text-align: center; padding: 5px">
-				<h2 class="gradient-text"> <b> Get More from 221Bravo.App! </b></h2>
+		<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+			<div style="text-align: center; padding: 4px">
+				<h3 class="gradient-text" id="GetMembership"> <b> Get More from 221Bravo.App! </b></h3>
 			</div>
 		</ContentBox>
 
-		<DoubleContentBox>
+		<DoubleContentBox type="standard-shaddow-dark">
 			<span slot="leftContent"> 
 				<div style="padding: 5px; margin-top:5px;" class="video-container">
 					<h5 style="text-align: center;">Genesis II NFTs feature real-time ICP transactions! </h5>
@@ -96,9 +184,10 @@
 					We use Genesis II NFTs as your membership card giving you ultimate control over your membership and the ability to transfer or sell it at any time! 
 				</p>	
 					{@html "<br>"}
+					<li>Exchanges and other interesting accounts are named</li>
 					<li>Access premium stats, visual block explorer and other tools</li>
 					<li>Access to exclusive members chat</li>
-					<li>Ability to name accounts and store them in your address book</li>
+					<li>Name accounts and store them in your address book</li>
 					<li>Access to exclusive research and reports</li>
 					<li>First in line benefits for future events and sales</li>
 					<li>No monthly costs!</li>
@@ -115,12 +204,6 @@
 			</span>
 		</DoubleContentBox>
 
-		<!-- Membership Section -->
-		<ContentBox type="standard-shaddow-light" addedTopMargin=true>
-			<div style="text-align: center; padding: 5px">
-				<h2 class="gradient-text"> <b>Report a Scam/ Fraud</b></h2>
-			</div>
-		</ContentBox>
 	</span>
 
 	<span slot="foot">
@@ -159,5 +242,9 @@
 	}
 	a {
 		color: aliceblue;
+		text-decoration: none;
 	}
+	.pad{
+        padding: 4px;
+    }
 </style>

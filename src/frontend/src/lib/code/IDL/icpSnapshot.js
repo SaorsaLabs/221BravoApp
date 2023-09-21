@@ -1,4 +1,23 @@
 export const icpSnapshotIDL = ({ IDL }) => {
+  const ExchangeOverviewTotal = IDL.Record({
+    'num_sent' : IDL.Nat64,
+    'num_received' : IDL.Nat64,
+    'num_transactions' : IDL.Nat64,
+    'name' : IDL.Text,
+    'total_received' : IDL.Nat64,
+    'total_sent' : IDL.Nat64,
+    'total_balance' : IDL.Nat64,
+  });
+  const ExchangeCollection = IDL.Record({
+    'huobi' : ExchangeOverviewTotal,
+    'gate' : ExchangeOverviewTotal,
+    'bitfinex' : ExchangeOverviewTotal,
+    'kucoin' : ExchangeOverviewTotal,
+    'binance' : ExchangeOverviewTotal,
+    'kraken' : ExchangeOverviewTotal,
+    'coinbase' : ExchangeOverviewTotal,
+    'coinex' : ExchangeOverviewTotal,
+  });
   const LogEntry = IDL.Record({ 'text' : IDL.Text, 'timestamp' : IDL.Text });
   const MemoryStats = IDL.Record({
     'memory' : IDL.Nat64,
@@ -61,6 +80,11 @@ export const icpSnapshotIDL = ({ IDL }) => {
     'get_all_authorised' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'get_canister_name' : IDL.Func([], [IDL.Text], ['query']),
     'get_cycles_balance' : IDL.Func([], [IDL.Nat64], ['query']),
+    'get_exchange_snapshots' : IDL.Func(
+        [IDL.Nat32],
+        [IDL.Opt(IDL.Vec(ExchangeCollection))],
+        ['query'],
+      ),
     'get_logs' : IDL.Func([], [IDL.Opt(IDL.Vec(LogEntry))], ['query']),
     'get_memory_stats' : IDL.Func([], [MemoryStats], ['query']),
     'get_quickstats' : IDL.Func(

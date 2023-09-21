@@ -30,6 +30,7 @@ use constants::{
     HOUR_AS_NANOS,
     MAX_DAYS,
     MAX_HOURS,
+    VERSION
 };
 
 use types::{
@@ -40,7 +41,6 @@ use types::{
     LogEntry,
     CanisterSettings,
     ProcessedTX,
-    ResultsData,
     DailyStats,
     HourlyStats,
     TotalHoldersResponse,
@@ -90,7 +90,6 @@ struct Data {
     account_holders: BTreeMap<String, EntityData>,
     hourly_stats: HourlyStats,
     daily_stats: DailyStats,
-    results_data: ResultsData,
 }
 
 impl Data {
@@ -179,10 +178,16 @@ fn with_runtime_mut<R>(f: impl FnOnce(&mut RuntimeState) -> R) -> R {
 fn init() {
     // itit main data state
     let mut data = Data::default();
-    data.authorised.push("2vxsx-fae".to_string()); // ***************************  TESTING ONLY!!
+    data.authorised.push(
+        "ADMIN_PRINCIPAL_HERE".to_string()
+    ); // Saorsa Dev
+    data.authorised.push(
+        "FRONTEND_PRINCIPAL_HERE".to_string()
+    ); // frontend
     data.first_run = true;
     data.canister_settings.stats_are_public = true;
     data.canister_settings.canister_name = "Name me please!".to_string();
+    data.working_stats.version = VERSION.to_string();
     let runtime_state = RuntimeState { data };
     RUNTIME_STATE.with(|state| {
         *state.borrow_mut() = runtime_state;
@@ -198,6 +203,11 @@ fn init() {
 
 #[pre_upgrade]
 fn pre_upgrade() {
+    RUNTIME_STATE.with(|state|{
+        let b: bool = state.borrow().data.working_stats.is_busy;
+        if b == true {ic_cdk::trap("Canister Busy - Upgrade halted. See working stats for status.") }
+    });
+
     // Serialize the state.
     // This example is using CBOR, but you can use any data format you like.
     let mut state_bytes = vec![];
@@ -231,6 +241,10 @@ fn post_upgrade() {
     let state = ciborium::de::from_reader(&*state_bytes).expect("failed to decode state");
     RUNTIME_STATE.with(|s| {
         *s.borrow_mut() = state;
+    });
+
+    RUNTIME_STATE.with(|state|{
+        state.borrow_mut().data.working_stats.version = VERSION.to_string();
     });
 }
 
@@ -270,7 +284,6 @@ fn set_canister_name(name: String) -> String {
         s.data.set_canister_name(name)
     })
 }
-
 
 #[update]
 async fn set_target_canister() -> String {
@@ -628,16 +641,10 @@ async fn fetch_data() {
                             // update working stats state
                             if ub_res == true {
                                 with_runtime_mut(|rts| {
-                                    rts.data.working_stats = WorkingStats {
-                                        total_downloaded: next_block + completed_this_run,
-                                        tx_completed_to: next_block + completed_this_run - 1, // -1 to account for 0 block
-                                        next_tx: next_block + completed_this_run,
-                                        hr_stats_complete_to: rts.data.working_stats.hr_stats_complete_to,
-                                        day_stats_complete_to: rts.data.working_stats.day_stats_complete_to,
-                                        is_upto_date,
-                                        is_busy: rts.data.working_stats.is_busy,
-                                        task_id: rts.data.working_stats.task_id,
-                                    };
+                                    rts.data.working_stats.total_downloaded = next_block + completed_this_run;
+                                    rts.data.working_stats.tx_completed_to = next_block + completed_this_run - 1;
+                                    rts.data.working_stats.next_tx = next_block + completed_this_run;
+                                    rts.data.working_stats.is_upto_date = is_upto_date;
                                 }); // -1 to account for 0 block
 
                                 log(
@@ -1319,7 +1326,7 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
         return true;
     }
 
-    let mut processed_ok_fn = true;
+    let processed_ok_fn:bool;
     processed_ok_fn = RUNTIME_STATE.with(|state| {
         let rts = &mut state.borrow_mut();
         let data = rts.data.borrow_mut();
@@ -1327,7 +1334,7 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
         let mut processed_ok = true;
 
         for tx in tx_array {
-            let tx_value_u128 = tx.tx_value.0.to_u128().ok_or("Tip of Chain is not a valid u128");
+            let tx_value_u128 = tx.tx_value.0.to_u128().ok_or("Tx value is not a valid u128");
             match tx_value_u128 {
                 Ok(tx_value_u128) => {
                     match tx.tx_type.as_str() {

@@ -7,7 +7,7 @@ import { stoicLogin, plugLogin, bitfinityLogin } from '../code/auth.js';
 import { browser } from '$app/environment';
 import Loading from '../shared/loading.svelte';
 import {authStore, authTrigger} from "../stores/authStore.js";
-import {getSync} from '../code/auth.js';
+//import {getSync} from '../code/auth.js';
 
 export let loggedIn = false;
 export let userData = {
@@ -56,10 +56,10 @@ async function handleBitfinityClick(){
     }
 }
 async function handleLogout(){
-    let x = await getSync(false,0);
+    //let x = await getSync(false,0);
     let d = new Date();
     let time = (d.getTime()/1000); // current in secs.
-    authStore.set(false,x,time,"abc123");
+    authStore.set(false,"x",time,"abc123");
     authTrigger.update(n => n + 1);
     outcome = '';
     loggedIn = false;

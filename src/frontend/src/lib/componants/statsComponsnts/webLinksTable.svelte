@@ -7,6 +7,7 @@ import twitterLogo from '$lib/images/projectLogos/twitter.png';
 import ocLogo from '$lib/images/projectLogos/Openchat_logo.png';
 import icLight from '$lib/images/projectLogos/IC_light2.png';
 import icpSwap from '$lib/images/projectLogos/icp_swap.png';
+import catLogo from '$lib/images/projectLogos/catalyzeLogo.png';
 
 
 export let SocialAR;
@@ -20,7 +21,7 @@ export let canisterDashboardURL;
 
 
 
-let twitterURL, dscvrURL, nuanceURL, distriktURL, openchatURL;
+let twitterURL, dscvrURL, nuanceURL, distriktURL, openchatURL, catalyzeURL;
 
 
 if (SocialAR != null){
@@ -32,6 +33,7 @@ if (SocialAR != null){
         if(SocialAR[i]?.platform == "nuance") nuanceURL = SocialAR[i].url;
         if(SocialAR[i]?.platform == "distrikt") distriktURL = SocialAR[i].url;
         if(SocialAR[i]?.platform == "openchat") openchatURL = SocialAR[i].url;
+        if(SocialAR[i]?.platform == "catalyze") catalyzeURL = SocialAR[i].url;
     }
 }
 
@@ -139,6 +141,14 @@ if (SocialAR != null){
                         <div class="card">
                             <img class="headAlign" src={ocLogo} alt="OpenChat" width="29px"/>
                             Openchat
+                        </div>
+                    </a>
+                    {/if}
+                    {#if catalyzeURL != null}
+                    <a href={catalyzeURL} target="_blank">
+                        <div class="card">
+                            <img class="headAlign" src={catLogo} alt="Catalyze" width="30px"/>
+                            Catalyze
                         </div>
                     </a>
                 {/if}

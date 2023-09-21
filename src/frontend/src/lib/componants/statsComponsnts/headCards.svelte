@@ -33,7 +33,7 @@ async function loadStuff(){
         priceData = await getPriceData(tradePair);
         if (priceData.change > 0) changeColour = "chartreuse";
         if (priceData.change < 0) changeColour = "orangered";
-        change = priceData.change;
+        change = priceData.change ?? 0;
 
         totalAll = await getICRC_TotalHolders(token);
         totalAccounts = totalAll?.accounts ?? 0;

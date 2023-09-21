@@ -6,7 +6,7 @@
     export let selected = 0;
 
     // underline selected
-    let numButtons = 7;
+    let numButtons = 11;
     let opAR = [];
     for(let i = 0; i<numButtons; i++){
         if(selected == i+1){
@@ -27,7 +27,7 @@
                                 ICP
                             </Button>
                         </a>
-                    <span class="pad"></span>
+                    <span class="pad">|</span>
                     <a href="/explore/visualblocks/ckbtc" class={opAR[1]}>
                         <Button 
                         slim={true} 
@@ -36,46 +36,85 @@
                             ckBTC
                         </Button>
                     </a>
-                    <span class="pad"></span>
+                    <span class="pad">|</span>
                     <a href="/explore/visualblocks/sns1" class={opAR[2]}>
                         <Button 
                         slim={true} 
                         flat={true} 
                         noBG={true}>
-                            SNS-Dragginz
+                            Dragginz
                         </Button>
                     </a>
-                    <span class="pad"></span>
+                    <span class="pad">|</span>
                     <a href="/explore/visualblocks/chat" class={opAR[3]}>
                         <Button 
                         slim={true} 
                         flat={true} 
                         noBG={true}>
-                            SNS-Chat
+                            Chat
                         </Button>
                     </a>
+                    <span class="pad">|</span>
                     <a href="/explore/visualblocks/kinic" class={opAR[4]}>
                         <Button 
                         slim={true} 
                         flat={true} 
                         noBG={true}>
-                            SNS-Kinic
+                            Kinic
                         </Button>
                     </a>
+                    <span class="pad">|</span>
                     <a href="/explore/visualblocks/hot" class={opAR[5]}>
                         <Button 
                         slim={true} 
                         flat={true} 
                         noBG={true}>
-                            SNS-HotOrNot
+                            HotOrNot
                         </Button>
                     </a>
+                    <span class="pad">|</span>
                     <a href="/explore/visualblocks/ghost" class={opAR[6]}>
                         <Button 
                         slim={true} 
                         flat={true} 
                         noBG={true}>
-                            SNS-Ghost
+                            Ghost
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/visualblocks/cat" class={opAR[7]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            Catalyze
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/visualblocks/modclub" class={opAR[8]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            ModClub
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/visualblocks/boom" class={opAR[9]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            BoomDAO
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/visualblocks/icx" class={opAR[10]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            IC-X
                         </Button>
                     </a>
                     <!--<span class="pad"></span>

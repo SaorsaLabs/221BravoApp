@@ -1,219 +1,126 @@
 <script>
 	import LayoutCombine from "../../lib/componants/layoutCombine.svelte";
 	import Head from "../../lib/componants/head.svelte";
+	import SubHead from "../../lib/shared/subHead.svelte";
 	import Footer from "../../lib/componants/footer.svelte";
 	import ContentBox from "../../lib/shared/contentBox.svelte";
-	import Button from "../../lib/shared/button.svelte";
-	import { createActor } from '../../../../declarations/backend/index.js';
-	import { getIdentity } from '../../lib/code/icAgent.js';
-
-	const canisterId = import.meta.env.VITE_BACKEND_CANISTER_ID;
-	const host = import.meta.env.VITE_HOST;
-
-	async function handlePotato(){
-		  const ID = getIdentity();
-		  const backendActor = createActor(canisterId, { agentOptions: { identity: ID, host: host } }); //,identity
-		  let testCall = await backendActor.whoami();
-		  console.log("WHO? : ",testCall);
-	}
+  	import TokensTable from "../../lib/componants/tokensTable.svelte";
+	import ProjectCarousel from "../../lib/componants/projectCarousel.svelte";
 
 </script>
 <svelte:head>
-	<title>TEST - Explore</title>
-	<meta name="description" content="Explore the Internet Computer" />
+	<title>Explore Internet Computer</title>
+	<meta name="description" content="Explore the Internet Computer Ecosystem" />
 </svelte:head>
 
 <LayoutCombine>
 
 	<span slot="head">
 		<Head/>
+		<SubHead>
+			<span class="pad">|</span>
+			<a href="#TopTokens">Top Tokens</a>
+			<span class="pad">|</span>
+			<a href="#Social">Social Apps</a>
+			<span class="pad">|</span>
+			<a href="#BNM">News/ Music</a>
+			<span class="pad">|</span>
+			<a href="#DEFI">DEFI Apps</a>
+			<span class="pad">|</span>
+			<a href="#Gaming">Games</a>
+			<span class="pad">|</span>
+			<a href="#NFT">NFT Apps</a>
+			<span class="pad">|</span>
+			<a href="#Wallets">Wallets</a>
+			<span class="pad">|</span>
+			<a href="#Devs">Devs</a>
+			<span class="pad">|</span>
+		</SubHead>
 	</span>
 
 	<span slot="body">
 		<div>
-			<h3>TEST - Explore</h3>
-			<ContentBox>
-				<p> WORK IN PROGRESS... <span style="color: aqua;">Transaction Search:</span></p>
-				<p style="padding-bottom: 10px;">
-				<a href="/search/icp">
-					<Button type="blueTP" 
-					flat={false} 
-					noBG={true}>
-					ICP Transactions
-					</Button>
-					</a>
-				<a href="/search/ckbtc">
-					<Button type="blueTP" 
-					flat={false} 
-					noBG={true}>
-					ckBTC Transactions
-					</Button>
-				</a>
-				<a href="/search/sns1">
-					<Button type="blueTP" 
-					flat={false} 
-					noBG={true}>
-					SNS-Dragginz Transactions
-					</Button>
-				</a>
-				<a href="/search/chat">
-					<Button type="blueTP" 
-					flat={false} 
-					noBG={true}>
-					CHAT Transactions
-					</Button>
-				</a>
-				<a href="/search/kinic">
-					<Button type="blueTP" 
-					flat={false} 
-					noBG={true}>
-					Kinic Transactions
-					</Button>
-				</a>
-				<a href="/search/hot">
-					<Button type="blueTP" 
-					flat={false} 
-					noBG={true}>
-					Hot Token Transactions
-					</Button>
-				</a>
-				<a href="/search/ghost">
-					<Button type="blueTP" 
-					flat={false} 
-					noBG={true}>
-					Ghost Token Transactions
-					</Button>
-				</a>
-				</p>
+
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="TopTokens"> <b> Top Internet Computer Tokens</b></h3>
+				</div>
 			</ContentBox>
 
 			<ContentBox>
-				<p> WORK IN PROGRESS... <span style="color: aqua;">Visual Explorer:</span></p>
-				<p style="padding-bottom: 10px;">
-				<a href="/explore/visualblocks/icp">
-					<Button type="orange" 
-					flat={false} 
-					noBG={true}>
-					Latest ICP
-					</Button>
-					</a>
-				<a href="/explore/visualblocks/ckbtc">
-					<Button type="orange" 
-					flat={false} 
-					noBG={true}>
-					Latest CKBTC
-					</Button>
-				</a>
-				<a href="/explore/visualblocks/sns1">
-					<Button type="orange" 
-					flat={false} 
-					noBG={true}>
-					Latest SNS-Dragginz
-					</Button>
-				</a>
-				<a href="/explore/visualblocks/chat">
-					<Button type="orange" 
-					flat={false} 
-					noBG={true}>
-					Latest CHAT
-					</Button>
-				</a>
-				<a href="/explore/visualblocks/kinic">
-					<Button type="orange" 
-					flat={false} 
-					noBG={true}>
-					Latest Kinic
-					</Button>
-				</a>
-				<a href="/explore/visualblocks/hot">
-					<Button type="orange" 
-					flat={false} 
-					noBG={true}>
-					Latest Hot Token
-					</Button>
-				</a>
-				<a href="/explore/visualblocks/ghost">
-					<Button type="orange" 
-					flat={false} 
-					noBG={true}>
-					Latest Ghost Token
-					</Button>
-				</a>
-				</p>
+				<TokensTable/>
+			</ContentBox>
+
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="Social"> <b> ICP Social Apps </b></h3>
+				</div>
 			</ContentBox>
 
 			<ContentBox>
-				<p> WORK IN PROGRESS... <span style="color: aqua;">Token Stats/ Metrics</span></p>
-				<p style="padding-bottom: 10px;">
-						<a href="/explore/stats/ckbtc">
-							<Button type="blueTP" 
-							flat={false} 
-							noBG={true}>
-							ckBTC Stats
-							</Button>
-						</a>
-						<a href="/explore/stats/icp">
-							<Button type="blueTP" 
-							flat={false} 
-							noBG={true}>
-							ICP Stats
-							</Button>
-						</a>
-						<a href="/explore/stats/chat">
-							<Button type="blueTP" 
-							flat={false} 
-							noBG={true}>
-							CHAT Stats
-							</Button>
-						</a>
-						<a href="/explore/stats/sns1">
-							<Button type="blueTP" 
-							flat={false} 
-							noBG={true}>
-							Draggonz Stats
-							</Button>
-						</a>
-						<a href="/explore/stats/kinic">
-							<Button type="blueTP" 
-							flat={false} 
-							noBG={true}>
-							Kinic Stats
-							</Button>
-						</a>
-						<a href="/explore/stats/hot">
-							<Button type="blueTP" 
-							flat={false} 
-							noBG={true}>
-							Hot Stats
-							</Button>
-						</a>
-						<a href="/explore/stats/ghost">
-							<Button type="blueTP" 
-							flat={false} 
-							noBG={true}>
-							Ghost Stats
-							</Button>
-						</a>
-				</p>
+				<ProjectCarousel bucket={1}/>
+			</ContentBox>
 
-
-
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="BNM"> <b> ICP Blogging/ News/ Music Apps </b></h3>
+				</div>
 			</ContentBox>
 
 			<ContentBox>
-				<p> WORK IN PROGRESS... <span style="color: aqua;">Random Tests</span></p>
-				<!-- <p style="padding-bottom: 10px;">
-						<Button type="orange" 
-						flat={false} 
-						noBG={true}
-						on:click={handlePotato}
-						>
-						POTATO!
-						</Button>
-				</p> -->
+				<ProjectCarousel bucket={2}/>
 			</ContentBox>
 
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="DEFI"> <b> ICP Defi Apps </b></h3>
+				</div>
+			</ContentBox>
 
+			<ContentBox>
+				<ProjectCarousel bucket={3}/>
+			</ContentBox>
+
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="Gaming"> <b> ICP Gaming Apps </b></h3>
+				</div>
+			</ContentBox>
+
+			<ContentBox>
+				<ProjectCarousel bucket={4}/>
+			</ContentBox>
+
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="NFT"> <b> ICP NFT Apps </b></h3>
+				</div>
+			</ContentBox>
+
+			<ContentBox>
+				<ProjectCarousel bucket={6}/>
+			</ContentBox>
+
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="Wallets"> <b> ICP Wallets </b></h3>
+				</div>
+			</ContentBox>
+
+			<ContentBox>
+				<ProjectCarousel bucket={5}/>
+			</ContentBox>
+
+			<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+				<div style="text-align: center; padding: 4px">
+					<h3 class="gradient-text" id="Devs"> <b> ICP Developer/ Tools </b></h3>
+				</div>
+			</ContentBox>
+
+			<ContentBox>
+				<ProjectCarousel bucket={7}/>
+			</ContentBox>
+			
 		</div>
 	</span>
 
@@ -223,6 +130,15 @@
 </LayoutCombine>
 
 <style>
+	.gradient-text {
+		/* font-size: 3em; */
+		/* background: linear-gradient(to right, #a83caf, #09cbf1); */
+		background: linear-gradient(to top, #a49257, #e3e37b);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+	}
 	.content {
 		min-height: 90vh;
 		text-align: center;
@@ -237,4 +153,11 @@
 		border-style: dashed;
 		border-color: aliceblue;
 	}
+	a {
+		color: aliceblue;
+		text-decoration: none;
+	}
+	.pad{
+        padding: 4px;
+    }
 </style>

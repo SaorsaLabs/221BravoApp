@@ -9,6 +9,7 @@ use ic_stable_memory::{
     stable_memory_pre_upgrade, store_custom_data, SBox,
 };
 use ic_stable_memory::derive::{AsFixedSizeBytes, StableType, CandidAsDynSizeBytes};
+use crate::constants::MAX_LINKED_ACS_TO_RETURN;
 use crate::custom_types::{ 
     LogEntry, CanisterSettings, BlockHolder, ProcessedTX, 
     Directory, SmallTX, AccountTree, IDKey, Overview, LinkData, FullDataResponseRaw, LinkDataResponse, FullDataResponse, WorkingStats };
@@ -26,11 +27,14 @@ pub struct Main {
     pub directory_data: Directory,
 }
 impl Main {
-    pub fn set_target_canisters_and_fee(&mut self, target_id: String, store_id: String, fee: u64){
+    pub fn set_target_canisters_and_fee(&mut self, target_id: String, store_id: String, self_id: String, fee: u64){
         let targ: IDKey = string_to_idkey(&target_id).unwrap();
         let store: IDKey = string_to_idkey(&store_id).unwrap();
+        let self_idk:IDKey = string_to_idkey(&self_id).unwrap();
+
         self.canister_data.target_canister = targ;
         self.canister_data.stx_store_canister = store;
+        self.canister_data.self_canister = self_idk;
         self.canister_data.target_canister_locked = true;
         self.processed_data.transaction_fee = fee;
     }
@@ -131,6 +135,7 @@ impl Main {
                             balance: ac_value.overview.balance,
                         };
                         let mut links:Vec<LinkDataResponse> = Vec::new();
+                        // 
                         for ld in ac_value.data.links.iter() {
                             match self.directory_data.get_id(&ld.1.linked_id) {
                                 Some(id_string) => {
@@ -148,6 +153,9 @@ impl Main {
                                 }
                             }   
                         }
+                        // trim links if too many
+                        if links.len() > MAX_LINKED_ACS_TO_RETURN { links.truncate(MAX_LINKED_ACS_TO_RETURN); }
+                        // blocks
                         let mut blocks:Vec<ProcessedTX> = Vec::new(); // fetch + process in follow up call. 
                         let res = FullDataResponse{
                             account_ref: id_string.clone(),
@@ -260,6 +268,9 @@ impl Main {
                         }
                     }   
                 }
+                // trim links if over Max to return
+                if links.len() > MAX_LINKED_ACS_TO_RETURN { links.truncate(MAX_LINKED_ACS_TO_RETURN); }
+                // blocks
                 match self.directory_data.get_id(&id_ref) {
                     Some(ac_string) => {
                         let mut blocks:Vec<ProcessedTX> = Vec::new(); // fetch blocks in follow up call to block-store. 
@@ -297,8 +308,8 @@ pub fn state_init(){
     stable_memory_init();
     // init stable state
     let mut stable_data = Main::default();
-    let default_authorised = string_to_idkey(&"2vxsx-fae".to_string()).unwrap();
-    let saorsa_admin:IDKey = string_to_idkey(&"e3uc3-o4g2j-bdkhp-yi4p4-wzfdy-glkas-zlhqf-n2jm2-ehxiv-fnjkc-2ae".to_string()).unwrap();
+    let default_authorised = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
+    let saorsa_admin:IDKey = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
     let default_canister_name = string_to_idkey(&"Name Me Please!".to_string()).unwrap();
     stable_data.canister_data.authorised.push(default_authorised).expect("Out of memory");
     stable_data.canister_data.authorised.push(saorsa_admin.clone()).expect("Out of memory");

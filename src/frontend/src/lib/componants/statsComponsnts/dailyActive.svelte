@@ -72,17 +72,4 @@
     </div>
     
     <style>
-
-        /* Media query for smaller screens */
-        @media (max-width: 900px) {
-          .box {
-            flex-basis: 100%; /* Boxes will take up 100% of the container width */
-          }
-          .box3 {
-            flex-basis: 100%; /* Boxes will take up 100% of the container width */
-          }
-        }
-        .lineBox{
-		max-height: 500px;
-	}
     </style>

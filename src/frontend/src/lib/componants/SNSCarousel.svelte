@@ -6,11 +6,33 @@
     import ghostLogo from '$lib/images/ghost_logo.png';
     import icpLogo from '$lib/images/icpLogo.png';
     import snsLogo from '$lib/images/SNS1_Logo.png';
+    import modLogo from '$lib/images/projectLogos/ModClub.png';
+    import catLogo from '$lib/images/projectLogos/catalyzeLogo.png';
+    import boomLogo from '$lib/images/projectLogos/BoomLogo.png';
+    import icxLogo from '$lib/images/projectLogos/IcxLogo.png';
     
     export let titleText = "";
     export let linkTypes = "stats";
 
     let linkURL = [];
+    let allLinks = [];
+    let showArray = [];
+
+    allLinks = [
+      {idx: 0, image: ckBTCLogo, text: "ckBTC"},
+      {idx: 1, image: chatLogo, text: "CHAT"},
+      {idx: 2, image: kinicLogo, text: "KINIC"},
+      {idx: 3, image: hotLogo, text: "HOT"},
+      {idx: 4, image: ghostLogo, text: "GHOST"},
+      {idx: 5, image: icpLogo, text: "ICP"},
+      {idx: 6, image: snsLogo, text: "Dragginz"},
+      {idx: 7, image: modLogo, text: "ModClub"},
+      {idx: 8, image: catLogo, text: "Catalyze"},
+      {idx: 9, image: boomLogo, text: "BoomDAO"},
+      {idx: 10, image: icxLogo, text: "IC-X"},
+    ];
+
+    let totalLinks = allLinks?.length ?? 0; 
 
     if(linkTypes == "stats"){
       linkURL[0] = "/explore/stats/ckbtc";
@@ -20,6 +42,10 @@
       linkURL[4] = "/explore/stats/ghost";
       linkURL[5] = "/explore/stats/icp";
       linkURL[6] = "/explore/stats/sns1";
+      linkURL[7] = "/explore/stats/modclub";
+      linkURL[8] = "/explore/stats/cat";
+      linkURL[9] = "/explore/stats/boom";
+      linkURL[10] = "/explore/stats/icx";
     }
     if(linkTypes == "search"){
       linkURL[0] = "/search/ckbtc";
@@ -29,33 +55,51 @@
       linkURL[4] = "/search/ghost";
       linkURL[5] = "/search/icp";
       linkURL[6] = "/search/sns1";
+      linkURL[7] = "/search/modclub";
+      linkURL[8] = "/search/cat";
+      linkURL[9] = "/search/boom";
+      linkURL[10] = "/search/icx";
     }
 
     let startIndex = 0;
-    let showArray = [0,1,2,3,4,5];
     let showNumber = 6;
-    let totalLinks = 7;
-    let i;
 
+    // init show array
+    showArray = [];
+    let pos = startIndex;
+    for(let i = 0; i<showNumber; i++){
+      if (pos >= totalLinks) pos = 0;
+      showArray.push(allLinks[pos]);
+      pos++;
+    }
     const next = () => {
-      let CN;
-      startIndex += showNumber;
+      let diff = Math.abs(totalLinks - showNumber);
+      let add;
+      if (diff > showNumber) {add = showNumber} else {add = diff};
+      startIndex = (startIndex + add) % totalLinks
       showArray = [];
-      for(i=startIndex; i<startIndex+showNumber; i++){
-        CN = i % totalLinks;
-        showArray.push(CN);
+      pos = startIndex;
+      for(let i = 0; i<showNumber; i++){
+        if (pos >= totalLinks) pos = 0;
+        showArray.push(allLinks[pos]);
+        pos++;
       }
     };
   
     const prev = () => {
-      let CN;
-      startIndex = Math.abs(startIndex - showNumber);
+      let diff = Math.abs(totalLinks - showNumber);
+      let add;
+      if (diff > showNumber) {add = showNumber} else {add = diff};
+      startIndex = (((startIndex - add) % totalLinks) + totalLinks) % totalLinks;
       showArray = [];
-      for(i=startIndex; i<startIndex+showNumber; i++){
-        CN = i % totalLinks;
-        showArray.push(CN);
+      pos = startIndex;
+      for(let i = 0; i<showNumber; i++){
+        if (pos >= totalLinks) pos = 0;
+        showArray.push(allLinks[pos]);
+        pos++;
       }
     };
+
   </script>
   
   <div style="padding:15px;">
@@ -63,84 +107,24 @@
     <div class="card-container">
       <button class="prev" on:click={prev}>{@html "&#10094;"}</button>
 
-            {#if showArray.includes(0)}
-              <a href={linkURL[0]}>
-                  <div class="card">
-                      <img class="headAlign" src={ckBTCLogo} alt="" width="100%"/>
-                      ckBTC 
-                  </div>
-              </a>
-            {/if}
-
-            {#if showArray.includes(1)}
-              <a href={linkURL[1]}>
-                  <div class="card">
-                      <img class="headAlign" src={chatLogo} alt="" width="100%"/>
-                      CHAT
-                  </div>
-              </a>
+    {#each showArray as TX}
+      <a href={linkURL[TX.idx]}>
+        <div class="card">
+            {#if TX.image == icpLogo}
+              <img class="headAlign" style="padding-top: 20px" src={TX.image} alt="" width="100%"/>
+              <span style="padding-top: 13px;">{TX.text}</span>
+            {:else}
+              <img class="headAlign" src={TX.image} alt="" width="100%"/>
+              {TX.text}
             {/if}
             
-            {#if showArray.includes(2)}
-              <a href={linkURL[2]}>
-                  <div class="card">
-                      <img class="headAlign" src={kinicLogo} alt="" width="100%"/>
-                      KINIC
-                  </div>
-              </a>
-            {/if}
+        </div>
+      </a>
+    {/each}  
             
-            {#if showArray.includes(3)}
-              <a href={linkURL[3]}>
-                  <div class="card">
-                      <img class="headAlign" src={hotLogo} alt="" width="100%"/>
-                      HOT
-                  </div>
-              </a>
-            {/if}
-            
-            {#if showArray.includes(4)}
-              <a href={linkURL[4]}>
-                  <div class="card">
-                      <img class="headAlign" src={ghostLogo} alt="" width="100%"/>
-                      GHOST
-                  </div>
-              </a>
-            {/if}
-            
-            {#if showArray.includes(5)}
-              <a href={linkURL[5]}>
-                  <div class="card" style="padding-top:27px;">
-                      <img class="headAlign" src={icpLogo} alt="" width="100%"/>
-                      <span style="padding-top: 14px;">ICP</span>
-                  </div>
-              </a>
-            {/if}
-            
-            {#if showArray.includes(6)}
-              <a href={linkURL[6]}>
-                  <div class="card">
-                      <img class="headAlign" src={snsLogo} alt="" width="100%"/>
-                      Dragginz
-                  </div>
-              </a>
-            {/if}
-            
-            <button class="next" on:click={next}>{@html "&#10095;"}</button>
+      <button class="next" on:click={next}>{@html "&#10095;"}</button>
     </div>
   </div>
-
-
-  <!-- <div class="carousel">
-    {#each displayedItems() as item, i}
-      <div class="carousel-item">
-        <img src={item.image} alt={item.text}>
-        <p>{item.text}</p>
-      </div>
-    {/each}
-    <button class="prev" on:click={prev}>&#10094;</button>
-    <button class="next" on:click={next}>&#10095;</button>
-  </div> -->
   
   <style>
 
@@ -164,22 +148,6 @@
     a {
         color: rgb(180, 180, 180);
     }
-
-  .carousel {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    max-width: 100%;
-    margin: auto;
-  }
-  
-  .carousel-item {
-    flex: 1 0 auto;
-    margin: 0 10px;
-    text-align: center;
-    padding: 10px;
-    box-sizing: border-box;
-  }
   
   .prev, .next {
 

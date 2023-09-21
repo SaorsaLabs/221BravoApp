@@ -1,1 +1,0 @@
-TODO - Need to reverse the latest transactions from full search... looks like it's going oldest to newest. 

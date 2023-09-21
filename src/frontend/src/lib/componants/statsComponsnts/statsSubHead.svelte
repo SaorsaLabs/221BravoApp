@@ -6,7 +6,7 @@
     export let selected = 0;
 
     // underline selected
-    let numButtons = 7;
+    let numButtons = 11;
     let opAR = [];
     for(let i = 0; i<numButtons; i++){
         if(selected == i+1){
@@ -27,7 +27,7 @@
                                 ICP
                             </Button>
                         </a>
-                    <span class="pad"></span>
+                    <span class="pad">|</span>
                     <a href="/explore/stats/ckbtc" class={opAR[1]}>
                         <Button 
                         slim={true} 
@@ -36,7 +36,7 @@
                             ckBTC
                         </Button>
                     </a>
-                    <span class="pad"></span>
+                    <span class="pad">|</span>
                     <a href="/explore/stats/sns1" class={opAR[2]}>
                         <Button 
                         slim={true} 
@@ -45,7 +45,7 @@
                             Dragginz
                         </Button>
                     </a>
-                    <span class="pad"></span>
+                    <span class="pad">|</span>
                     <a href="/explore/stats/chat" class={opAR[3]}>
                         <Button 
                         slim={true} 
@@ -54,6 +54,7 @@
                             Chat
                         </Button>
                     </a>
+                    <span class="pad">|</span>
                     <a href="/explore/stats/kinic" class={opAR[4]}>
                         <Button 
                         slim={true} 
@@ -62,6 +63,7 @@
                             Kinic
                         </Button>
                     </a>
+                    <span class="pad">|</span>
                     <a href="/explore/stats/hot" class={opAR[5]}>
                         <Button 
                         slim={true} 
@@ -70,6 +72,7 @@
                             HotOrNot
                         </Button>
                     </a>
+                    <span class="pad">|</span>
                     <a href="/explore/stats/ghost" class={opAR[6]}>
                         <Button 
                         slim={true} 
@@ -78,15 +81,42 @@
                             Ghost
                         </Button>
                     </a>
-                    <!--<span class="pad"></span>
-                    <a href="/search/cketh" class={opAR[2]}>
+                    <span class="pad">|</span>
+                    <a href="/explore/stats/modclub" class={opAR[7]}>
                         <Button 
                         slim={true} 
                         flat={true} 
                         noBG={true}>
-                            ckETH
+                            ModClub
                         </Button>
-                    </a> -->
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/stats/cat" class={opAR[8]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            Catalyze
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/stats/boom" class={opAR[9]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            BoomDAO
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/stats/icx" class={opAR[10]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            IC-X
+                        </Button>
+                    </a>
     </div>
 </SubHead>
 <style>

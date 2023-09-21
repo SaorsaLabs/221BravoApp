@@ -62,6 +62,30 @@ impl QuickStats {
     }
 }
 
+
+#[derive(CandidType, Deserialize, Serialize, Clone, Default, Debug)]
+pub struct ExchangeOverviewTotal {
+    pub name: String, 
+    pub total_balance: u64,
+    pub num_transactions: u64,
+    pub total_sent: u64,
+    pub num_sent: u64,
+    pub total_received: u64,
+    pub num_received: u64,
+}
+
+#[derive(CandidType, Deserialize, Serialize, Clone, Default, Debug)]
+pub struct ExchangeCollection {
+    pub binance: ExchangeOverviewTotal,
+    pub kucoin: ExchangeOverviewTotal, 
+    pub gate: ExchangeOverviewTotal,
+    pub coinex: ExchangeOverviewTotal,
+    pub kraken: ExchangeOverviewTotal,
+    pub bitfinex: ExchangeOverviewTotal,
+    pub coinbase: ExchangeOverviewTotal, 
+    pub huobi: ExchangeOverviewTotal
+}
+
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct WorkingStats {
     pub data_collections: Vec<String>,
@@ -115,7 +139,7 @@ pub struct TimeStats {
     pub most_active_accounts: Vec<(String, u64)>,
     pub burn_stats: TotCntAvg,
     pub mint_stats: TotCntAvg,
-    pub trasaction_stats: TotCntAvg, // typo not fixed in deployed version! 
+    pub transaction_stats: TotCntAvg, 
     pub count_over_time: Vec<TimeChunkStats>,
     pub top_mints: Vec<ProcessedTX>,
     pub top_burns: Vec<ProcessedTX>,

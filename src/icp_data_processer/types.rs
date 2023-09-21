@@ -1,6 +1,5 @@
 use candid::{ CandidType, Deserialize, Nat, Principal };
 use serde::Serialize;
-use serde_bytes::ByteBuf;
 use std::fmt;
 use icrc_ledger_types;
 
@@ -22,6 +21,7 @@ pub struct HolderBalance {
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct WorkingStats {
+    pub version: String,
     pub total_downloaded: u128,
     pub tx_completed_to: u128,
     pub next_tx: u128,
@@ -30,11 +30,6 @@ pub struct WorkingStats {
     pub is_upto_date: bool,
     pub is_busy: bool,
     pub task_id: u32,
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
-pub struct ResultsData {
-    pub work_in_progress: u64,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug, Copy)]

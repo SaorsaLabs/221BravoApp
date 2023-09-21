@@ -8,35 +8,43 @@
 	import TxArtistGeneric from "../../../../lib/componants/txArtistGeneric.svelte";
 	import {getVisualBlockData} from '../../../../lib/code/searchRequest.js';
 	import {visualBlockSubTable} from '../../../../lib/code/searchRequest.js';
+	import HiddenContent from "../../../../lib/componants/hiddenContent.svelte";
+	import { authStore } from "../../../../lib/stores/authStore";
+	import Loading from "../../../../lib/shared/loading.svelte";
 
 	// SETTINGS FOR TX ARTIST
 	let data;
 	let loadedTXS;
+	let LS;
 	async function loadStuff(){
-		let x = await getVisualBlockData("ICP", 0, 0, 0, 0);
-		loadedTXS = x.blocks;
-		//console.log(loadedTXS);
-		data = {
-        settings: [{
-            token: "ICP",
-            lineColour: [255,255,255,0.25],
-            dotColour: [50,230,255,0.75],
-            size: 1.5, 
-        }],
-        transactions: loadedTXS,
-        globalData: {
-            canvasWidth: 0,
-            canvasHeight: 0,
-            canvasBGColour: [0,0,0,0.666],
-            globalZoom: 1,
-            inX: 1,
-            inY: 1,
-            globalMoveX: 0,
-            globalMoveY: 0,
-			text: "ICP: Latest Transactions"
-        }
-        };
-		return x;
+		let aS = authStore.read();
+        LS = aS.data.loggedIn;
+		if (LS == "true" || LS == true){
+			let x = await getVisualBlockData("ICP", 0, 0, 0, 0);
+			loadedTXS = x.blocks;
+			//console.log(loadedTXS);
+			data = {
+			settings: [{
+				token: "ICP",
+				lineColour: [255,255,255,0.25],
+				dotColour: [50,230,255,0.75],
+				size: 1.5, 
+			}],
+			transactions: loadedTXS,
+			globalData: {
+				canvasWidth: 0,
+				canvasHeight: 0,
+				canvasBGColour: [0,0,0,0.666],
+				globalZoom: 1,
+				inX: 1,
+				inY: 1,
+				globalMoveX: 0,
+				globalMoveY: 0,
+				text: "ICP: Latest Transactions"
+			}
+			};
+			return x;
+		}
 	}
 	let promise = loadStuff();
 	let clickedID = "X";
@@ -69,7 +77,7 @@
 </script>
 <svelte:head>
 	<title>Latest blocks: ICP</title>
-	<meta name="description" content="Home for the fam" />
+	<meta name="description" content="visual block explorer" />
 </svelte:head>
 
 <LayoutCombine>
@@ -80,22 +88,28 @@
 	</span>
 
 	<span slot="body">
-		<div>
-			{#await promise}
-				<p class="cntr">Loading Visual Map for ICP transactions... </p>
-			{:then}
-				<div><TxArtistGeneric data={data} on:click={handleNodeClick}/></div>
-			{/await}
-				<!-- <TxArtistGeneric data={data} on:click={handleNodeClick}/> -->
-		</div>
-		<div>
-			<ContentBox>
-				{#if clickedID != "X"}
-					<TxArtistSubDiv tx={outputData} is_icrc={false} popupType={"visualMap"}/>
-				{/if}
+		{#if LS == "false" || LS == false}
+			<ContentBox type="standard-shaddow-dark-padding">	
+				<HiddenContent>Become a member to access the Visual Block Explorer</HiddenContent>
 			</ContentBox>
-		</div>
-
+		{:else}
+			<div>
+				{#await promise}
+					<p class="cntr">Loading Visual Map for ICP transactions... </p>
+					<Loading/>
+				{:then}
+					<div><TxArtistGeneric data={data} on:click={handleNodeClick}/></div>
+				{/await}
+					<!-- <TxArtistGeneric data={data} on:click={handleNodeClick}/> -->
+			</div>
+			<div>
+				<ContentBox>
+					{#if clickedID != "X"}
+						<TxArtistSubDiv tx={outputData} is_icrc={false} popupType={"visualMap"}/>
+					{/if}
+				</ContentBox>
+			</div>
+		{/if}
 	</span>
 
 	<span slot="foot">

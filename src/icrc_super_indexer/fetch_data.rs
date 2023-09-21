@@ -1,6 +1,6 @@
 use ic_cdk::api::call;
 use num_traits::cast::ToPrimitive;
-use candid::{ Nat, Principal };
+use candid::{ Nat, Principal, Encode };
 
 use crate::utils::{idkey_to_string, string_to_idkey, log};
 use crate::state_management::{ STABLE_STATE, RUNTIME_STATE };
@@ -10,11 +10,11 @@ use crate::custom_types::{
     GetTransactionsRequest, 
     TransactionType, GetTxFromStoreArgs, SmallTX, GetMultipleTxFromStoreArgs, 
     GetTransactionsResponse, QueryTxArchiveFn, ArchivedRange, 
-    GetTransactionsArchiveResponse, Mint, Burn, Account, Transfer,
+    GetTransactionsArchiveResponse, Mint, Burn, Account, Transfer, GetMultipleTxFromStoreTimeArgs,
 };
 
 // Set target canister, call target and tx fee to stable memory
-pub async fn impl_set_target_canister(canister_id: String, store_id: String) -> String {
+pub async fn impl_set_target_canister(canister_id: String, store_id: String, self_id: String) -> String {
     let s = STABLE_STATE.with(|state|{ 
         state.borrow().as_ref().unwrap().canister_data.target_canister_locked});
     // check if already set
@@ -38,14 +38,39 @@ pub async fn impl_set_target_canister(canister_id: String, store_id: String) -> 
                     Ok(fee_value) => {
                         log(format!("Target: {}", &canister_id));
 
-                        // update target canisters and fee into stable memory
-                        STABLE_STATE.with(|state|{
-                            state.borrow_mut().as_mut().unwrap()
-                            .set_target_canisters_and_fee(canister_id, store_id, fee_value);
-                        });
-                        
-                        log("[][] ---- Target Canister Set ---- [][]");
-                        log(format!("Updated transfer fee: {}", &fee_value));
+                        // CHECK/ INIT STORE CANISTER 
+                        let store_pr = Principal::from_text(&store_id);
+                        match store_pr {
+                            Ok(spr) => {
+                                // call
+                                let res: Result<
+                                    (bool,), 
+                                    (ic_cdk::api::call::RejectionCode, String)> 
+                                    = ic_cdk::call(spr, "canister_init", ()).await;
+                                match res {
+                                    Ok(v) => {
+                                        if v.0 == true {
+                                            // update target canisters and fee into stable memory
+                                            STABLE_STATE.with(|state|{
+                                                state.borrow_mut().as_mut().unwrap()
+                                                .set_target_canisters_and_fee(canister_id, store_id, self_id, fee_value);
+                                            });
+                                            log("[][] ---- Target Canister Set ---- [][]");
+                                            log(format!("Updated transfer fee: {}", &fee_value));
+                                            log("[][] ---- TX Store Admin Set ---- [][]");
+                                        } else {
+                                            ic_cdk::trap("Error adding ICRC Index canister as admin on TX Store Canister");
+                                        }
+                                    }
+                                    Err(error) => {
+                                        log(format!("Error doing init on ICRC TX Store. {}", error.1));
+                                    }
+                                }
+                            }
+                            Err(error) => {
+                                log(format!("Can't get principal from text. Error {}", error));
+                            }
+                        }
                     }
                     Err(error) => {
                         log(format!("Error setting target canister: {}", error));
@@ -59,11 +84,13 @@ pub async fn impl_set_target_canister(canister_id: String, store_id: String) -> 
                 log(format!("Can't get principal from text. Error {}", error));
             }
         }
+
+
     }
-    return "Target canister and fee set".to_string();
+    return "Target canister, Store Canister and fee set".to_string();
 }
 
-pub async fn download_and_process_txs(){
+pub async fn download_and_process_txs() -> bool {
     // get target canister id from stable memory
     let tc = STABLE_STATE.with(|state|{ 
         state.borrow().as_ref().unwrap().canister_data.target_canister.clone()});
@@ -151,7 +178,7 @@ pub async fn download_and_process_txs(){
 
                             // Retain latest processed transactions
                             let mut is_upto_date = false;
-                            if (start+length) > (tip - MAX_BLOCKS_RETAINED as u128) {
+                            if (start+length) > (tip - MAX_BLOCKS_RETAINED as u128) || tip <=  MAX_BLOCKS_RETAINED as u128 {
                                 RUNTIME_STATE.with(|s|{
                                     let mut highest_block: u128 = 0;
                                     for tx in &temp_tx_array {
@@ -178,15 +205,7 @@ pub async fn download_and_process_txs(){
                                     next_block + completed_this_run - 1, 
                                     is_upto_date);
                             }); 
-
-                            // move onto next task
-                            STABLE_STATE.with(|s|{
-                                s.borrow_mut().as_mut()
-                                .unwrap().canister_data.working_stats
-                                .task_id = 1;
-                            }); 
-                            
-
+                        
                             log(
                                 format!(
                                     "Complete To {}; All transactions downloaded? = {};",
@@ -195,15 +214,22 @@ pub async fn download_and_process_txs(){
                                 )
                             );
                         } // end if blocks_needed
-                    } // end if tip
+                        return true;
+                    } // end if tip 
+                    else{
+                        // nothing to update
+                        return false;
+                    }
                 } // end Ok tip
                 Err(error) => {
                     log(format!("ERROR : {}", error));
+                    return false;
                 }
             } // end match tip
         }
         Err(error) => {
             log(format!("Cannot derive principal from target canister. Error {}", error));
+            return false;
         }
     } // match ledger id
 }
@@ -663,8 +689,6 @@ pub async fn get_multiple_txs_from_store(block: Vec<u32>) -> Vec<Option<Processe
                         .map_err(|(code, str)| format!("code: {:#?} message: {}", code, str))
                         .unwrap();
 
-                    log(format!("{:?}", call_res));
-
                     for stx in call_res{
                         match stx {
                             Some(tx) => {
@@ -733,4 +757,98 @@ pub async fn get_multiple_txs_from_store(block: Vec<u32>) -> Vec<Option<Processe
         }
     }
 }
+
+
+pub async fn get_multiple_txs_from_store_time(block: Vec<u32>, start: u64, end: u64, max_return: u64) -> Option<Vec<ProcessedTX>> {
+    let store_id = STABLE_STATE.with(|s|{
+        s.borrow().as_ref().unwrap().canister_data.stx_store_canister.clone()
+    });
+    let mut return_vec: Vec<ProcessedTX> = Vec::new();
+    let canister_id = idkey_to_string(&store_id);
+    match canister_id {
+        Some(id) => {
+            let store_id = Principal::from_text(&id);
+            match store_id {
+                Ok(pr_id) => {
+
+                    let args = GetMultipleTxFromStoreTimeArgs{
+                        blocks: block,
+                        start,
+                        end,
+                        max_return,
+                    };
+                    // call
+                    let (call_res,):(Option<Vec<SmallTX>>,)  = ic_cdk
+                        ::call(pr_id, "get_multiple_tx_from_store_time", (args,)).await
+                        .map_err(|(code, str)| format!("code: {:#?} message: {}", code, str))
+                        .unwrap();
+                    match call_res {
+                        Some(stx) => {
+                            for tx in stx {
+                                // process from SmallTX to ProcessedTX
+                                let fm_to = STABLE_STATE.with(|s| {
+                                    let mut fm = String::new();
+                                    let mut to= String::new();
+        
+                                    // from
+                                    if let Some(fm_res) =  tx.from {
+                                        match s.borrow_mut().as_mut().unwrap().directory_data.get_id(&fm_res) {
+                                            Some(fm_value) => {fm = fm_value},
+                                            None => {log("Errror getting string from fm_res. (get_processed_tx)")}
+                                        }
+                                    } else {
+                                        fm = "ICRC_LEDGER".to_string();
+                                    }
+        
+                                    // To
+                                    if let Some(to_res) =  tx.to {
+                                        match s.borrow_mut().as_mut().unwrap().directory_data.get_id(&to_res) {
+                                            Some(to_value) => {to = to_value},
+                                            None => {log("Errror getting string from to_res. (get_processed_tx)")}
+                                        }
+                                    } else {
+                                        to = "ICRC_LEDGER".to_string();
+                                    }
+                                    return (fm, to);
+                                });
+        
+                                let mut tx_type: String;
+                                match tx.tx_type {
+                                    0  => {tx_type = "Transaction".to_string()},
+                                    1  => {tx_type = "Mint".to_string()},
+                                    2  => {tx_type = "Burn".to_string()},
+                                    _ =>  {tx_type = "Unknown".to_string()},
+                                }
+        
+                                let res = ProcessedTX{
+                                    block: tx.block as u128,
+                                    hash: String::from("no-hash"),
+                                    tx_type,
+                                    from_account: fm_to.0,
+                                    to_account: fm_to.1,
+                                    tx_value: tx.value as u128,
+                                    tx_time: tx.time,
+                                };
+                                return_vec.push(res);
+                            }
+                            return Some(return_vec);
+                        },
+                        None => {
+                            return None;
+                        }
+                    }
+                },
+                Err(error) => {
+                    log(format!("Error getting principal from string (send_stx_to_store) Err:{}", error));
+                    return None;
+                },
+            }
+        },
+        None => {
+            log("Unable to get string from IDKey - send_stx_to_store");
+            return None;
+        }
+    }
+}
+
 

@@ -7,7 +7,6 @@
     import search from "$lib/images/search.png";
     import CopyButton from '../shared/copyButton.svelte';
     import SaveButton from '../shared/saveButton.svelte';
-    import { HtmlTag } from 'svelte/internal';
 
     export let data = [];
     export let is_icrc = false; 
@@ -19,7 +18,8 @@
 	let selectedHeader = "#";
 	let ascendingOrder = false;
     let clickRowData = {};
-	
+    let isMaxedOut = false;
+	if (dataLen >= 10000) { isMaxedOut = true; }
 	// SORT BY NUMBER
 	const sortByNumber = (colHeaderInput) => {
 
@@ -135,6 +135,10 @@
             </td>
             <td class="textRight">
                  Results : {dataLen}
+                 {#if isMaxedOut == true}
+                    {@html "<br>"}
+                    <span class="text-warning">*Showing first 10,000 links</span>
+                {/if}
             </td>
         </tr>
     </table>
@@ -162,13 +166,13 @@
                 {#if !TX?.name}
                 {TX.shortID}
                 {:else}
-                {TX.name}
+                <span class="text-info">{TX.name}</span>
                 {/if}
             {:else}
                 {#if !TX?.name}
                 {TX.shortID}
                 {:else}
-                {TX.name}
+                <span class="text-info">{TX.name}</span>
                 {/if}
                 {@html "<br>"}
                 {#if TX?.shortSA != "N/A"}

@@ -5,7 +5,7 @@ mod utils;
 
 use ic_cdk_macros::*;
 use state_management::{ state_init, state_pre_upgrade, state_post_upgrade, STABLE_STATE, RUNTIME_STATE };
-use custom_types::{ MemoryData, LogEntry, SmallTX };
+use custom_types::{ MemoryData, LogEntry, SmallTX, GetMultipleTxFromStoreTimeArgs };
 use utils::log;
 
 // [][] ---------------- [][]
@@ -14,10 +14,10 @@ use utils::log;
 
 #[update]
 fn add_txs_to_store(tx_vec: Vec<SmallTX>) -> bool {
-    // check authorised
+    // check admin
     STABLE_STATE.with(|state| {
         state.borrow().as_ref().unwrap().canister_data
-        .check_authorised(ic_cdk::caller().to_text());
+        .check_admin(ic_cdk::caller().to_text());
     });
     // add txs
     let mut process_error: bool = false;
@@ -62,6 +62,45 @@ fn get_multiple_tx_from_store(block_vec: Vec<u32>) -> Vec<Option<SmallTX>> {
 }
 
 #[query]
+fn get_multiple_tx_from_store_time(args: GetMultipleTxFromStoreTimeArgs) -> Option<Vec<SmallTX>> {
+    // catch empty input
+    if args.blocks.len() == 0 {
+        return None;
+    }
+
+    // check authorised
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_authorised(ic_cdk::caller().to_text());
+    });
+    let res = STABLE_STATE.with(|s|{
+        s.borrow().as_ref().unwrap().tx_store.get_multiple_tx(args.blocks)
+    });
+    let mut ret_values: Vec<SmallTX> = Vec::new();
+    let mut hits: bool = false;
+    // time filter 
+    for tx in res {
+        match tx {
+            Some(v) => {
+                if v.time >= args.start && v.time <= args.end {
+                    ret_values.push(v);
+                    hits = true;
+                }
+            },
+            None => {},
+        }
+    }
+    
+    if hits == true {
+        ret_values.truncate(args.max_return as usize);
+        return Some(ret_values);
+    } else {
+        return None
+    }
+}
+
+
+#[query]
 fn get_total_transactions() -> u32 {
     // check authorised
     STABLE_STATE.with(|state| {
@@ -74,15 +113,33 @@ fn get_total_transactions() -> u32 {
     })
 }
 
+#[update] // not public. Can only be called once. 
+fn canister_init() -> bool {
+    let caller = ic_cdk::caller().to_text();
+    let is_locked = STABLE_STATE.with(|s| {
+        s.borrow().as_ref().unwrap().canister_data.init_lock
+    });
+    if is_locked == true {
+        return false;
+    } else {
+        STABLE_STATE.with(|s|{
+            s.borrow_mut().as_mut().unwrap().canister_data.add_admin(caller.clone());
+            s.borrow_mut().as_mut().unwrap().canister_data.add_authorised(caller);
+            s.borrow_mut().as_mut().unwrap().canister_data.init_lock = true;
+        });
+        return true;
+    }
+}
+
 // [][] --------------------------- [][]
 // [][] --- Canister Management --- [][]
 // [][] --------------------------- [][]
 #[update]
 fn add_authorised(principal_id: String) -> String {
-    // check authorised
+    // check admin
     STABLE_STATE.with(|state| {
         state.borrow().as_ref().unwrap().canister_data
-        .check_authorised(ic_cdk::caller().to_text());
+        .check_admin(ic_cdk::caller().to_text());
     });
     // add authorised 
     STABLE_STATE.with(|state| {
@@ -93,10 +150,10 @@ fn add_authorised(principal_id: String) -> String {
 
 #[update]
 fn remove_authorised(principal_id: String) -> String {
-   // check authorised
-   STABLE_STATE.with(|state| {
-    state.borrow().as_ref().unwrap().canister_data
-    .check_authorised(ic_cdk::caller().to_text());
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
     });
     // add authorised 
     STABLE_STATE.with(|state| {
@@ -105,12 +162,55 @@ fn remove_authorised(principal_id: String) -> String {
     })
 }
 
-#[update]
-fn set_canister_name(name: String) -> String {
-   // check authorised
+#[update] // not visible to public
+fn add_admin(principal_id: String) -> String {
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
+    });
+    // add admin
+    STABLE_STATE.with(|state| {
+        state.borrow_mut().as_mut().unwrap().canister_data
+        .add_admin(principal_id)
+    })
+}
+
+#[update] // not visible to public
+fn remove_admin(principal_id: String) -> String {
+   // check admin
    STABLE_STATE.with(|state| {
     state.borrow().as_ref().unwrap().canister_data
-    .check_authorised(ic_cdk::caller().to_text());
+    .check_admin(ic_cdk::caller().to_text());
+    });
+    // remove admin
+    STABLE_STATE.with(|state| {
+        state.borrow_mut().as_mut().unwrap().canister_data
+        .remove_admin(principal_id)
+    })
+}
+
+#[query] // not visible to public
+fn get_all_admins() -> Vec<String> {
+   // check admin
+   STABLE_STATE.with(|state| {
+    state.borrow().as_ref().unwrap().canister_data
+    .check_admin(ic_cdk::caller().to_text());
+    });
+    // get all admins
+    STABLE_STATE.with(|state| {
+        let ret = state.borrow_mut().as_mut().unwrap()
+        .canister_data.get_all_admins();
+        return ret;
+    })
+}
+
+#[update]
+fn set_canister_name(name: String) -> String {
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
     });
     // set canister name 
     STABLE_STATE.with(|state| {
@@ -121,25 +221,24 @@ fn set_canister_name(name: String) -> String {
 
 #[update]
 fn set_stats_public(are_stats_public: bool) -> String {
-   // check authorised
-   STABLE_STATE.with(|state| {
-    state.borrow().as_ref().unwrap().canister_data
-    .check_authorised(ic_cdk::caller().to_text());
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
     });
-    // set canister name 
+    // set stats public
     STABLE_STATE.with(|state| {
         state.borrow_mut().as_mut().unwrap().canister_data
         .set_stats_public(are_stats_public)
     })
 }
 
-
 #[query]
 fn get_all_authorised() -> Vec<String> {
-   // check authorised
-   STABLE_STATE.with(|state| {
-    state.borrow().as_ref().unwrap().canister_data
-    .check_authorised(ic_cdk::caller().to_text());
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
     });
     // get all authorised
     STABLE_STATE.with(|state| {
@@ -181,10 +280,10 @@ fn are_stats_public() -> bool {
 
 #[query]
 fn get_canister_logs() -> Vec<LogEntry> {
-    // check authorised
-   STABLE_STATE.with(|state| {
-    state.borrow().as_ref().unwrap().canister_data
-    .check_authorised(ic_cdk::caller().to_text());
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
     });
     RUNTIME_STATE.with(|state|{
         state.borrow().canister_logs.to_owned()
@@ -193,10 +292,10 @@ fn get_canister_logs() -> Vec<LogEntry> {
 
 #[query]
 fn get_cycles_balance() -> u64 {
-    // check authorised
-   STABLE_STATE.with(|state| {
-    state.borrow().as_ref().unwrap().canister_data
-    .check_authorised(ic_cdk::caller().to_text());
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
     });
     // get cycles balance
     let cycles: u64 = ic_cdk::api::canister_balance();

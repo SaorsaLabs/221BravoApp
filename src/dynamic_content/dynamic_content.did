@@ -1,0 +1,53 @@
+// Dynamic Content - 221Bravo App  v0.2.1
+
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+
+type LogEntry = record {timestamp: text; text: text};
+
+type NewsItem = record {
+    title: text;
+    sub_title: text;
+    article_url: text;
+    image_url: text;
+};
+
+type ProjectCard = record {
+    title: text;
+    sub_title: text;
+    project_url: text;
+    image_url: text;
+};
+
+type ProjectCollection = record {
+    bucket1: vec ProjectCard;
+    bucket2: vec ProjectCard;
+    bucket3: vec ProjectCard;
+    bucket4: vec ProjectCard;
+    bucket5: vec ProjectCard;
+    bucket6: vec ProjectCard;
+    bucket7: vec ProjectCard;
+    bucket8: vec ProjectCard;
+}
+
+service : {
+    "add_authorised": (text) -> (text);
+    "remove_authorised": (text) -> (text);
+    "get_all_authorised": () -> (vec text) query;
+    "get_canister_name": () -> (text) query;
+    "set_canister_name": (text) -> (text);
+    "are_stats_public": () -> (bool) query;
+    "set_stats_public": (bool) -> (text); 
+    "get_cycles_balance": () -> (nat64) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "get_canister_logs": () -> (vec LogEntry) query;
+    // news methods
+    "add_news_item": (text, text, text, text) -> (text); // title, sub, article_url, image_url
+    "remove_news_item": (nat64) -> (text); // index from 0
+    "read_news_items": () -> (vec NewsItem) query;
+    // projects methods
+    "add_project": (nat8, text, text, text, text) -> (text); // bucket_number (from 1), title, sub, project_url, image_url
+    "remove_project": (nat64, nat8) -> (text); // index from 0, bucket_number (from 1) 
+    "read_single_project_bucket": (nat8) -> (vec ProjectCard) query;
+    "read_all_project_buckets": () -> (ProjectCollection) query; 
+}
+

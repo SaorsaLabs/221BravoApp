@@ -13,8 +13,8 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"preview": "vite preview",
 		"prebuild": "npm run generate",
+		"preview": "vite preview",
 		"format": "prettier --plugin-search-dir . --write .",
 		"generate": "dfx generate && node ./update.types.mjs"
 	},
@@ -25,7 +25,9 @@
 		"@dfinity/identity": "^0.15.7",
 		"@dfinity/identity-secp256k1": "^0.15.7",
 		"@dfinity/principal": "^0.15.5",
+		"@open-ic/openchat-xframe": "^1.0.1",
 		"chart.js": "^4.3.0",
+		"fuse.js": "^6.6.2",
 		"isomorphic-fetch": "^3.0.0"
 	},
 	"devDependencies": {

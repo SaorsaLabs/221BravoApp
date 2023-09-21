@@ -8,12 +8,13 @@ mod test_data;
 
 use std::time::Duration;
 
+use candid::Principal;
 use ic_cdk::api::instruction_counter;
 use ic_cdk_macros::*;
 use ic_cdk_timers::TimerId;
 use state_management::{ state_init, state_pre_upgrade, state_post_upgrade, STABLE_STATE, RUNTIME_STATE, TIMER_STATE };
-use custom_types::{ MemoryData, ProcessedTX, LogEntry, FullDataResponse, Overview, FullDataResponseRaw, LinkDataResponse, LinkData, WorkingStats,};
-use utils::{remove_none_ptx_values, string_to_idkey, log};
+use custom_types::{ MemoryData, ProcessedTX, LogEntry, FullDataResponse, Overview, FullDataResponseRaw, LinkDataResponse, LinkData, WorkingStats, WorkingStatsResponse, TimeSearchArgs,};
+use utils::{remove_none_ptx_values, string_to_idkey, log, idkey_to_string};
 use fetch_data::*;
 use process_data::{ send_stx_to_store, process_smtx_to_index, process_to_small_tx};
 use constants::MAX_BLOCKS_TO_RETURN;
@@ -40,14 +41,14 @@ use constants::MAX_BLOCKS_TO_RETURN;
 
 // Set target canister and tx store canister
 #[update]
-async fn set_target_canister(principal_id: String, store_id: String) -> String {
+async fn set_target_canister(principal_id: String, store_id: String, self_id: String) -> String {
     // check admin
     STABLE_STATE.with(|state| {
         state.borrow().as_ref().unwrap().canister_data
         .check_admin(ic_cdk::caller().to_text());
     });
     // set target and save fee
-    let ret = impl_set_target_canister(principal_id, store_id).await;
+    let ret = impl_set_target_canister(principal_id, store_id, self_id).await;
     return ret;
 }
 
@@ -302,7 +303,7 @@ fn get_links_from_ref_raw(id_ref: u32) -> Option<Vec<LinkData>> {
     }
 }
 
-// Account transactions by ID (Max Return value - MAX_BLOCKS_TO_RETURN)
+// Account transactions by ID (Max Return value = MAX_BLOCKS_TO_RETURN)
 #[update]
 async fn get_transactions_from_id(id_string: String) -> Option<Vec<ProcessedTX>> {
     // check authorised
@@ -322,6 +323,29 @@ async fn get_transactions_from_id(id_string: String) -> Option<Vec<ProcessedTX>>
             let ptx: Vec<Option<ProcessedTX>> = get_multiple_txs_from_store(vec_refs).await;
             let ptx2: Vec<ProcessedTX> = remove_none_ptx_values(ptx);
             return Some(ptx2);
+        },
+        None => {return None}
+    }
+}
+
+
+// Account transactions by ID (filtered by time) (Max Return value = MAX_BLOCKS_TO_RETURN)
+#[update]
+async fn get_transactions_time_id(args: TimeSearchArgs) -> Option<Vec<ProcessedTX>> {
+    // check authorised
+   STABLE_STATE.with(|state| {
+    state.borrow().as_ref().unwrap().canister_data
+    .check_authorised(ic_cdk::caller().to_text());
+    });
+
+    let block_refs: Option<Vec<u32>> = STABLE_STATE.with(|s|{
+        s.borrow().as_ref().unwrap().get_transactions_by_id(&args.id)
+    });
+    match block_refs {
+        Some(vec_refs) => {
+            // fetch blocks
+            let ptx: Option<Vec<ProcessedTX>> = get_multiple_txs_from_store_time(vec_refs, args.start, args.end, MAX_BLOCKS_TO_RETURN as u64).await;
+            return ptx;
         },
         None => {return None}
     }
@@ -430,77 +454,19 @@ fn get_ref_from_id(id_string: String) -> Option<u32> {
 
 // Get working stats
 #[query]
-fn get_working_stats() -> WorkingStats {
+fn get_working_stats() -> WorkingStatsResponse {
     // check authorised
    STABLE_STATE.with(|state| {
     state.borrow().as_ref().unwrap().canister_data
     .check_authorised(ic_cdk::caller().to_text());
     });
     // get working stats
-    let ws: WorkingStats = STABLE_STATE.with(|state| {
-        state.borrow().as_ref().unwrap().canister_data.working_stats.clone()
+    let ws: WorkingStatsResponse = STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data.working_stats.read_stats()
     });
     return ws;
 }
 
-
-// *************** Test Calls
-
-// Download txs from ICP Ledger
-#[update]
-async fn test_call_1() -> String {
-    download_and_process_txs().await;
-    return "Complete".to_string();
-}
-
-// Add Test TXS from test_data.rs 
-#[update]
-fn test_call_1A(tx_store: String) -> String {
-    RUNTIME_STATE.with(|s|{
-        s.borrow_mut().temp_vec_ptx = test_data::test_data();
-     });
-
-    STABLE_STATE.with(|s|{
-    s.borrow_mut().as_mut().unwrap()
-    .canister_data.stx_store_canister= string_to_idkey(&tx_store).unwrap() ;
-    });
-     return "Done".to_string();
-}
-
-// Test 2 - Process to Small TX
-#[update]
-async fn test_Small_tx_2() -> String {
-    process_to_small_tx(); 
-    let counter = instruction_counter();
-    return format!("DONE! Instructions Used :: {},", counter);
-}
-
-#[update]
-async fn test_send_tx() -> String {
-    let x = send_stx_to_store().await;
-    let counter = instruction_counter();
-    return format!("DONE! Instructions Used :: {}, Res :: {}", counter, x);
-}
-
-#[update]
-fn test_index_stx_3() -> String {
-    process_smtx_to_index();
-    let counter = instruction_counter();
-    return format!("DONE! Instructions Used :: {}", counter);
-}
-
-#[query]
-fn test_get_alldata(id_ref: u32) -> String {
-    let ov = STABLE_STATE.with(|s|{s.borrow().as_ref().unwrap()
-        .get_fulldata_by_ref_raw(&id_ref)});
-    let res;
-    match ov {
-        Some(v) => {res = format!("{:?}", v)},
-        None => {res = "nothing".to_string()}
-    }
-    let counter = instruction_counter();
-    return format!("DONE! Instructions Used :: {}, Result {}", counter, res);
-}
 
 // [][] ----------------------- [][]
 // [][] --- Timer Functions --- [][]
@@ -542,7 +508,7 @@ fn check_and_start_processing_timer(secs: u64) -> String {
         s.borrow().as_ref().unwrap().canister_data.target_canister_locked
     });
     if target_set == false {
-        ic_cdk::trap("Target Canister Not Set!");
+        ic_cdk::trap("Target Canisters Not Set!");
     }
 
     let ret: String;
@@ -574,7 +540,7 @@ fn start_processing_timer(secs: u64) {
 async fn schedule_data_processing() {
     // check if busy
     let busy = STABLE_STATE.with(|s|{
-        s.borrow().as_ref().unwrap().canister_data.working_stats.is_busy
+        s.borrow().as_ref().unwrap().canister_data.working_stats.is_busy.clone()
     });
     if busy == true {
         return;
@@ -583,55 +549,124 @@ async fn schedule_data_processing() {
         STABLE_STATE.with(|s|{
             s.borrow_mut().as_mut().unwrap().canister_data.working_stats.is_busy = true;
         });
-        let working_stats =  STABLE_STATE.with(|s|{
-            s.borrow().as_ref().unwrap().canister_data.working_stats.clone()
-        });
 
-        if working_stats.task_id == 0 {
-            //[][] --- TASK 1 --- [][]
-            download_and_process_txs().await;
-            // set busy false
-            STABLE_STATE.with(|s|{
-                s.borrow_mut().as_mut().unwrap().canister_data.working_stats.is_busy = false;
-            });
-        } else if working_stats.task_id == 1 {
-            //[][] --- TASK 2 --- [][]
-            log("[][] --- Process SmallTX and send to store --- [][]");
-            process_to_small_tx(); 
-            process_smtx_to_index();
-            let update_store = send_stx_to_store().await;
-            match update_store {
-                true => {
-                    log("[][] --- Store Updated with latest blocks --- [][]");
-                    // set busy false + go to next task
-                    STABLE_STATE.with(|s|{
-                        s.borrow_mut().as_mut().unwrap().canister_data.working_stats.is_busy = false;
-                        s.borrow_mut().as_mut().unwrap().canister_data.working_stats.task_id = 0;
-                    });
-                },
-                false => {
-                    log("ERROR - Store canister returned an error. Check store canister logs!");
-                }
-            }
-        }            
-        // } else if working_stats.task_id == 2 {
-        //     //[][] --- TASK 3 --- [][]
-        //     // NOT USED
-        //     // set busy false + go to next task
-        //     STABLE_STATE.with(|s|{
-        //         s.borrow_mut().as_mut().unwrap().canister_data.working_stats.is_busy = false;
-        //         s.borrow_mut().as_mut().unwrap().canister_data.working_stats.task_id = 0;
-        //     });
-        //     log("[][] --- Index Updated with latest transactions --- [][]");
-        // } 
+        let dl = task_manager(0).await;
+        if dl == true {
+            task_manager(1).await;
+            task_manager(2).await;
+        }
+
+        // set not busy
+        STABLE_STATE.with(|s|{
+            s.borrow_mut().as_mut().unwrap().canister_data.working_stats.is_busy = false;
+        });
     }
 }
 
+async fn task_manager(task_number: u8) -> bool {
+    match task_number {
+        0 => {
+            //[][] --- Download + Process --- [][]
+            let ret = download_and_process_txs().await;
+            return ret;
+        },
+        1 => {
+            //[][] --- Process to SmallTX and Store --- [][]
+            let self_idk = STABLE_STATE.with(|s|{
+                s.borrow().as_ref().unwrap().canister_data.self_canister.clone()
+            });
+            let self_string: String = idkey_to_string(&self_idk).unwrap();
+            let self_principal = Principal::from_text(self_string);
+            match self_principal {
+                Ok(pr_id) => {
+                    let res: Result<
+                        ((),), // no result value
+                        (ic_cdk::api::call::RejectionCode, String)
+                    > = ic_cdk::call(pr_id, "self_call0", ((),)).await; // no args
+                    match res {
+                        Ok(v) => {
+                            return true;
+                        },
+                        Err(verror) => { 
+                            log(format!("Self call error: call0: {}", verror.1));
+                            return false;
+                        }
+                    }
+                }
+                Err(error) => { return false; },
+            }
+        },
+        2 => {
+            //[][] --- Calculate Balances and Index --- [][]
+            let self_idk = STABLE_STATE.with(|s|{
+                s.borrow().as_ref().unwrap().canister_data.self_canister.clone()
+            });
+            let self_string: String = idkey_to_string(&self_idk).unwrap();
+            let self_principal = Principal::from_text(self_string);
+            match self_principal {
+                Ok(pr_id) => {
+                    let res: Result<
+                        ((),), // no result value
+                        (ic_cdk::api::call::RejectionCode, String)
+                    > = ic_cdk::call(pr_id, "self_call1", ((),)).await; // no args
+                    match res {
+                        Ok(v) => {
+                            log("[][] --- Processing Self-Calls Complete --- [][]");
+                            return true;
+                        },
+                        Err(verror) => { 
+                            log(format!("Self call error: call1: {}", verror.1));
+                            return false;
+                        }
+                    }
+                }
+                Err(error) => { return false; },
+            }
+        },
+        _ => { 
+            log("Task Manager Error :: Requested task does not exist!");
+            return false;
+        }
+    }
+}
 
+#[update]
+async fn self_call0(){
+    //[][] --- Process to SmallTX and Store --- [][]
+    process_to_small_tx();  
+    let update_store = send_stx_to_store().await;
+    match update_store {
+        true => {
+            log("[][] --- Store Updated with latest blocks --- [][]");
+        },
+        false => {
+            log("ERROR - Store canister returned an error. Check store canister logs!");
+        }
+    }
+}
+#[update]
+async fn self_call1(){
+    process_smtx_to_index().await;  
+}
 
 // [][] --------------------------- [][]
 // [][] --- Canister Management --- [][]
 // [][] --------------------------- [][]
+#[update]
+fn force_reset_busy() -> String {
+    // check admin
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_admin(ic_cdk::caller().to_text());
+    });
+    // reset
+    STABLE_STATE.with(|state| {
+        state.borrow_mut().as_mut().unwrap().canister_data.working_stats.reset_busy()
+    });
+    let ret:String ="is_busy has been reset to false".to_string();
+    return ret;
+}
+
 #[update]
 fn add_authorised(principal_id: String) -> String {
     // check admin
@@ -709,7 +744,7 @@ fn set_stats_public(are_stats_public: bool) -> String {
     state.borrow().as_ref().unwrap().canister_data
     .check_admin(ic_cdk::caller().to_text());
     });
-    // set canister name 
+    // set stats public
     STABLE_STATE.with(|state| {
         state.borrow_mut().as_mut().unwrap().canister_data
         .set_stats_public(are_stats_public)

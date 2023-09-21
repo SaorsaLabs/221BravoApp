@@ -61,11 +61,30 @@ function shortenString(str) {
 	}
 }
 
+function getUniqueValues(array){
+    array.sort();
+    let keepers = [];
+    let i;
+    keepers[0] = array[0]; // 1st is always a keeper
+    let LL = array.length;
+    for(i = 1; i<LL; i++) {
+        if(array[i] != array[i-1]) keepers.push(array[i]);
+    }
+    return keepers;
+}
+
+async function processPromises(arrayOfPromises) {
+    let responses = await Promise.all(arrayOfPromises);
+    return responses;
+}
+
 export {
 	millisToDate,
 	millisToTime,
 	datetimeToMillis,
 	parsePrincipalSubAccountString,
 	combinePrincipalSubAccount,
-	shortenString
+	shortenString,
+	processPromises,
+	getUniqueValues
 };

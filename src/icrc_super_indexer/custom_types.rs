@@ -9,7 +9,7 @@ use ic_stable_memory::{derive::{StableType, AsFixedSizeBytes}, AsFixedSizeBytes,
 use serde_bytes::ByteBuf;
 
 use crate::utils::{idkey_to_string, string_to_idkey, log};
-use crate::constants::MAX_BLOCKS_RETAINED;
+use crate::constants::{MAX_BLOCKS_RETAINED, VERSION};
 
 // ID Key is limited to 135 bytes (max 134 input string and ':' at the end) 
 #[derive(CandidType, Deserialize, StableType, Hash, Eq, PartialEq, Clone, Debug)]
@@ -143,11 +143,21 @@ pub struct GetTxFromStoreArgs(pub u32);
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct GetMultipleTxFromStoreArgs(pub Vec<u32>);
 
+// used for getting mutiple tx from tx store BY TIME
+#[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
+pub struct GetMultipleTxFromStoreTimeArgs {
+    pub blocks: Vec<u32>, 
+    pub start: u64, 
+    pub end: u64, 
+    pub max_return: u64
+}
+
 // Stable storage of canister settings. 
 #[derive(StableType, AsFixedSizeBytes, Debug, Default)]
 pub struct CanisterSettings {
     pub target_canister: IDKey,
     pub stx_store_canister: IDKey,
+    pub self_canister: IDKey,
     pub canister_name: IDKey, 
     pub stats_are_public: bool,
     pub target_canister_locked: bool,
@@ -366,6 +376,8 @@ impl CanisterSettings {
 
     pub fn set_stats_public(&mut self, are_stats_public: bool) -> String {
         self.stats_are_public = are_stats_public;
+        if are_stats_public == true { self.add_authorised("2vxsx-fae".to_string()); } 
+        else { self.remove_authorised("2vxsx-fae".to_string());}
         return format!("are_stats_public updated to: {}", are_stats_public);
     }
 
@@ -379,7 +391,7 @@ pub struct MemoryData {
 }
 
 // sub-struct of canister settings
-#[derive(CandidType, StableType, Deserialize, Clone, Default, AsFixedSizeBytes, Debug)]
+#[derive(CandidType, StableType, Deserialize, Serialize, Clone, Default, AsFixedSizeBytes, Debug)]
 pub struct WorkingStats {
     pub total_downloaded: u128,
     pub tx_completed_to: u128,
@@ -396,8 +408,38 @@ impl WorkingStats {
         self.is_upto_date = is_upto_date;
         self.next_tx = complete_to+1;
     }
+
+    pub fn reset_busy(&mut self){
+        self.is_busy = false;
+    }
+
+    pub fn read_stats(&self) -> WorkingStatsResponse {
+        let ret: WorkingStatsResponse = WorkingStatsResponse{
+            version: VERSION.to_string(),
+            total_downloaded: self.total_downloaded,
+            tx_completed_to: self.tx_completed_to,
+            next_tx: self.next_tx,
+            timer_set: self.timer_set,
+            is_upto_date: self.is_upto_date,
+            is_busy: self.is_busy,
+            task_id: self.task_id,
+        };
+        return ret;
+    }
 }
 
+// Adds version number to the response
+#[derive(CandidType, Deserialize, Serialize, Clone, Default, Debug)]
+pub struct WorkingStatsResponse {
+    pub version: String,
+    pub total_downloaded: u128,
+    pub tx_completed_to: u128,
+    pub next_tx: u128,
+    pub timer_set: bool,
+    pub is_upto_date: bool,
+    pub is_busy: bool,
+    pub task_id: u8,
+}
 
 #[derive(CandidType, StableType, CandidAsDynSizeBytes, Deserialize, Serialize, Clone, Default, Debug, PartialEq, Eq)]
 pub struct ProcessedTX {
@@ -423,6 +465,13 @@ impl fmt::Display for ProcessedTX {
             self.tx_time
         )
     }
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
+pub struct TimeSearchArgs {
+    pub id: String,
+    pub start: u64, 
+    pub end: u64, 
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone)]

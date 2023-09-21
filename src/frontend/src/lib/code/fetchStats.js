@@ -1,6 +1,6 @@
 import { getIdentity, icActor } from './icAgent.js';
 import {
-	icrc_canister_ids,
+	canister_ids,
 	token_swap_canisters,
 	ICP_dataCanister,
 	ICP_ledgerCanister,
@@ -8,7 +8,7 @@ import {
 	ICRC_SnapshotCanister,
 	ICP_SnapshotCanister
 } from './constants.js';
-import { parsePrincipalSubAccountString, shortenString } from './utils.js';
+import { parsePrincipalSubAccountString, shortenString, processPromises } from './utils.js';
 import { icrcDataIDL } from './IDL/icrcDataProcessor.js';
 import { icpDataIDL } from './IDL/icpDataProcessor.js';
 import { icrcLedgerIDL } from './IDL/icrcLedger.js';
@@ -17,7 +17,7 @@ import { swapsIDL } from './IDL/icLightSwaps.js';
 import { snapshotIDL } from './IDL/snapshot.js';
 import { icpSnapshotIDL } from './IDL/icpSnapshot.js';
 
-const canisterIDS = icrc_canister_ids;
+const canisterIDS = canister_ids;
 
 // ICRC Stats
 async function getICRC_Stats(token, timescale) {
@@ -553,22 +553,73 @@ async function getPriceData(tokenPair) {
 		}
 	} else if (tokenPair == 'ICP/USD') {
 		try {
-		    // let API_KEY =  import.meta.env.VITE_CMC_KEY;
-		    // let ID = "8916";
-		    // const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=${ID}&CMC_PRO_API_KEY=${API_KEY}`;
-		    // const response = await fetch(url);
-		    // const resJS = await response.json();
+		    let API_KEY =  import.meta.env.VITE_CMC_KEY;
+		    let ID = "8916";
+		    const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=${ID}&CMC_PRO_API_KEY=${API_KEY}`;
+		    const response = await fetch(url);
+		    const resJS = await response.json();
 		    let res = {
 		        price: resJS.data['8916'].quote.USD.price.toFixed(2),
 		        change: resJS.data['8916'].quote.USD.percent_change_24h.toFixed(2),
 		        dollar: 0,
 		    }
-		    return res;
+		   return res;
 		} catch (error) {
 		    console.log(error);
 		    return {price: 0, change: 0, dollar: 0};
 		}
 	 }
+}
+
+async function getTokenTableData(){
+	let loopLen = canister_ids.length ?? 0;
+	let promAR = [];
+	let compAR;
+	let resOBJ;
+	let resAR = [];
+	let resTKN = [];
+	let pos = 0;
+	for(let i=0; i<loopLen; i++){
+		if(canister_ids[i].token == "ICP"){
+			// ICP STATS
+			promAR[pos] = getICP_TotalHolders();
+			promAR[pos+1] = getICP_Stats('hourly');
+			resTKN.push(canister_ids[i].token);
+		} else {
+			// ICRC STATS
+			promAR[pos] = getICRC_TotalHolders(canister_ids[i].token);
+			promAR[pos+1] = getICRC_Stats(canister_ids[i].token, 'hourly');
+		}
+		pos+=2;
+	}
+
+	compAR = await processPromises(promAR);
+	let cnt = 0;
+	let cARLen = compAR.length ?? 0;
+	for(let i=0; i<cARLen; i+=2){
+			let lc = canister_ids[cnt].token.toLowerCase();
+			resOBJ = {
+				link: lc,
+				token: canister_ids[cnt].token,
+				holders: Number(compAR[i].accounts),
+				transactions: Number(compAR[i+1].total_transaction_count),
+				active: Number(compAR[i+1].total_unique_accounts),
+			};
+			cnt++;
+			resAR.push(resOBJ);
+	}
+	return resAR;
+}
+
+async function getExchangeBalances(num_to_return){
+	if (!num_to_return) num_to_return = 5;
+
+	const ID = getIdentity();
+	let stats;
+	let actor = icActor(ICP_SnapshotCanister, icpSnapshotIDL, ID);
+	stats = await actor.get_exchange_snapshots(num_to_return);
+	
+	return stats;
 }
 
 export {
@@ -588,5 +639,7 @@ export {
 	processICPTopMintData,
 	processICPTopBurnData,
 	getICRC_SnapshotQuickStats,
-	getICP_SnapshotQuickStats
+	getICP_SnapshotQuickStats,
+	getTokenTableData,
+	getExchangeBalances
 };

@@ -155,7 +155,7 @@
 		// mint/ burn init (Daily)
 		mBData[0] =Number(dailyData.mint_stats.total_value)*vPower;
 		mBData[1] = Number(dailyData.burn_stats.total_value)*vPower;
-		mBData[2] = Number(dailyData.trasaction_stats.total_value)*vPower;
+		mBData[2] = Number(dailyData.transaction_stats.total_value)*vPower;
 		valMintH = hourlyExport.hourlyMintValue.toLocaleString('en-US', fmtOptionsValue);
 		valBurnH = hourlyExport.hourlyBurnValue.toLocaleString('en-US', fmtOptionsValue);
 		numMintH = hourlyExport.hourlyTotalMint.toLocaleString('en-US', fmtOptions);
@@ -224,7 +224,7 @@
 		showMB = "hourly";
 		mBData[0] = Number(hourlyData.mint_stats.total_value)*vPower;
 		mBData[1] = Number(hourlyData.burn_stats.total_value)*vPower;
-		mBData[2] = Number(hourlyData.trasaction_stats.total_value)*vPower;// TYPO!! should be => Number(BigInt(dailyData.transaction_stats.total_value)*BigInt(vPower));
+		mBData[2] = Number(hourlyData.transaction_stats.total_value)*vPower;
 		mintBurnExport = {
 			mint: topMintHourly,
 			burn: topBurnHourly,
@@ -236,7 +236,7 @@
 		showMB = "daily";
 		mBData[0] = Number(dailyData.mint_stats.total_value)*vPower;
 		mBData[1] = Number(dailyData.burn_stats.total_value)*vPower;
-		mBData[2] = Number(dailyData.trasaction_stats.total_value)*vPower;// TYPO!! should be => Number(BigInt(dailyData.transaction_stats.total_value)*BigInt(vPower));
+		mBData[2] = Number(dailyData.transaction_stats.total_value)*vPower;
 		mintBurnExport = {
 			mint: topMintDaily,
 			burn: topBurnDaily,
@@ -246,7 +246,7 @@
 </script>
 <svelte:head>
 	<title>Stats : {token}</title>
-	<meta name="description" content="Home for the fam" />
+	<meta name="description" content="Internet Computer Statistics" />
 </svelte:head>
 
 <LayoutCombine>

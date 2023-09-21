@@ -1,5 +1,5 @@
 <script>
-    import logo from '$lib/images/221B_sml.png';
+    import logo from '$lib/images/221B_sml_beta.png';
     import HeadBtns from './headBTNS.svelte';
 
 </script>

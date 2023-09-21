@@ -26,7 +26,7 @@ use types::{
     QuickStats,
     TimeStats,
     TotalHoldersResponse,
-    KEY_LENGTH,
+    KEY_LENGTH, ExchangeCollection,
 };
 
 //[][] ---- State Manamgement ---- [][]
@@ -41,6 +41,7 @@ struct RuntimeState {
     pub mgmt_data: Data,
     pub icp_standard_collections: BTreeMap<IDKey, SnapshotData>,
     pub icp_quickstats_collections: BTreeMap<IDKey, QuickStats>,
+    pub icp_exchange_stats: Option<Vec<ExchangeCollection>>,
 }
 impl Default for RuntimeState {
     fn default() -> Self {
@@ -48,6 +49,7 @@ impl Default for RuntimeState {
             mgmt_data: Data::default(),
             icp_standard_collections: BTreeMap::default(),
             icp_quickstats_collections: BTreeMap::default(),
+            icp_exchange_stats: Some(Vec::new()),
         }
     }
 }
@@ -139,8 +141,14 @@ fn init() {
     let mut mgmt_data = Data::default();
     let icp_standard_collections = BTreeMap::default();
     let icp_quickstats_collections = BTreeMap::default();
+    let icp_exchange_stats = Some(Vec::new());
     // add state
-    mgmt_data.authorised.push("2vxsx-fae".to_string());
+    mgmt_data.authorised.push(
+        "ADMIN_PRINCIPAL_HERE".to_string()
+    ); 
+    mgmt_data.authorised.push(
+        "FRONTEND_PRINCIPAL_HERE".to_string()
+    ); 
     mgmt_data.canister_settings.stats_are_public = true;
     mgmt_data.canister_settings.canister_name = "Name me please!".to_string();
     mgmt_data.first_run = true;
@@ -148,6 +156,7 @@ fn init() {
         mgmt_data,
         icp_standard_collections,
         icp_quickstats_collections,
+        icp_exchange_stats
     };
     RUNTIME_STATE.with(|state| {
         *state.borrow_mut() = runtime_state;
@@ -364,6 +373,30 @@ fn get_standard_snapshots(
 }
 
 #[query]
+fn get_exchange_snapshots( max_to_return: u32 ) -> Option<Vec<ExchangeCollection>> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.mgmt_data.check_authorised(ic_cdk::caller().to_text());
+
+        match s.icp_exchange_stats.clone() {
+            Some(v) => {
+                let ret_data: Vec<ExchangeCollection> = v
+                .iter()
+                .rev()
+                .take(max_to_return as usize)
+                .cloned()
+                .collect();
+                return Some(ret_data);
+            },
+            None => {
+                return None;
+            },
+
+        }
+    })
+}
+
+#[query]
 fn get_quickstats(collection_id: String, max_to_return: u128) -> Option<QuickStats> {
     RUNTIME_STATE.with(|state| {
         let s = state.borrow();
@@ -474,8 +507,8 @@ async fn take_snapshots(time_nano: u64) {
     });
 
     for id in collection_canisters {
-        let mut full_stats = RetSaorsaStatsICP::default();
-        let ledger_id = Principal::from_text(id.1);
+        let mut full_stats: RetSaorsaStatsICP = RetSaorsaStatsICP::default();
+        let ledger_id: Result<Principal, candid::types::principal::PrincipalError> = Principal::from_text(id.1);
         match ledger_id {
             Ok(pr_id) => {
   
@@ -494,7 +527,7 @@ async fn take_snapshots(time_nano: u64) {
                         full_stats.most_active_accounts = v.0.most_active_accounts;
                         full_stats.burn_stats = v.0.burn_stats;
                         full_stats.mint_stats = v.0.mint_stats;
-                        full_stats.transaction_stats = v.0.trasaction_stats;  // Typo not fixed in deployed ICP stats canister
+                        full_stats.transaction_stats = v.0.transaction_stats;  // Typo not fixed in deployed ICP stats canister
                         full_stats.count_over_time = v.0.count_over_time;
                         full_stats.top_mints = v.0.top_mints;
                         full_stats.top_burns = v.0.top_burns;
@@ -586,6 +619,48 @@ async fn take_snapshots(time_nano: u64) {
         // update Map
         log(format!("Collection {} updated", id.0));
     }
+
+    // Get Exchange Data
+    let ex_id: Result<Principal, candid::types::principal::PrincipalError> = Principal::from_text("gnfso-uqaaa-aaaak-qclzq-cai");
+    match ex_id {
+        Ok(pr_id) => {
+            let res: Result<
+                (ExchangeCollection,),
+                (ic_cdk::api::call::RejectionCode, String)
+            > = ic_cdk::call(pr_id, "get_exchange_data", ()).await;
+            match res {
+                Ok(v) => {
+                    log(format!("Got exchange data : {:?}", v.clone()));
+                    let data = RUNTIME_STATE.with(|s|{
+                        s.borrow().icp_exchange_stats.clone()
+                    });
+                    match data {
+                        Some(d1) => {
+                            let mut combined = d1;
+                            combined.push(v.0);
+                            RUNTIME_STATE.with(|s|{
+                                s.borrow_mut().icp_exchange_stats = Some(combined)
+                            });
+                        },
+                        None => {
+                            RUNTIME_STATE.with(|s|{
+                                let mut x = Vec::new();
+                                x.push(v.0);
+                                s.borrow_mut().icp_exchange_stats = Some(x)
+                            });
+                        },
+                    }
+                }
+                Err(error) => {
+                    log(format!("Error getting exchange stats from Tracking Canister. {}", error.1));
+                }
+            }
+        },
+        Err(error) => {
+            log(format!("Error - Cannot convert input canister ID to Principal (exchange data): {}", error));
+        },
+    }
+
     // Clear all timers + Sent new timer for next midnight
     TIMER_IDS.with(|timer_ids: &RefCell<Vec<TimerId>>| {
         let vec1: &mut std::cell::RefMut<Vec<TimerId>> = &mut timer_ids.borrow_mut();

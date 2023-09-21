@@ -268,7 +268,7 @@
 </script>
 <svelte:head>
 	<title>Stats : {token}</title>
-	<meta name="description" content="Home for the fam" />
+	<meta name="description" content="Internet Computer Statistics" />
 </svelte:head>
 
 <LayoutCombine>

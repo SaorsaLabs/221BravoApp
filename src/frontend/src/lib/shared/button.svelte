@@ -57,6 +57,26 @@
 		  background: -webkit-linear-gradient(to right, #89318f, #09cbf1);  /* Chrome 10-25, Safari 5.1-6 */
 		  background: linear-gradient(to right, #89318f, #09cbf1); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     }
+    .green{
+      background: #00c80a;
+      border: #8eca02b3;
+      border-width: 1px;
+      border-style: solid;
+      color: white;
+    }
+    button.green:hover {
+      background: #89318f;  /* fallback for old browsers */
+      border: #8f8f8f;
+		  background: -webkit-linear-gradient(to right, #89318f, #09cbf1);  /* Chrome 10-25, Safari 5.1-6 */
+		  background: linear-gradient(to right, #89318f, #09cbf1); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    }
+    button.green:active {
+      /* background-color: yellow; */
+      background: #06beb6;  /* fallback for old browsers */
+      border: #8f8f8f;
+		  background: -webkit-linear-gradient(to right, #89318f, #06beb6);  /* Chrome 10-25, Safari 5.1-6 */
+		  background: linear-gradient(to right, #89318f, #06beb6); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    }
     .grey{
       background: #565656;
       border: #8f8f8f;

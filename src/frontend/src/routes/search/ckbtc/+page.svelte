@@ -14,7 +14,8 @@
 	import HiddenContent from "../../../lib/componants/hiddenContent.svelte";
 	import FlagsTable from "../../../lib/componants/flagsTable.svelte";
 	import LinksTable from "../../../lib/componants/linksTable.svelte";
-	import {getData, basicAccountTableTX, getBlockData, basicBlockTableTX, linkedIDTable, getLatestBlockData} from '../../../lib/code/searchRequest.js';
+	import { basicAccountTableTX, basicBlockTableTX, linkedIDTable} from '../../../lib/code/searchRequest.js'; // getData,
+	import { getData, getBlockData, getLatestBlockData } from '../../../lib/code/searchRequest_v2.js'
 	import { datetimeToMillis } from '../../../lib/code/utils.js';
 	import {authStore, authTrigger} from "../../../lib/stores/authStore.js";
 	import { browser } from '$app/environment';
@@ -48,6 +49,7 @@
 	let btnClicked = '';
 
 	async function handleAccountClick(event) {
+		outcome = '';
 		contentLoading = true;
 		hideResultDivs = true;
 		txTableProcessed = [];
@@ -55,52 +57,48 @@
 		btnClicked = event.detail.btnClicked;
 
 		if(btnClicked == 'search'){
-			if(event.detail.startDate != 0){
-				epochStart = datetimeToMillis(event.detail.startDate, 'UTC');
-			}
-			else epochStart  = 0;
-			if(event.detail.endDate != 0){
-				epochEnd = datetimeToMillis(event.detail.endDate, 'UTC');
-			}
-			else epochEnd = 0;
-			
-			let target = event.detail.searchID;
+			//let target = event.detail.searchID;
 			let subAcInput = event.detail.subAC; 
 
 			searchResults = await getData(
 				token,
 				event.detail.searchID,
 				subAcInput,
-				event.detail.minValue,
-				event.detail.maxValue,
-				epochStart,
-				epochEnd
+				0,
+				0,
+				0,
+				0
 			);
 
-			if(searchResults.maxResults == true || searchResults.maxResults == 'true') {
-				alert(`Too Many Results - Only first 10,000 transactions will be shown. 
-						Try using a smaller timeframe for the search `); 
+			if(searchResults != "nothing-found"){ 
+				if(searchResults.maxResults == true || searchResults.maxResults == 'true') {
+				alert(`Too Many Results - Only first 1,000 transactions will be shown.`); 
+				}
+				// overview
+				ovData = {
+					sentValue: searchResults.overview.tokenSent,
+					receivedValue: searchResults.overview.tokenReceived,
+					balance: searchResults.overview.tokenBalance,
+					sentTX: searchResults.overview.numSent,
+					receivedTX: searchResults.overview.numReceived,
+					activeFrom: searchResults.overview.activeFrom,
+					lastActive: searchResults.overview.lastActive
+				};
+
+				// TX Table 
+				txTableProcessed = basicAccountTableTX(searchResults.primaryAccount,searchResults.tokenTXS,token);
+				linkedTableProcessed = linkedIDTable(searchResults.linkedIdStats,token);
+				// Linked ID Table 
+
+				searchMode = 'account';
+				hideResultDivs = false;
+				hideBlockSearch = true;
+				contentLoading = false;
+			} else {
+				// nothing found
+				outcome = "Search returned 0 results";
+				contentLoading = false;
 			}
-			// overview
-			ovData = {
-				sentValue: searchResults.overview.tokenSent,
-				receivedValue: searchResults.overview.tokenReceived,
-				balance: searchResults.overview.tokenBalance,
-				sentTX: searchResults.overview.numSent,
-				receivedTX: searchResults.overview.numReceived,
-				activeFrom: searchResults.overview.activeFrom,
-				lastActive: searchResults.overview.lastActive
-			};
-
-			// TX Table 
-			txTableProcessed = basicAccountTableTX(searchResults.primaryAccount,searchResults.tokenTXS,token);
-			linkedTableProcessed = linkedIDTable(searchResults.linkedIdStats,token);
-			// Linked ID Table 
-
-			searchMode = 'account';
-			hideResultDivs = false;
-			hideBlockSearch = true;
-			contentLoading = false;
 		}// end btnClicked search
 
 		if(btnClicked == 'reset'){
@@ -131,8 +129,8 @@
 				token,
 				event.detail.startBlock,
 				event.detail.endBlock,
-				epochStart,
-				epochEnd
+				// epochStart,
+				// epochEnd
 			);
 
 			// Blocks Table
@@ -219,7 +217,7 @@
 				{#key resetKey}
 					<BlockSearchForm on:click={handleBlockClick}/>
 				{/key}
-				<div class="cText smlPadTB">{outcome}</div>
+				<!-- <div class="cText smlPadTB">{outcome}</div> -->
 			</ContentBox>
 		{/if}
 
@@ -283,6 +281,7 @@
 	.smlPadTB{
 		padding-top: 3px;
 		padding-bottom: 3px;
+		font-size: larger;
 	}
 	.box{
 		border: 2px;

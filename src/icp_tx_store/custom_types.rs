@@ -80,6 +80,13 @@ impl TxStore {
 
 }
 
+#[derive(CandidType, Deserialize, Clone, Default, Debug)]
+pub struct GetMultipleTxFromStoreTimeArgs {
+    pub blocks: Vec<u32>, 
+    pub start: u64, 
+    pub end: u64, 
+    pub max_return: u64
+}
 
 #[derive(CandidType, StableType, AsFixedSizeBytes, Debug, Deserialize, Default, Clone, Copy)]
 pub struct SmallTX {
@@ -105,6 +112,8 @@ pub struct CanisterSettings {
     pub canister_name: IDKey, 
     pub stats_are_public: bool,
     pub authorised: SVec<IDKey>,
+    pub admin: SVec<IDKey>,
+    pub init_lock: bool,
 }
 
 impl CanisterSettings {
@@ -128,6 +137,26 @@ impl CanisterSettings {
         }
     }
 
+    pub fn check_admin(&self, principal_id: String) {
+        let key = string_to_idkey(&principal_id);
+        match key {
+            Some(caller_key) => {
+                let auth_vec:&SVec<IDKey> = &self.admin;
+                let mut auth: bool = false;
+                for idk in auth_vec.iter() {
+                    if idk.0 == caller_key.0 {auth = true}
+                }
+                match auth {
+                    true => (),
+                    _ => ic_cdk::trap("Caller Not Admin"),
+                }
+            },
+            None => {
+                ic_cdk::trap("Caller Not Admin")
+            }
+        }
+    }
+
     pub fn add_authorised(&mut self, principal_id: String) -> String {
         let key = string_to_idkey(&principal_id);
         match key {
@@ -141,7 +170,31 @@ impl CanisterSettings {
                     true => return "Principal is already authorised".to_string(),
                     false => {
                         auth_vec.push(caller_key).expect("out of memory");
-                        let rtn: String = String::from("Admin Added");
+                        let rtn: String = String::from("Authorised user added");
+                        return rtn;
+                    },
+                }
+            },
+            None => {
+                return "Cannot convert Principal Id to IDKey".to_string();
+            }
+        }
+    }
+
+    pub fn add_admin(&mut self, principal_id: String) -> String {
+        let key = string_to_idkey(&principal_id);
+        match key {
+            Some(caller_key) => {
+                let auth_vec:&mut SVec<IDKey> = &mut self.admin;
+                let mut auth: bool = false;
+                for idk in auth_vec.iter() {
+                    if idk.0 == caller_key.0 {auth = true}
+                }
+                match auth {
+                    true => return "Principal is already admin".to_string(),
+                    false => {
+                        auth_vec.push(caller_key).expect("out of memory");
+                        let rtn: String = String::from("Admin added");
                         return rtn;
                     },
                 }
@@ -168,6 +221,35 @@ impl CanisterSettings {
                 match present {
                     true => {
                         auth_vec.remove(pos);
+                        return "Authorised user removed".to_string();
+                    },
+                    false => {
+                        return "Principal not part of authorised list".to_string();
+                    },
+                }
+            },
+            None => {
+                return "Cannot convert Principal Id to IDKey".to_string();
+            }
+        }
+    }
+
+    pub fn remove_admin(&mut self, principal_id: String) -> String {
+        let key = string_to_idkey(&principal_id);
+        match key {
+            Some(caller_key) => {
+                let auth_vec:&mut SVec<IDKey> = self.admin.borrow_mut();
+                let mut pos: usize = 0_usize;
+                let mut present: bool = false; 
+                for (i,idk) in auth_vec.iter().enumerate() {
+                    if idk.0 == caller_key.0 {
+                        pos = i;
+                        present = true;
+                    }
+                }
+                match present {
+                    true => {
+                        auth_vec.remove(pos);
                         return "Admin removed".to_string();
                     },
                     false => {
@@ -183,6 +265,23 @@ impl CanisterSettings {
 
     pub fn get_all_authorised(&self) -> Vec<String> {
         let auth_vec:&SVec<IDKey> = &self.authorised;
+        let mut ret_vec: Vec<String> = Vec::new();
+        for idk in auth_vec.iter() {
+            let vec_key = idk.0.clone();
+            let id = IDKey(vec_key);
+            let st = idkey_to_string(&id);
+            match st {
+                Some(value) => {
+                    ret_vec.push(value);
+                },
+                None => ()
+            }
+        }
+        return ret_vec.to_owned();
+    }
+
+    pub fn get_all_admins(&self) -> Vec<String> {
+        let auth_vec:&SVec<IDKey> = &self.admin;
         let mut ret_vec: Vec<String> = Vec::new();
         for idk in auth_vec.iter() {
             let vec_key = idk.0.clone();
@@ -227,9 +326,10 @@ impl CanisterSettings {
 
     pub fn set_stats_public(&mut self, are_stats_public: bool) -> String {
         self.borrow_mut().stats_are_public = are_stats_public;
+        if are_stats_public == true { self.add_authorised("2vxsx-fae".to_string()); } 
+        else { self.remove_authorised("2vxsx-fae".to_string()); } 
         return format!("are_stats_public updated to: {}", are_stats_public);
     }
-
 }
 
 // struct for returning memory query

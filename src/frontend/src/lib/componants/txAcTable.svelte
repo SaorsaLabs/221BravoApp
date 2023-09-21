@@ -16,6 +16,8 @@
 
     let sortedData = txData;
     let dataLen = sortedData?.length ?? 0;
+    let isMaxedOut = false;
+    if (dataLen >= 1000) isMaxedOut = true; // max 1k transactions delivered
 	const tableHeaders = ['#','Date/Time','Account','Direction','Value','info'];
     const dataNames = ['counter', 'date', 'time', 'shortID', 'direction', 'value', 'hash', 'block', 'longID'];
 	let selectedHeader = "#";
@@ -137,6 +139,10 @@
             </td>
             <td class="textRight">
                  Results : {dataLen}
+                 {#if isMaxedOut == true}
+                    {@html "<br>"}
+                    <span class="text-warning">*Most recent 1,000 transactions. Older transactions not shown!</span>
+                 {/if}
             </td>
         </tr>
     </table>
@@ -167,7 +173,9 @@
                     {:else}
                         {TX.shortID}
                         {@html "<br>"}
-                        {#if TX?.longSubID != "0000000000000000000000000000000000000000000000000000000000000000"}
+                        {#if TX?.longSubID != "0000000000000000000000000000000000000000000000000000000000000000" 
+                            && TX.shortID != "Mint"
+                            && TX.shortID != "Burn"}
                         {TX.shortSA}
                         {/if}
                     {/if}

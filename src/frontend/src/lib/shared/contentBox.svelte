@@ -36,6 +36,15 @@
         background-color: rgba(49, 49, 49, 0.5);
         box-shadow: 0px 0px 3px rgba(0,0,0,0.3);
     }
+    .light-shaddow-dark{
+        color: azure;
+        margin-top: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
+        border-radius: 5px;
+        background-color: rgba(49, 49, 49, 0.05);
+        box-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+    }
     .standard-shaddow-black{
         color: azure;
         margin-top: 10px;

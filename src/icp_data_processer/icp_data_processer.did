@@ -13,6 +13,7 @@ type HolderBalance = record {holder: text; balance: nat};
 type TopHolderResponse = record {top_accounts: vec HolderBalance};
 
 type WorkingStats = record {
+    version: text;
     total_downloaded: nat; 
     tx_completed_to: nat; 
     next_tx: nat;

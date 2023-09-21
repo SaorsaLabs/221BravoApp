@@ -21,6 +21,10 @@
         t1 = "standard-shaddow-dark-left";
         t2 = "standard-shaddow-dark-right";
     }
+    if (type == "light-shaddow-dark"){
+        t1 = "light-shaddow-dark-left";
+        t2 = "light-shaddow-dark-right";
+    }
     if (type == "standard-shaddow-black"){
         t1 = "standard-shaddow-black-left";
         t2 = "standard-shaddow-black-right";
@@ -118,6 +122,28 @@
         border-radius: 5px;
         background-color: rgba(49, 49, 49, 0.5);
         box-shadow: 0px 0px 3px rgba(0,0,0,0.3);
+        width:49.5%;
+        margin-left: 0.5%;
+    }
+    .light-shaddow-dark-left{
+        color: azure;
+        margin-top: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
+        border-radius: 5px;
+        background-color: rgba(49, 49, 49, 0.05);
+        box-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+        width:49.5%;
+        margin-right: 0.5%;
+    }
+    .light-shaddow-dark-right{
+        color: azure;
+        margin-top: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
+        border-radius: 5px;
+        background-color: rgba(49, 49, 49, 0.05);
+        box-shadow: 0px 0px 3px rgba(0,0,0,0.5);
         width:49.5%;
         margin-left: 0.5%;
     }

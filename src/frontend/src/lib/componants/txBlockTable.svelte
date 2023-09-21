@@ -10,8 +10,9 @@
     export let usePrincipal = true;
     export let popupType = 'noPrincipalBlock'; // standard  noPrincipal noPrincipalBlock principalBlock icrcBlock
     export let is_icrc = false;
+    export let perPage;
 
-    if(is_icrc) popupType = "icrcBlock";
+    //if(is_icrc) popupType = "icrcBlock";
 
     let sortedData = [];
     sortedData = txData;
@@ -79,7 +80,7 @@
     //pagination
     let page = 0;
     let totalPages = [];
-    let itemsPerPage = 25;
+    let itemsPerPage = perPage ?? 25;
     let currentPageRows = [];
     let maxPage;
 
@@ -172,17 +173,71 @@
                 <td>{TX.block}</td>
                 <td>{TX.date}{@html "<br>"}{TX.time}</td>
                 <td>
-                    {TX.fromShortID}
-                    {#if TX.fromAccount != DEFAULT_SUBACCOUNT && is_icrc == true}
-                        {@html "<br>"}
-                        {TX.fromShortSA}
+                    {#if is_icrc == true}
+                        {#if TX.fromPrincipalName != undefined || TX.fromAccountName != undefined}
+                            {#if TX.fromPrincipalName != undefined}
+                                <span class="text-info">{TX.fromPrincipalName}</span>
+                                {@html "<br>"}
+                            {/if} 
+                            {#if TX.fromAccountName != undefined}
+                                <span class="text-info">{TX.fromAccountName}</span>
+                            {/if} 
+                        {:else}
+                            {TX.fromShortID}
+                            {#if TX.fromAccount != DEFAULT_SUBACCOUNT}
+                                {@html "<br>"}
+                                {TX.fromShortSA}
+                            {/if}
+                        {/if}
+                    {:else}
+                        {#if  TX.fromAccountName != undefined || TX.toPrincipalName != undefined}
+                            {#if TX.fromAccountName != undefined}
+                                <span class="text-info">{TX.fromAccountName}</span>
+                            {/if}
+                            {#if TX.toPrincipalName != undefined}
+                                <span class="text-info">{TX.fromShortID}</span>
+                            {/if}
+                        {:else}
+                            {#if TX.fromShortSA != ''}
+                                {TX.fromShortSA}
+                            {:else}
+                                {"ICP LEDGER"}
+                            {/if}
+                        {/if}
                     {/if}
                 </td>
-                <td>
-                    {TX.toShortID}
-                    {#if TX.toAccount != DEFAULT_SUBACCOUNT &&  is_icrc == true}
-                        {@html "<br>"}
-                        {TX.toShortSA}
+                <td>   
+                    {#if is_icrc == true}
+                        {#if TX.toPrincipalName != undefined || TX.toAccountName != undefined}
+                            {#if TX.toPrincipalName != undefined}
+                                <span class="text-info">{TX.toPrincipalName}</span>
+                                {@html "<br>"}
+                            {/if} 
+                            {#if TX.toAccountName != undefined}
+                                <span class="text-info">{TX.toAccountName}</span>
+                            {/if} 
+                        {:else}
+                            {TX.toShortID}
+                            {#if TX.toAccount != DEFAULT_SUBACCOUNT}
+                                {@html "<br>"}
+                                {TX.toShortSA}
+                            {/if}
+                        {/if}
+                    {:else}
+                    {#if TX.toAccountName != undefined || TX.toPrincipalName != undefined}
+                        {#if TX.toAccountName != undefined}
+                            <span class="text-info">{TX.toAccountName}</span>
+                        {/if}
+                        {#if TX.toPrincipalName != undefined}
+                            <span class="text-info">{TX.toPrincipalName}</span>
+                        {/if}
+                        {:else}
+                            {#if TX.toShortSA != ''}
+                                {TX.toShortSA}
+                            {:else}
+                                {"ICP LEDGER"}
+                            {/if}
+                        {/if}
                     {/if}
                 </td>
                 <td>{TX.value}</td>

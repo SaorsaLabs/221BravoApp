@@ -105,7 +105,8 @@
         </div>
     </div>
 
-    <div class="form-group row">
+    <!-- TODO! -->
+    <!-- <div class="form-group row">
         <label for="blockStTime" class="col-sm-3 col-form-label-sm smlPadTB">Start Time (UTC):</label>
         <div class="col-sm-3 smlPadTB">
             <input 
@@ -126,14 +127,15 @@
             bind:value={endBlockDate} {disabled}
         >
         </div>
-    </div>
+    </div> -->
 
     <div class="form-group row smlPadTB">
         <div class="col-sm-3"></div>
         <div class="col-sm-9" style="margin-top: 15px">
             <Button type="grey" on:click={() => searchBlock()}>Search</Button>
             {#if searchActive == false}
-            <Button type="grey" on:click={() => quickBlock()}>Show Latest Blocks</Button>
+            <span> : OR : </span>
+            <Button type="orange" on:click={() => quickBlock()}>Show Latest Blocks</Button>
             {/if}
             {#if searchActive == true}
                 <Button type="orange" on:click={() => reset()}>Reset</Button>

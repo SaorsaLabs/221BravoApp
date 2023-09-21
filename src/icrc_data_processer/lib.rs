@@ -31,6 +31,7 @@ use constants::{
     MAX_HOURS,
     STATS_RETURN_LENGTH,
     MAX_LOG_LENGTH,
+    VERSION
 };
 
 use types::{
@@ -180,11 +181,18 @@ fn with_runtime_mut<R>(f: impl FnOnce(&mut RuntimeState) -> R) -> R {
 fn init() {
     // init main data state
     let mut data = Data::default();
-    data.authorised.push("2vxsx-fae".to_string());
+    data.authorised.push("ADMIN_PRINCIPAL_HERE".to_string());
+    data.authorised.push(
+        "ADMIN_PRINCIPAL_HERE".to_string()
+    ); 
+    data.authorised.push(
+        "FRONTEND_PRINCIPAL_HERE".to_string()
+    ); 
     data.canister_settings.stats_are_public = true;
     data.canister_settings.stats_return_length = STATS_RETURN_LENGTH;
     data.first_run = true;
     data.canister_settings.canister_name = "Name me please!".to_string();
+    data.working_stats.version = VERSION.to_string();
     let runtime_state = RuntimeState { data };
     RUNTIME_STATE.with(|state| {
         *state.borrow_mut() = runtime_state;
@@ -200,12 +208,17 @@ fn init() {
 
 #[pre_upgrade]
 fn pre_upgrade() {
+    RUNTIME_STATE.with(|state|{
+        let b = state.borrow().data.working_stats.is_busy;
+        if b == true { ic_cdk::trap("Canister Busy - Upgrade Stopped! Check working stats for status")}
+    });
     RUNTIME_STATE.with(|state| ic_cdk::storage::stable_save((&state.borrow().data,)).unwrap());
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (data,): (Data,) = ic_cdk::storage::stable_restore().unwrap();
+    let (mut data,): (Data,) = ic_cdk::storage::stable_restore().unwrap();
+    data.working_stats.version = VERSION.to_string(); // update version 
     let runtime_state = RuntimeState { data };
     RUNTIME_STATE.with(|state| {
         *state.borrow_mut() = runtime_state;
@@ -263,13 +276,15 @@ fn get_total_holders() -> TotalHoldersResponse {
         }
     });
 
-    let principals = with_runtime(|rts| { rts.data.principal_holders.len() });
-    let accounts = with_runtime(|rts| { rts.data.account_holders.len() });
-    let ret = TotalHoldersResponse {
-        principals: principals as u64,
-        accounts: accounts as u64,
-    };
-    return ret;
+    with_runtime(|rts| { 
+        let principals =  rts.data.principal_holders.len();
+        let accounts = rts.data.account_holders.len();
+        let ret = TotalHoldersResponse {
+            principals: principals as u64,
+            accounts: accounts as u64,
+        };
+        return ret;
+    })
 }
 
 #[query]
@@ -281,39 +296,41 @@ fn get_top_holders(top_x: usize) -> TopHoldersResponse {
         }
     });
 
-    let principals = with_runtime(|rts| { rts.data.principal_holders.to_owned() });
-    let accounts = with_runtime(|rts| { rts.data.account_holders.to_owned() });
-    let pr_len = if top_x > principals.len() { principals.len() } else { top_x };
-    let ac_len = if top_x > accounts.len() { accounts.len() } else { top_x };
+    with_runtime(|rts| {
+        let principals = &rts.data.principal_holders;
+        let accounts = &rts.data.account_holders;
+        let pr_len = if top_x > principals.len() { principals.len() } else { top_x };
+        let ac_len = if top_x > accounts.len() { accounts.len() } else { top_x };
+        
+        // ACCOUNTS
+        let mut ac_vec: Vec<HolderBalance> = vec![];
+        for (hdr, ed) in accounts {
+            ac_vec.push(HolderBalance { holder: hdr.clone(), balance: ed.balance.clone() });
+        }
+        ac_vec.sort_unstable_by_key(|element| element.balance);
+        ac_vec.reverse();
+        let mut top_ac: Vec<HolderBalance> = vec![];
+        for i in 0..ac_len as usize {
+            top_ac.push(ac_vec[i].to_owned());
+        }
+        // PRINCIPALS
+        let mut pr_vec: Vec<HolderBalance> = vec![];
+        for (hdr, ed) in principals {
+            pr_vec.push(HolderBalance { holder: hdr.clone(), balance: ed.balance.clone() });
+        }
+        pr_vec.sort_unstable_by_key(|element| element.balance);
+        pr_vec.reverse();
+        let mut top_pr: Vec<HolderBalance> = vec![];
+        for i in 0..pr_len as usize {
+            top_pr.push(pr_vec[i].to_owned());
+        }
 
-    // ACCOUNTS
-    let mut ac_vec: Vec<HolderBalance> = vec![];
-    for (hdr, ed) in accounts {
-        ac_vec.push(HolderBalance { holder: hdr, balance: ed.balance });
-    }
-    ac_vec.sort_unstable_by_key(|element| element.balance);
-    ac_vec.reverse();
-    let mut top_ac: Vec<HolderBalance> = vec![];
-    for i in 0..ac_len as usize {
-        top_ac.push(ac_vec[i].to_owned());
-    }
-    // PRINCIPALS
-    let mut pr_vec: Vec<HolderBalance> = vec![];
-    for (hdr, ed) in principals {
-        pr_vec.push(HolderBalance { holder: hdr, balance: ed.balance });
-    }
-    pr_vec.sort_unstable_by_key(|element| element.balance);
-    pr_vec.reverse();
-    let mut top_pr: Vec<HolderBalance> = vec![];
-    for i in 0..pr_len as usize {
-        top_pr.push(pr_vec[i].to_owned());
-    }
-
-    let res = TopHoldersResponse {
-        top_accounts: top_ac,
-        top_principals: top_pr,
-    };
-    return res;
+        let res = TopHoldersResponse {
+            top_accounts: top_ac,
+            top_principals: top_pr,
+        };
+        return res;
+    })
 }
 
 #[query]
@@ -416,11 +433,7 @@ async fn set_target_canister(canister_id: String) -> String {
                     log(format!("Target: {}", &canister_id));
                     with_runtime_mut(|rts| {
                         rts.data.canister_settings.transaction_fee = value;
-                    });
-                    with_runtime_mut(|rts| {
                         rts.data.first_run = false;
-                    });
-                    with_runtime_mut(|rts| {
                         rts.data.canister_settings.target_canister = canister_id;
                     });
                     log("[][] ---- Target Canister Set ---- [][]");
@@ -583,7 +596,7 @@ async fn fetch_data() {
         rts.data.canister_settings.target_canister.to_owned()
     });
 
-    // Download latest blocks, calculate balances, and save any transactions within timewindow.
+    // Download latest blocks
     let ledger_id = ic_cdk::export::Principal::from_text(targ_canister);
     match ledger_id {
         Ok(ledger_id) => {
@@ -704,17 +717,11 @@ async fn fetch_data() {
                             // update working stats state
                             if ub_res == true {
                                 with_runtime_mut(|rts| {
-                                    rts.data.working_stats = WorkingStats {
-                                        total_downloaded: next_block + completed_this_run,
-                                        tx_completed_to: next_block + completed_this_run - 1, // -1 to account for 0 block
-                                        next_tx: next_block + completed_this_run,
-                                        hr_stats_complete_to: rts.data.working_stats.hr_stats_complete_to,
-                                        day_stats_complete_to: rts.data.working_stats.day_stats_complete_to,
-                                        stats_return_length: rts.data.canister_settings.stats_return_length as u32,
-                                        is_upto_date,
-                                        is_busy: rts.data.working_stats.is_busy,
-                                        task_id: rts.data.working_stats.task_id,
-                                    };
+                                    let mut s = rts.data.working_stats.borrow_mut();
+                                    s.total_downloaded = next_block + completed_this_run;
+                                    s.tx_completed_to = next_block + completed_this_run - 1;
+                                    s.next_tx = next_block + completed_this_run;
+                                    s.is_upto_date = is_upto_date;
                                 }); // -1 to account for 0 block
 
                                 log(
@@ -764,7 +771,6 @@ async fn calc_hourly_stats() -> bool {
                 rts.data.hourly_stats.data = v;
                 rts.data.working_stats.is_busy = false;
             });
-            // with_runtime_mut(|rts: &mut RuntimeState| {});
             return true;
         }
         Err(error) => {
@@ -794,8 +800,6 @@ async fn calc_daily_stats() -> bool {
             processed_ok = true;
             with_runtime_mut(|rts: &mut RuntimeState| {
                 rts.data.daily_stats.data = v;
-            });
-            with_runtime_mut(|rts: &mut RuntimeState| {
                 rts.data.working_stats.is_busy = false;
             });
         }
@@ -1096,7 +1100,7 @@ fn process_mint_transaction(tx: Mint, block: &Nat, timestamp: &u64) -> Processed
 }
 
 fn process_burn_transaction(tx: Burn, block: &Nat, timestamp: &u64) -> ProcessedTX {
-    let from_ac = tx.from;
+    let from_ac: types::Account = tx.from;
     let from_pr = from_ac.owner.to_string();
     let sub = from_ac.effective_subaccount();
     let sub_ac = hex::encode(sub);
@@ -1708,6 +1712,7 @@ async fn most_active(process_from: u64, return_number: usize) -> bool {
     return true;
 }
 
+
 //[][] ------------------------- [][]
 //[][] ---- Timer Functions ---- [][]
 //[][] ------------------------- [][]
@@ -1885,9 +1890,7 @@ mod tests {
         test_most_active, 
     };
 
-    use crate::utils::{
-        get_unique_string_values,
-    };
+    use crate::utils::get_unique_string_values;
 
     #[test]
     fn text_unique_string_values(){

@@ -12,7 +12,7 @@
     function setClipboard(text, text2, icrcAccount) {
     const type = "text/plain";
     let writeText = '';
-    if (icrcAccount == false || !icrcAccount) {
+    if (icrcAccount == false || !icrcAccount || icrcAccount == "false") {
       writeText = text;
     } else {
       writeText = text+"."+text2;

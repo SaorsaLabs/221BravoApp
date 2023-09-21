@@ -1,6 +1,7 @@
 import { DOMAIN } from '../code/constants.js';
 import { authStore } from '../stores/authStore.js';
-import { shortenString, parsePrincipalSubAccountString } from '../code/utils.js';
+import { shortenString, parsePrincipalSubAccountString, getUniqueValues, combinePrincipalSubAccount, processPromises } from '../code/utils.js';
+import { getUserNamedAccounts, getPublicNamedAccounts } from './searchRequest_v2.js';
 import { calculateKey } from './auth.js';
 
 async function getData(token, ID, subAccount, min, max, start, end) {
@@ -52,10 +53,129 @@ async function getVisualBlockData(token, minBlock, maxBlock, startTime, endTime)
 	let url = DOMAIN + `/v2/VisualBlockSearch?${params}`;
 	let settings = { method: 'Get', mode: 'cors', headers: { 'Content-Type': 'application/json' } };
 	const txDATA = await fetch(url, settings).then((res) => res.json());
+
+	// check names from v2 backend
+	if (token != "ICP") {
+        // logged in 
+        let ls = authStore.read();
+        if (ls.data.loggedIn == true) {
+            // get unique accounts
+			let dataLen = txDATA?.blocks?.length ?? 0;
+            let uniqueACS = [];
+            let jobArray = []
+			let fmCombined, toCombined;
+            for(let i = 0; i<dataLen; i++){
+				fmCombined = combinePrincipalSubAccount(txDATA.blocks[i].fromPrincipal,txDATA.blocks[i].fromAccount);
+				toCombined = combinePrincipalSubAccount(txDATA.blocks[i].toPrincipal,txDATA.blocks[i].toAccount);
+                uniqueACS.push(fmCombined);
+                uniqueACS.push(toCombined);
+            }
+            uniqueACS = getUniqueValues(uniqueACS);
+
+            // Fetch name data for accounts
+            jobArray[0] = getUserNamedAccounts(ls.data.user, uniqueACS);
+            jobArray[1] = getPublicNamedAccounts(uniqueACS);
+            let jobArrayDone = await processPromises(jobArray);
+
+            // update links with names 
+            let combinedSavedNames = [];
+            let usrLen = jobArrayDone[0][0]?.length ?? 0;
+            let gblLen = jobArrayDone[1][0]?.length ?? 0;
+            if (usrLen != 0 && gblLen != 0) {
+                combinedSavedNames = [...jobArrayDone[0][0], ...jobArrayDone[1][0]];
+            } else if (usrLen != 0) {
+                combinedSavedNames = jobArrayDone[0][0];
+            } else if (gblLen != 0) {
+                combinedSavedNames = jobArrayDone[1][0];
+            }
+            let csnLen = combinedSavedNames?.length ?? 0;
+
+            // Add names to Blocks + Links
+            if (csnLen != 0){
+                // sort names decending
+                combinedSavedNames.sort(function(a,b){ return a[0] > b[0] ? 1 : -1; }) 
+                // Blocks
+                let fm, to, k;
+                for(let i=0; i<dataLen; i++){
+					fm = txDATA.blocks[i].fromAccount;
+					to = txDATA.blocks[i].toAccount;
+                    for(k=0; k<csnLen; k++){
+                        // from
+                        if(combinedSavedNames[k][0] == fm) {
+                            txDATA.blocks[i].fromAccountName = combinedSavedNames[k][1];
+                        }
+                        // to
+                        if(combinedSavedNames[k][0] == to) {
+                            txDATA.blocks[i].toAccountName = combinedSavedNames[k][1];
+                        }
+                    }
+                }
+            }
+        }
+	} else {
+
+		let ls = authStore.read();
+		if (ls.data.loggedIn == true) {
+			// get unique accounts
+			let uniqueACS = [];
+			let jobArray = []
+			let dataLen = txDATA?.blocks?.length ?? 0;
+			for(let i = 0; i<dataLen; i++){
+				uniqueACS.push(txDATA.blocks[i].fromAccount);
+				uniqueACS.push(txDATA.blocks[i].toAccount);
+			}
+			
+			uniqueACS = getUniqueValues(uniqueACS);
+
+			// Fetch name data for accounts
+			jobArray[0] = getUserNamedAccounts(ls.data.user, uniqueACS);
+			jobArray[1] = getPublicNamedAccounts(uniqueACS);
+			let jobArrayDone = await processPromises(jobArray);
+			console.log(jobArrayDone);
+
+			// update links with names 
+			let combinedSavedNames = [];
+			let usrLen = jobArrayDone[0][0]?.length ?? 0;
+			let gblLen = jobArrayDone[1][0]?.length ?? 0;
+			if (usrLen != 0 && gblLen != 0) {
+				combinedSavedNames = [...jobArrayDone[0][0], ...jobArrayDone[1][0]];
+			} else if (usrLen != 0) {
+				combinedSavedNames = jobArrayDone[0][0];
+			} else if (gblLen != 0) {
+				combinedSavedNames = jobArrayDone[1][0];
+			}
+			let csnLen = combinedSavedNames?.length ?? 0;
+
+			// Add names to Blocks + Links
+			if (csnLen != 0){
+				// sort names decending
+				combinedSavedNames.sort(function(a,b){ return a[0] > b[0] ? 1 : -1; }) 
+				// Blocks
+				let fm, to, k;
+				for(let i=0; i<dataLen; i++){
+					fm = txDATA.blocks[i].fromAccount;
+					to = txDATA.blocks[i].toAccount;
+					for(k=0; k<csnLen; k++){
+						// from
+						if(combinedSavedNames[k][0] == fm) {
+							txDATA.blocks[i].fromAccountName = combinedSavedNames[k][1];
+						}
+						// to
+						if(combinedSavedNames[k][0] == to) {
+							txDATA.blocks[i].toAccountName = combinedSavedNames[k][1];
+						}
+					}
+				}
+			}
+		}
+
+	}
+
 	return txDATA;
 }
 
 function basicAccountTableTX(target, data, token) {
+
 	let dataLen = data?.length ?? 0;
 	let i;
 	let shortID, shortSA;
@@ -93,7 +213,7 @@ function basicAccountTableTX(target, data, token) {
 		}
 
 		// shortAC
-		if (data[i].type == 'burn') {
+		if (data[i].type == 'burn' || data[i].type == 'Burn') {
 			shortID = 'Burn';
 			longID = 'Burn Account';
 			longSubID = 'Burn Account';
@@ -102,7 +222,7 @@ function basicAccountTableTX(target, data, token) {
 			targetSub = data[i].fromSub;
 			targetName = data[i]?.fromName ?? undefined;
 			targetSubName = data[i]?.fromSubName ?? undefined;
-		} else if (data[i].type == 'mint') {
+		} else if (data[i].type == 'mint' || data[i].type == 'Mint') {
 			shortID = 'Mint';
 			longID = 'Minting Account';
 			longSubID = 'Minting Account';
@@ -225,15 +345,14 @@ function basicBlockTableTX(data, token, is_icrc) {
 			t1 = new Date(data[i].timeMilli);
 			tDate = t1.toLocaleString('en-GB', options); /// number.toLocaleString('en-US')
 			tTime = t1.toLocaleString('en-GB', options2); //
-
 			OP[i] = {
 				block: data[i].block,
 				date: tDate,
 				time: tTime,
 				fromShortID: fromShortID,
 				toShortID: toShortID,
-				fromShortSA: '',
-				toShortSA: '',
+				fromShortSA: fromShortID,
+				toShortSA: toShortID,
 				toPrincipal: data[i].toPrincipal,
 				toPrincipalName: data[i]?.toPrincipalName,
 				toAccount: data[i].toAccount,
@@ -425,7 +544,7 @@ function visualBlockSubTable(target, data, is_icrc) {
 		// parse target account from {principal}.{account}
 		let parseICRC = parsePrincipalSubAccountString(target);
 		for (i = 0; i < dataLen; i++) {
-			if (data[i].fromAccount != 'N/A' && data[i].fromPrincipal != 'N/A') {
+			if (data[i].fromAccount != '' && data[i].fromPrincipal != '') {
 				sACswitchF = data[i]?.fromAccountName ?? shortenString(data[i].fromAccount);
 				sPRswitchF = data[i]?.fromPrincipalName ?? shortenString(data[i].fromPrincipal);
 			} else {
@@ -433,7 +552,7 @@ function visualBlockSubTable(target, data, is_icrc) {
 				sPRswitchF = 'Mint';
 			}
 
-			if (data[i].toAccount != 'N/A' && data[i].toPrincipal != 'N/A') {
+			if (data[i].toAccount != '' && data[i].toPrincipal != '') {
 				sACswitchT = data[i]?.toAccountName ?? shortenString(data[i].toAccount);
 				sPRswitchT = data[i]?.fromPrincipalName ?? shortenString(data[i].toPrincipal);
 			} else {
@@ -441,9 +560,9 @@ function visualBlockSubTable(target, data, is_icrc) {
 				sPRswitchT = 'Burn';
 			}
 
-			if (parseICRC.principal == 'N/A') targPRSwitch = 'Mint/ Burning Account';
+			if (parseICRC.principal == '') targPRSwitch = 'Mint/ Burning Account';
 			else targPRSwitch = parseICRC.principal;
-			if (parseICRC.subaccount == 'N/A') targACSwitch = 'Mint/ Burning Account';
+			if (parseICRC.subaccount == '') targACSwitch = 'Mint/ Burning Account';
 			else targACSwitch = parseICRC.subaccount;
 
 			//direction

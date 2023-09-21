@@ -79,19 +79,21 @@
                 </Button>
                 </a>
             </td>
-            <td class="alignSelf"> 
+            <!-- <td class="alignSelf"> 
                 <Button type="head" 
                 flat={true} 
                 noBG={true}>
                 Services
                 </Button> 
-            </td>
+            </td> -->
             <td class="alignSelf"> 
-                <Button type="head" 
-                flat={true} 
-                noBG={true}>
-                Members
-                </Button> 
+                <a href="/members">
+                    <Button type="head" 
+                    flat={true} 
+                    noBG={true}>
+                    Members
+                    </Button> 
+                </a>
             </td>
             <td class="alignSelf"> 
                 {#if LS == 'false' || LS == false}

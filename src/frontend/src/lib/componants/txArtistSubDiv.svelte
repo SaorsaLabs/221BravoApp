@@ -3,6 +3,7 @@ import TxBlockVisualTable from "./txBlockVisualTable.svelte";
 import search from "$lib/images/search.png";
 import CopyButton from "../shared/copyButton.svelte";
 import SaveButton from "../shared/saveButton.svelte";
+  import { loop_guard } from "svelte/internal";
 
 // Min
 export let tx = {};
@@ -19,6 +20,7 @@ export let popupType = "visualMap";
 <div> 
 	<!-- ACCOUNT CLICKED -->
 	{#if is_icrc == false}
+			
 			<p class="textPad" style="padding-top:15px;"> Account Clicked : {dataOP[0]?.targetAC ?? "Mint/Burn Account"}
 			{#if dataOP[0]?.targetAC != null && dataOP[0]?.targetAC != "null" && dataOP[0]?.targetAC != "Unknown"}
 				<a href="/search/ID/{dataOP[0].token}?id={dataOP[0]?.targetAC}&sub=None" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
@@ -28,14 +30,14 @@ export let popupType = "visualMap";
 			{/if} 
 			</p>
 		
-			<p class="textPad" style="padding-bottom: 10px;"> Principal : {dataOP[0]?.targetPR}
+			<!-- <p class="textPad" style="padding-bottom: 10px;"> Principal : {dataOP[0]?.targetPR}
 				{#if dataOP[0]?.targetPR != null && dataOP[0]?.targetPR != "null" && dataOP[0]?.targetPR != "Unknown"}
 				<a href="/search/ID/{dataOP[0].token}?id={dataOP[0].targetPR}&sub=None" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
 				<CopyButton icrcAccount={false} text={dataOP[0].targetPR}/>
 				<SaveButton icrcAccount={false} text={dataOP[0].targetPR} />
 				<span class="textPad" style="color:aqua; margin-bottom: 10px;"> {dataOP[0]?.targetPRName}</span>
 				{/if} 
-			</p>
+			</p> -->
 	{:else}
 		<!-- icrc -->
 			<p class="textPad" style="padding-top:15px;"> Principal : {dataOP[0]?.targetPR ?? "Mint/Burn Account"}

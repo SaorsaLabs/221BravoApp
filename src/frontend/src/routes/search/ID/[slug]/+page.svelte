@@ -11,7 +11,8 @@
 	import HiddenContent from "../../../../lib/componants/hiddenContent.svelte";
 	import FlagsTable from "../../../../lib/componants/flagsTable.svelte";
 	import LinksTable from "../../../../lib/componants/linksTable.svelte";
-	import {getData, basicAccountTableTX, linkedIDTable} from '../../../../lib/code/searchRequest.js';
+	import { basicAccountTableTX, linkedIDTable} from '../../../../lib/code/searchRequest.js';
+	import { getData } from '../../../../lib/code/searchRequest_v2.js'
     import { onMount } from "svelte";
     import {_slugData} from './+page';
 	import {authStore, authTrigger} from "../../../../lib/stores/authStore.js";
@@ -88,6 +89,12 @@
 		}
 		if(_slugData.token == "GHOST") {
 			headSelected = 7;
+			txTableType = "icrc";
+			icrcToggle = true;
+			showSubACInput = true;
+		}
+		if(_slugData.token == "MODCLUB") {
+			headSelected = 8;
 			txTableType = "icrc";
 			icrcToggle = true;
 			showSubACInput = true;
