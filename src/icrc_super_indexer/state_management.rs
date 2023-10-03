@@ -79,7 +79,6 @@ impl Main {
     }
     
     pub fn get_fulldata_by_id_raw(&self, id_string: &String) -> Option<FullDataResponseRaw> {
-        let ac_idkey = string_to_idkey(&id_string);
         match self.directory_data.get_ref(id_string) {
             Some(ref_value) => {
                 match self.processed_data.accounts.get(&ref_value) {
@@ -309,7 +308,7 @@ pub fn state_init(){
     stable_memory_init();
     // init stable state
     let mut stable_data = Main::default();
-    let default_authorised = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
+    let default_authorised = string_to_idkey(&"2vxsx-fae".to_string()).unwrap();
     let saorsa_admin:IDKey = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
     let default_canister_name = string_to_idkey(&"Name Me Please!".to_string()).unwrap();
     stable_data.canister_data.authorised.push(default_authorised).expect("Out of memory");

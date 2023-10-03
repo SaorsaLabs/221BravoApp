@@ -11,8 +11,10 @@ export let is_icrc = false;
 
 $: update(tx)
 let dataOP = [];
+
 function update(data){
 	dataOP = data;
+	console.log("DATA :: ", dataOP[0]);
 }
 export let popupType = "visualMap";
 </script>
@@ -46,7 +48,8 @@ export let popupType = "visualMap";
 						<a href="/search/ID/{dataOP[0].token}?id={dataOP[0].targetPR}&sub={dataOP[0].targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
 						<CopyButton icrcAccount={true} text={dataOP[0].targetPR} text2={dataOP[0].targetAC}/>
 						<SaveButton icrcAccount={true} text={dataOP[0].targetPR} text2={dataOP[0].targetAC} />
-						<span class="textPad" style="color:aqua; margin-bottom: 10px;"> {dataOP[0]?.targetPRName}</span>
+						<span class="textPad" style="color:aqua; margin-bottom: 10px;"> {dataOP[0]?.targetACName}</span>
+						
 					{/if}
 				{/if} 
 			</p>

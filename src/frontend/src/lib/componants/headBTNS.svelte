@@ -79,13 +79,15 @@
                 </Button>
                 </a>
             </td>
-            <!-- <td class="alignSelf"> 
+            <td class="alignSelf"> 
+                <a href="/search/icp">
                 <Button type="head" 
                 flat={true} 
                 noBG={true}>
-                Services
+                Search
                 </Button> 
-            </td> -->
+                </a>
+            </td>
             <td class="alignSelf"> 
                 <a href="/members">
                     <Button type="head" 

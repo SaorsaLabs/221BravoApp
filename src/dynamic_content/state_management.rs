@@ -31,7 +31,9 @@ pub struct RuntimeState{
     pub project_store_6: Vec<ProjectCard>,
     pub project_store_7: Vec<ProjectCard>,
     pub project_store_8: Vec<ProjectCard>,
+    pub member_research: Option<Vec<NewsItem>>
 }
+
 impl RuntimeState {
     pub fn add_news(&mut self, title:String, sub_title:String, article_url:String, image_url:String) -> String {
         let data:NewsItem = NewsItem {
@@ -50,6 +52,46 @@ impl RuntimeState {
     pub fn get_all_news(&self) -> Vec<NewsItem> {
         return self.news_store.clone();
     }
+
+    // research methods
+    pub fn add_research(&mut self, title:String, sub_title:String, article_url:String, image_url:String) -> String {
+
+        let data:NewsItem = NewsItem {
+            title,
+            sub_title,
+            article_url,
+            image_url,
+        };
+
+        // Check if some/ none and add data
+        if let Some(mut vec) = self.member_research.clone() {
+            vec.push(data);
+            self.member_research = Some(vec);
+        } else {
+            self.member_research = Some(vec![data]);
+        }
+
+        return "Research Item Added".to_string();
+    }
+    pub fn remove_research(&mut self, index: usize) -> String {
+        // Check if some/ none and remove if possible
+        if let Some(mut vec) = self.member_research.clone() {
+            vec.remove(index);
+            self.member_research = Some(vec);
+            return "Research Item Removed".to_string();
+        } else {
+            return "There is nothing in the research store".to_string();
+        }
+    }
+    pub fn get_all_research(&self) -> Vec<NewsItem> {
+        if let Some(vec) = self.member_research.clone() {
+            return vec;
+        } else {
+            let ret = Vec::new();
+            return ret;
+        }
+    }
+
     // project methods
     pub fn add_project(&mut self, store:u8, title:String, sub_title:String, project_url:String, image_url:String) -> String {
         let data:ProjectCard = ProjectCard {
@@ -125,7 +167,7 @@ pub fn state_init(){
     stable_memory_init();
     // init stable state
     let mut stable_data = Main::default();
-    let default_admin: IDKey = string_to_idkey(&"DEFAULT_ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
+    let default_admin: IDKey = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
     let frontend: IDKey = string_to_idkey(&"FRONTEND_PRINCIPAL_HERE".to_string()).unwrap(); 
     let default_canister_name = string_to_idkey(&"Name Me Please!".to_string()).unwrap();
     stable_data.canister_data.authorised.push(default_admin).expect("Out of memory");
@@ -167,7 +209,7 @@ pub fn state_post_upgrade(){
 
     // Runtime Storage 
     let bytes: Vec<u8> = retrieve_custom_data::<Vec<u8>>(1).unwrap().into_inner();
-    let rstate: RuntimeState = decode_one(&bytes).expect("Unable to candid decode");
+    let mut rstate: RuntimeState = decode_one(&bytes).expect("Unable to candid decode");
     RUNTIME_STATE.with(|s| {
         *s.borrow_mut() = rstate;
     });

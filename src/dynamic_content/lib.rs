@@ -51,6 +51,47 @@ fn read_news_items() -> Vec<NewsItem> {
     return all;
 }
 
+
+#[update]
+fn add_research_item(title: String, sub_title: String, article_url: String, image_url: String) -> String {
+    // check authorised
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_authorised(ic_cdk::caller().to_text());
+    });
+    let add = RUNTIME_STATE.with(|s|{
+        s.borrow_mut().add_research(title, sub_title, article_url, image_url)
+    });
+    return add;
+}
+
+#[update]
+fn remove_research_item(index: usize) -> String {
+    // check authorised
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_authorised(ic_cdk::caller().to_text());
+    });
+    let rm = RUNTIME_STATE.with(|s|{
+        s.borrow_mut().remove_research(index)
+    });
+    return rm;
+}
+
+#[query]
+fn read_research_items() -> Vec<NewsItem> {
+    // check authorised
+    STABLE_STATE.with(|state| {
+        state.borrow().as_ref().unwrap().canister_data
+        .check_authorised(ic_cdk::caller().to_text());
+    });
+    let all: Vec<NewsItem> = RUNTIME_STATE.with(|s|{
+        s.borrow().get_all_research()
+    });
+    return all;
+}
+
+
 #[update]
 fn add_project(bucket: u8, title: String, sub_title: String, project_url: String, image_url: String) -> String {
     // check authorised

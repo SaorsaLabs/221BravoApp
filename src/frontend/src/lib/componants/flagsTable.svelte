@@ -8,7 +8,7 @@ import LinkedTokenCarousel from "../shared/linkedTokenCarousel.svelte";
 import { parsePrincipalSubAccountString } from '../code/utils.js';
 
 export let flagData = {};
-console.log("Flag DATA :: ", flagData);
+//console.log("Flag DATA :: ", flagData);
 
 let showPrincipal = false;
 let showSubAccount = false;

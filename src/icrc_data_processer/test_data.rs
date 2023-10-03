@@ -22,8 +22,8 @@ pub fn test_data() -> VecDeque<ProcessedTX> {
     // 
     // (1)
     // 2vxsx-fae.0000000000000000000000000000000000000000000000000000000000000000
-    // END Balance: 269,530,001
-    // txs: transfer 8, burn 0, mint 1;
+    // END Balance: 269,520,001
+    // txs: transfer 8, burn 0, mint 1, approve 1;
     //
     // (2)
     // 2vxsx-fae.0000000000000000000000000000000000000000000000000000000000000001
@@ -101,6 +101,21 @@ pub fn test_data() -> VecDeque<ProcessedTX> {
     // start nano : 1_687_935_600_000,000,000
     // end nano :   1_687_939_200_000_000_000
     
+    // NEW - Approve TX
+    txs.push_front(
+        ProcessedTX {
+            block: Nat::from(20),
+            hash: "No-hash".to_string(),
+            tx_type: "Approve".to_string(),
+            from_principal: "2vxsx-fae".to_string(),
+            from_account: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+            to_principal: "q6osm-57cdv-5zmcc-p7dtq-v2lpi-uuzkr-pzhgf-lncpe-ns2yr-cxqsc-uqe".to_string(),
+            to_account: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+            tx_value: Nat::from(1_000_000_000),
+            tx_time: 1_687_564_901_000_000_000
+        }
+    );
+
     txs.push_front(
         ProcessedTX { // 0 transaction??  Can TX BE 0 value? 
             block: Nat::from(19),
@@ -553,7 +568,7 @@ pub fn test_calculate_time_stats(
                             all_accounts.push(from_combined);
                             all_principals.push(tx.from_principal.clone());
                         }
-                        if tx.to_principal != "ICRC_LEDGER" {
+                        if tx.to_principal != "ICRC_LEDGER" && tx.tx_type != "Approve" {
                             all_accounts.push(to_combined);
                             all_principals.push(tx.to_principal.clone());
                         }
@@ -571,6 +586,9 @@ pub fn test_calculate_time_stats(
                             transaction_count += 1_u128;
                             transaction_value += &value_u128;
                             all_transactions.push(tx.clone());
+                        }
+                        if tx.tx_type == "Approve" {
+                            // Do nothing at the moment.
                         }
                         total_value += &value_u128;
                         total_txs += 1_u128;
@@ -785,7 +803,7 @@ pub fn test_most_active(process_from: u64, return_number: usize) -> ((Vec<(Strin
 
         // process to 
         for tx in array {
-            if tx.tx_time >= process_from {
+            if tx.tx_time >= process_from && tx.tx_type != "Approve" {
                 to_combined = format!("{}.{}", tx.to_principal, tx.to_account);
                 
                 let a = all_acs.entry(to_combined).or_insert(0);

@@ -1,4 +1,4 @@
-// ICRC Indexer - Saorsa Labs  v 0.3.1
+// ICRC Indexer - Saorsa Labs  v 0.4.1
 // NOTE - Remember set target canisters and authorise indexer on store. 
 
 type MemoryStats = record {memory: nat64; heap_memory: nat64};

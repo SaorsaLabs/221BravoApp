@@ -49,6 +49,7 @@ pub fn processedtx_to_smalltx(input_vec: &Vec<ProcessedTX>) -> Vec<SmallTX> {
             "Transaction" => {tx_type = 0},
             "Mint" => {tx_type = 1},
             "Burn" => {tx_type = 2},
+            "Approve" => {tx_type = 3},
             _ => {tx_type = 99},
         }
         
@@ -92,6 +93,7 @@ pub fn smalltx_to_processedtx(input_vec: &Vec<SmallTX>) -> Vec<ProcessedTX> {
             0 => {tx_type = "Transaction".to_string()},
             1 => {tx_type = "Mint".to_string()},
             2 => {tx_type = "Burn".to_string()},
+            3 => {tx_type = "Approve".to_string()},
             _ => { log("Error - can't convert tx-type from smallTx to ProcessedTx. (smalltx_to_processedtx)")},
         }
         

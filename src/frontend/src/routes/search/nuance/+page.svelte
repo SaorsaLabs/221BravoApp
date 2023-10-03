@@ -4,7 +4,7 @@
 	import Footer from "../../../lib/componants/footer.svelte";
     import SearchSubHead from "../../../lib/componants/searchSubHead.svelte";
     import ContentBox from "../../../lib/shared/contentBox.svelte";
-	import projectLogo from '$lib/images/projectLogos/IcxLogo.png'
+	import projectLogo from '$lib/images/projectLogos/NuanceLogo.png'
 	import SearchForm from "../../../lib/componants/searchForm.svelte";
 	import BlockSearchForm from "../../../lib/componants/blockSearchForm.svelte";
     import SearchOverview from "../../../lib/componants/searchOverview.svelte";
@@ -31,7 +31,7 @@
         }
     });
 
-	let token = 'ICX';
+	let token = 'NUANCE';
 	let searchResults = [];
 	let blockSearchResults = [];
 	let txTableProcessed = [];
@@ -179,13 +179,13 @@
 </script>
 <svelte:head>
 	<title>{token} Search</title>
-	<meta name="description" content="Search ICX Transactions" />
+	<meta name="description" content="Search NUANCE Transactions" />
 </svelte:head>
 
 <LayoutCombine>
 	<span slot="head">
 		<Head/>
-		<SearchSubHead selected="11" on:click={handleSubHeadClick}/>
+		<SearchSubHead selected="12" on:click={handleSubHeadClick}/>
 	</span>
 
 	<span slot="body">
@@ -194,7 +194,7 @@
 			<ContentBox type="standard-shaddow-dark">
 				<table style="width: 100%;">
 					<tr>
-						<td><h4 class="headAlign">ICX Account Search</h4></td>
+						<td><h4 class="headAlign">Nuance Account Search</h4></td>
 						<td class="rText"><img class="headAlign" src={projectLogo} alt="Project Logo" width="50px"/> </td>
 					</tr>
 				</table>
@@ -210,7 +210,7 @@
 			<ContentBox type="standard-shaddow-dark">
 				<table style="width: 100%;">
 					<tr>
-						<td><h4 class="headAlign">ICX Block Search</h4></td>
+						<td><h4 class="headAlign">Nuance Block Search</h4></td>
 						<td class="rText"><img class="headAlign" src={projectLogo} alt="Project Logo" width="50px"/> </td>
 					</tr>
 				</table>

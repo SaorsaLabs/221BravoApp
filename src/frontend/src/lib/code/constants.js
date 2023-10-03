@@ -65,10 +65,16 @@ const ICX_ledgerCanister = 'rffwt-piaaa-aaaaq-aabqq-cai';
 const ICX_decimals = 8;
 const ICX_index = 'h3okf-baaaa-aaaak-qcl4q-cai';
 
+const NUANCE_dataCanister = 'burde-oqaaa-aaaak-qcmwa-cai';
+const NUANCE_ledgerCanister = 'rxdbk-dyaaa-aaaaq-aabtq-cai';
+const NUANCE_decimals = 8;
+const NUANCE_index = 'btqfq-diaaa-aaaak-qcmwq-cai';
+
 
 const ICRC_SnapshotCanister = '7hcof-tiaaa-aaaak-qcjfa-cai';
 const ICP_SnapshotCanister = '4qqcx-cqaaa-aaaak-qcjnq-cai';
 const flagCanister = "mz4ck-niaaa-aaaak-qckba-cai";
+const trackingCanister = "gnfso-uqaaa-aaaak-qclzq-cai";
 
 const token_swap_canisters = [
 	{
@@ -105,10 +111,14 @@ const token_swap_canisters = [
 	},
 	{
 		tokenPair: 'HOT/ICP',
-		canister: '6rdgd-kyaaa-aaaaq-aaavq-cai'
+		canister: 'ntwyo-viaaa-aaaak-ae2pa-cai'
 	},
 	{
 		tokenPair: 'CAT/ICP',
+		canister: 'zu4fl-riaaa-aaaak-ae6eq-cai'
+	},
+	{
+		tokenPair: 'NUANCE/ICP',
 		canister: 'zu4fl-riaaa-aaaak-ae6eq-cai'
 	}
 ];
@@ -190,6 +200,13 @@ let canister_ids = [
 		decimals: ICX_decimals,
 		ledger: ICX_ledgerCanister,
 		index: ICX_index 
+	},
+	{
+		token: 'NUANCE',
+		canister: NUANCE_dataCanister,
+		decimals: NUANCE_decimals,
+		ledger: NUANCE_ledgerCanister,
+		index: NUANCE_index 
 	}
 ];
 
@@ -214,6 +231,7 @@ export {
 	CAT_decimals,
 	BOOM_decimals,
 	ICX_decimals,
+	NUANCE_decimals,
 	canister_ids,
 	ICRC_SnapshotCanister,
 	ICP_SnapshotCanister,
@@ -222,4 +240,5 @@ export {
 	dynamicContentCanister,
 	assetsCanister,
 	flagCanister,
+	trackingCanister,
 };

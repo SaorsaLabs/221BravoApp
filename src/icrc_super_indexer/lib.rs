@@ -953,7 +953,7 @@ mod tests {
         // check time
         assert_eq!(first_stx.time, first_stx.time);
         // check type
-        assert_eq!(first_stx.tx_type, 0_u8); // 0 = transfer, 1 = Mint, 2 = Burn.
+        assert_eq!(first_stx.tx_type, 0_u8); // 0 = transfer, 1 = Mint, 2 = Burn. 3 = approve.
         // check value
         assert_eq!(first_stx.value, first_ptx.tx_value as u64);
         // check block
@@ -1036,6 +1036,37 @@ mod tests {
         // check block
         assert_eq!(burn_stx.block, burn_ptx.block as u32);
 
+
+        // APPROVE TYPE
+        let app_ptx = RUNTIME_STATE.with(|state| {
+            state.borrow().temp_vec_ptx[30].clone()
+        });
+
+        // Small TX 0
+        let app_stx = RUNTIME_STATE.with(|state| {
+            state.borrow().temp_vec_stx[30].clone()
+        });
+
+
+        // from account to u32 ref (using Directory)
+        let id_ref_from4 = STABLE_STATE.with(|s|{
+            let ac = app_ptx.from_account;
+                s.borrow().as_ref().unwrap()
+            .directory_data.get_ref(&ac).clone()
+        });
+
+        // check from ac on Small TX = from ac on Processed TX
+        assert_eq!(app_stx.from.unwrap(), id_ref_from4.unwrap());
+        
+        // check time
+        assert_eq!(app_stx.time, app_stx.time);
+        // check type
+        assert_eq!(app_stx.tx_type, 3_u8); // 0 = transfer, 1 = Mint, 2 = Burn, 3 = Approve.
+        // check value
+        assert_eq!(app_stx.value, app_ptx.tx_value as u64);
+        // check block
+        assert_eq!(app_stx.block, app_ptx.block as u32);
+
         // check input length == output length.
         // Processed TX 0
         let ptx_len = RUNTIME_STATE.with(|state| {
@@ -1051,6 +1082,10 @@ mod tests {
 
     #[test]
     fn test_calculate_balances(){
+
+        // NOTE - This test will fail unless the async is removed from process_smtx_to_index.. the async has been added
+        //        as the function is called by a IC 'Self-call' method. 
+
         // init test Stable/ Runtime state
         test_state_init();
 
@@ -1061,7 +1096,10 @@ mod tests {
         
         // process to Small TX - output is temp_vec_stx in RUNTIME_STATE
         process_to_small_tx();
-
+        let OP = RUNTIME_STATE.with(|s|{
+            s.borrow().temp_vec_stx.clone()
+        });
+    
         // process balances
         process_smtx_to_index();
 
@@ -1070,6 +1108,8 @@ mod tests {
         let res1 = STABLE_STATE.with(|s| s.borrow().as_ref().unwrap()
         .get_fulldata_by_id_raw(&ac1)
         );
+
+        // println!("{:?}", res1);
 
         // index exists
         let sm;
@@ -1081,17 +1121,17 @@ mod tests {
         // First Active 
         assert_eq!(&res1.as_ref().unwrap().overview.first_active, &1_687_939_200_000_000_000);
         // Last Active 
-        assert_eq!(&res1.as_ref().unwrap().overview.last_active, &1_688_888_888_888_888_888);
+        assert_eq!(&res1.as_ref().unwrap().overview.last_active, &1_698_888_888_888_888_888);
         // Sent Count
-        assert_eq!(&res1.as_ref().unwrap().overview.sent.0, &6);
+        assert_eq!(&res1.as_ref().unwrap().overview.sent.0, &7);
         // Sent Value
-        assert_eq!(&res1.as_ref().unwrap().overview.sent.1, &730560000);
+        assert_eq!(&res1.as_ref().unwrap().overview.sent.1, &730570000);
         // Received Count
         assert_eq!(&res1.as_ref().unwrap().overview.received.0, &4);
         // Received Value
         assert_eq!(&res1.as_ref().unwrap().overview.received.1, &101000090001);
         // Balance
-        assert_eq!(&res1.as_ref().unwrap().overview.balance, &100_269_530_001);
+        assert_eq!(&res1.as_ref().unwrap().overview.balance, &100_269_520_001);
         // Link Data
         let LD1 = LinkData{ 
             linked_from: 1687988709540000000, linked_id: 1, number_txs: 2, gross: 100090000, net: -99910000 };
@@ -1109,7 +1149,7 @@ mod tests {
             linked_from: 1687988718000000000, linked_id: 8, number_txs: 1, gross: 30000000, net: -30000000 };
         assert_eq!(&res1.as_ref().unwrap().links[4], &LD5);
         // Blocks
-        let blocks = Vec::from([0, 10, 11, 15, 17, 20, 23, 27, 28, 29]);
+        let blocks = Vec::from([0, 10, 11, 15, 17, 20, 23, 27, 28, 29, 30]);
         assert_eq!(&res1.as_ref().unwrap().blocks, &blocks);
     }
 

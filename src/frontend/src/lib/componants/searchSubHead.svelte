@@ -5,7 +5,7 @@
     export let selected = 0;
 
     // underline selected
-    let numButtons = 11;
+    let numButtons = 12;
     let opAR = [];
     for(let i = 0; i<numButtons; i++){
         if(selected == i+1){
@@ -136,6 +136,16 @@
                         noBG={true}
                         on:click={() => resetCheck(11)}>
                             IC-X
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/search/nuance" class={opAR[11]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}
+                        on:click={() => resetCheck(12)}>
+                            Nuance
                         </Button>
                     </a>
 

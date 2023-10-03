@@ -58,7 +58,7 @@ use types::{
     TotCntAvg,
     TimeStats,
     StatsType,
-    TimeChunkStats,
+    TimeChunkStats, Approve,
 };
 
 //[][] ---- State Manamgement ---- [][]
@@ -181,13 +181,13 @@ fn with_runtime_mut<R>(f: impl FnOnce(&mut RuntimeState) -> R) -> R {
 fn init() {
     // init main data state
     let mut data = Data::default();
-    data.authorised.push("ADMIN_PRINCIPAL_HERE".to_string());
+    data.authorised.push("2vxsx-fae".to_string());
     data.authorised.push(
         "ADMIN_PRINCIPAL_HERE".to_string()
-    ); 
+    ); // 
     data.authorised.push(
         "FRONTEND_PRINCIPAL_HERE".to_string()
-    ); 
+    ); //
     data.canister_settings.stats_are_public = true;
     data.canister_settings.stats_return_length = STATS_RETURN_LENGTH;
     data.first_run = true;
@@ -899,6 +899,16 @@ async fn icrc_transaction_download(start: u128, length: u128) -> Option<Vec<Proc
                                         );
                                         block += Nat::from(1);
                                     }
+                                    if let Some(value) = transaction.approve {
+                                        processed_transactions.push(
+                                            process_approve_transaction(
+                                                value,
+                                                &block,
+                                                &transaction.timestamp
+                                            )
+                                        );
+                                        block += Nat::from(1);
+                                    }
                                 }
                             }
                             Err(err_text) => {
@@ -942,6 +952,16 @@ async fn icrc_transaction_download(start: u128, length: u128) -> Option<Vec<Proc
                             );
                             block_master += Nat::from(1);
                         }
+                        if let Some(value) = transaction.approve {
+                            processed_transactions.push(
+                                process_approve_transaction(
+                                    value,
+                                    &block_master,
+                                    &transaction.timestamp
+                                )
+                            );
+                            block_master += Nat::from(1);
+                        }
                     }
 
                     return Some(processed_transactions);
@@ -965,6 +985,16 @@ async fn icrc_transaction_download(start: u128, length: u128) -> Option<Vec<Proc
                         if let Some(value) = transaction.transfer {
                             processed_transactions.push(
                                 process_transfer_transaction(value, &block, &transaction.timestamp)
+                            );
+                            block += Nat::from(1);
+                        }
+                        if let Some(value) = transaction.approve {
+                            processed_transactions.push(
+                                process_approve_transaction(
+                                    value,
+                                    &block,
+                                    &transaction.timestamp
+                                )
                             );
                             block += Nat::from(1);
                         }
@@ -1009,6 +1039,16 @@ async fn icrc_transaction_download(start: u128, length: u128) -> Option<Vec<Proc
                                     if let Some(value) = transaction.transfer {
                                         processed_transactions.push(
                                             process_transfer_transaction(
+                                                value,
+                                                &block,
+                                                &transaction.timestamp
+                                            )
+                                        );
+                                        block += Nat::from(1);
+                                    }
+                                    if let Some(value) = transaction.approve {
+                                        processed_transactions.push(
+                                            process_approve_transaction(
                                                 value,
                                                 &block,
                                                 &transaction.timestamp
@@ -1144,6 +1184,31 @@ fn process_transfer_transaction(tx: Transfer, block: &Nat, timestamp: &u64) -> P
     return ret;
 }
 
+fn process_approve_transaction(tx: Approve, block: &Nat, timestamp: &u64) -> ProcessedTX {
+    let from_ac = tx.from;
+    let from_pr = from_ac.owner.to_string();
+    let from_sub = from_ac.effective_subaccount();
+    let from_sub_ac = hex::encode(from_sub);
+
+    let to_ac = tx.spender;
+    let to_pr = to_ac.owner.to_string();
+    let to_sub = to_ac.effective_subaccount();
+    let to_sub_ac = hex::encode(to_sub);
+
+    let ret = ProcessedTX {
+        block: block.to_owned(),
+        hash: "no-hash".to_string(),
+        tx_type: TransactionType::Approve.to_string(),
+        from_principal: from_pr,
+        from_account: from_sub_ac,
+        to_principal: to_pr, // THIS IS THE SPENDER PRINCIPAL
+        to_account: to_sub_ac, // THIS IS THE SPENDER SUB-ACCOUNT
+        tx_value: tx.amount, // THIS IS THE APPROVAL VALUE
+        tx_time: timestamp.to_owned(),
+    };
+    return ret;
+} 
+
 async fn get_tip_of_chain(ledger_id: Principal) -> Result<Nat, String> {
     let req = GetTransactionsRequest {
         start: Nat::from(0),
@@ -1205,16 +1270,16 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
                             );
                             if let Some(ac) = data.account_holders.get(&from_combined_account) {
                                 let tot_deduction;
-                                if ac.balance < tx_value_u128 + tx_fee {
-                                    tot_deduction = ac.balance; // catch overflows. cant spend more than ac balance.
+                                if ac.balance < (tx_value_u128 + tx_fee) {
+                                    tot_deduction = ac.balance.clone(); // catch overflows. cant spend more than ac balance.
                                     log(
                                         format!(
-                                            "Caught overflow from transfer. Account: {}",
-                                            &from_combined_account
+                                            "Caught overflow from transfer. Account: {}. Balance: {}, tx_total(inc fee): {}, fee: {}",
+                                            &from_combined_account, &ac.balance, (tx_value_u128 + tx_fee), &tx_fee
                                         )
                                     );
                                 } else {
-                                    tot_deduction = tx_value_u128 + tx_fee;
+                                    tot_deduction = tx_value_u128.clone() + tx_fee.clone();
                                 }
                                 // existing account
                                 let ent = EntityData {
@@ -1235,7 +1300,7 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
                             // principal balance
                             if let Some(pr) = data.principal_holders.get(&tx.from_principal) {
                                 let tot_deduction;
-                                if pr.balance < tx_value_u128 + tx_fee {
+                                if pr.balance < (tx_value_u128 + tx_fee) {
                                     tot_deduction = pr.balance; // catch overflows. cant spend more than ac balance.
                                     log(
                                         format!(
@@ -1244,7 +1309,7 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
                                         )
                                     );
                                 } else {
-                                    tot_deduction = tx_value_u128 + tx_fee;
+                                    tot_deduction = tx_value_u128.clone() + tx_fee.clone();
                                 }
                                 // existing account
                                 let ent = EntityData {
@@ -1272,14 +1337,14 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
                             if let Some(ac) = data.account_holders.get(&to_combined_account) {
                                 // existing account
                                 let ent = EntityData {
-                                    balance: ac.balance + tx_value_u128,
+                                    balance: ac.balance + tx_value_u128.clone(),
                                     transactions: ac.transactions + 1_u64,
                                 };
                                 data.account_holders.insert(to_combined_account.clone(), ent);
                             } else {
                                 // new account
                                 let ent = EntityData {
-                                    balance: tx_value_u128,
+                                    balance: tx_value_u128.clone(),
                                     transactions: 1_u64,
                                 };
                                 data.account_holders.insert(to_combined_account, ent);
@@ -1378,9 +1443,76 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
                                 processed_ok = false;
                             }
                         }
+                        "Approve" => {
+                            // ----- DEBIT FEE ONLY (FROM)
+                            // ----- account balance
+                            from_combined_account = format!(
+                                "{}.{}",
+                                &tx.from_principal,
+                                &tx.from_account
+                            );
+                            if let Some(ac) = data.account_holders.get(&from_combined_account) {
+                                let tot_deduction;
+                                if ac.balance < tx_fee {
+                                    tot_deduction = ac.balance.clone(); // catch overflows. cant spend more than ac balance.
+                                    log(
+                                        format!(
+                                            "Caught overflow from Approve Fee deduction. Account: {}",
+                                            &from_combined_account
+                                        )
+                                    );
+                                } else {
+                                    tot_deduction = tx_fee.clone();
+                                }
+                                // existing account
+                                let ent = EntityData {
+                                    balance: ac.balance - tot_deduction,
+                                    transactions: ac.transactions + 1_u64,
+                                };
+                                data.account_holders.insert(from_combined_account.clone(), ent);
+                            } else {
+                                log(
+                                    format!(
+                                        "Error: Approve Transaction from new unknown account {}",
+                                        &from_combined_account
+                                    )
+                                );
+                                processed_ok = false;
+                            }
+
+                            // principal balance
+                            if let Some(pr) = data.principal_holders.get(&tx.from_principal) {
+                                let tot_deduction;
+                                if pr.balance < tx_fee {
+                                    tot_deduction = pr.balance.clone(); // catch overflows. cant spend more than ac balance.
+                                    log(
+                                        format!(
+                                            "Caught overflow from approve. Principal: {}",
+                                            &tx.from_principal
+                                        )
+                                    );
+                                } else {
+                                    tot_deduction = tx_fee.clone();
+                                }
+                                // existing account
+                                let ent = EntityData {
+                                    balance: pr.balance - tot_deduction,
+                                    transactions: pr.transactions + 1_u64,
+                                };
+                                data.principal_holders.insert(tx.from_principal.clone(), ent);
+                            } else {
+                                log(
+                                    format!(
+                                        "Error: Approve transaction from new unknown principal {}",
+                                        &tx.from_principal
+                                    )
+                                );
+                                processed_ok = false;
+                            }
+                        }
                         _ => {
                             log(
-                                "Could not process transaction, type is not Mint, Burn or Transaction"
+                                "Could not process transaction, type is not Mint, Burn, Approve or Transaction"
                             );
                             processed_ok = false;
                         }
@@ -1441,7 +1573,7 @@ fn calculate_time_stats(
                             all_accounts.push(from_combined);
                             all_principals.push(tx.from_principal.clone());
                         }
-                        if tx.to_principal != "ICRC_LEDGER" {
+                        if tx.to_principal != "ICRC_LEDGER" && tx.tx_type != "Approve" {
                             all_accounts.push(to_combined);
                             all_principals.push(tx.to_principal.clone());
                         }
@@ -1459,6 +1591,9 @@ fn calculate_time_stats(
                             transaction_count += 1_u128;
                             transaction_value += &value_u128;
                             all_transactions.push(tx.clone());
+                        }
+                        if tx.tx_type == "Approve" {
+                            // Do Nothing at the moment. 
                         }
                         total_value += &value_u128;
                         total_txs += 1_u128;
@@ -1673,7 +1808,7 @@ async fn most_active(process_from: u64, return_number: usize) -> bool {
 
         // process to 
         for tx in array {
-            if tx.tx_time >= process_from {
+            if tx.tx_time >= process_from && tx.tx_type != "Approve" {
                 to_combined = format!("{}.{}", tx.to_principal, tx.to_account);
                 
                 let a = all_acs.entry(to_combined).or_insert(0);
@@ -1960,205 +2095,284 @@ mod tests {
         let mut to_combined_account: String;
         let mut processed_ok = true;
 
-        for tx in tx_array {
-            let tx_value_u128 = tx.tx_value.0.to_u128().ok_or("Tip of Chain is not a valid u128");
-            match tx_value_u128 {
-                Ok(tx_value_u128) => {
-                    match tx.tx_type.as_str() {
-                        "Transaction" => {
-                            // ----- DEBIT FROM
-                            // ----- account balance
-                            from_combined_account = format!(
-                                "{}.{}",
-                                &tx.from_principal,
-                                &tx.from_account
-                            );
-                            if let Some(ac) = data.account_holders.get(&from_combined_account) {
-                                // existing account
-                                let tot_dedution = if tx_value_u128 == 0_u128 {
-                                    tx_fee as u128
-                                } else {
-                                    tx_value_u128 + (tx_fee as u128)
-                                };
-                                // println!("Balance: {}, Account: {}", ac.balance, from_combined_account);
-                                // println!("Deduction: {}", tot_dedution);
-                                let ent = EntityData {
-                                    balance: ac.balance - tot_dedution,
-                                    transactions: ac.transactions + 1_u64,
-                                };
-                                data.account_holders.insert(from_combined_account.clone(), ent);
-                            } else {
+    for tx in tx_array {
+        let tx_value_u128 = tx.tx_value.0.to_u128().ok_or("Tip of Chain is not a valid u128");
+        match tx_value_u128 {
+            Ok(tx_value_u128) => {
+                match tx.tx_type.as_str() {
+                    "Transaction" => {
+                        // ----- DEBIT FROM
+                        // ----- account balance
+                        from_combined_account = format!(
+                            "{}.{}",
+                            &tx.from_principal,
+                            &tx.from_account
+                        );
+                        if let Some(ac) = data.account_holders.get(&from_combined_account) {
+                            let tot_deduction;
+                            if ac.balance < tx_value_u128 + tx_fee {
+                                tot_deduction = ac.balance; // catch overflows. cant spend more than ac balance.
                                 log(
                                     format!(
-                                        "Error: Sent transaction from new unknown account {}",
+                                        "Caught overflow from transfer. Account: {}",
                                         &from_combined_account
                                     )
                                 );
-                                processed_ok = false;
-                            }
-
-                            // principal balance
-                            if let Some(pr) = data.principal_holders.get(&tx.from_principal) {
-                                // existing account
-                                let tot_dedution = if tx_value_u128 == 0_u128 {
-                                    tx_fee as u128
-                                } else {
-                                    tx_value_u128 + (tx_fee as u128)
-                                };
-                                let ent = EntityData {
-                                    balance: pr.balance - tot_dedution,
-                                    transactions: pr.transactions + 1_u64,
-                                };
-                                data.principal_holders.insert(tx.from_principal.clone(), ent);
                             } else {
+                                tot_deduction = tx_value_u128 + tx_fee;
+                            }
+                            // existing account
+                            let ent = EntityData {
+                                balance: ac.balance - tot_deduction,
+                                transactions: ac.transactions + 1_u64,
+                            };
+                            data.account_holders.insert(from_combined_account.clone(), ent);
+                        } else {
+                            log(
+                                format!(
+                                    "Error: Sent transaction from new unknown account {}",
+                                    &from_combined_account
+                                )
+                            );
+                            processed_ok = false;
+                        }
+
+                        // principal balance
+                        if let Some(pr) = data.principal_holders.get(&tx.from_principal) {
+                            let tot_deduction;
+                            if pr.balance < tx_value_u128 + tx_fee {
+                                tot_deduction = pr.balance; // catch overflows. cant spend more than ac balance.
                                 log(
                                     format!(
-                                        "Error: Sent transaction from new unknown principal {}",
+                                        "Caught overflow from transfer. Principal: {}",
                                         &tx.from_principal
                                     )
                                 );
-                                processed_ok = false;
-                            }
-
-                            // ----- PAYMENT TO
-                            // ----- account balance
-                            to_combined_account = format!(
-                                "{}.{}",
-                                &tx.to_principal,
-                                &tx.to_account
-                            );
-                            if let Some(ac) = data.account_holders.get(&to_combined_account) {
-                                // existing account
-                                let ent = EntityData {
-                                    balance: ac.balance + tx_value_u128,
-                                    transactions: ac.transactions + 1_u64,
-                                };
-                                data.account_holders.insert(to_combined_account.clone(), ent);
                             } else {
-                                // new account
-                                let ent = EntityData {
-                                    balance: tx_value_u128,
-                                    transactions: 1_u64,
-                                };
-                                data.account_holders.insert(to_combined_account, ent);
+                                tot_deduction = tx_value_u128 + tx_fee;
                             }
-
-                            // principal balance
-                            if let Some(pr) = data.principal_holders.get(&tx.to_principal) {
-                                // existing account
-                                let ent = EntityData {
-                                    balance: pr.balance + tx_value_u128,
-                                    transactions: pr.transactions + 1_u64,
-                                };
-                                data.principal_holders.insert(tx.to_principal.clone(), ent);
-                            } else {
-                                // new account
-                                let ent = EntityData {
-                                    balance: tx_value_u128,
-                                    transactions: 1_u64,
-                                };
-                                data.principal_holders.insert(tx.to_principal.clone(), ent);
-                            }
-                        }
-                        "Mint" => {
-                            // account balance
-                            to_combined_account = format!(
-                                "{}.{}",
-                                &tx.to_principal,
-                                &tx.to_account
-                            );
-                            if let Some(ac) = data.account_holders.get(&to_combined_account) {
-                                // existing account
-                                let ent = EntityData {
-                                    balance: ac.balance + tx_value_u128, // Nat
-                                    transactions: ac.transactions + 1_u64,
-                                };
-                                data.account_holders.insert(to_combined_account.clone(), ent);
-                            } else {
-                                // new account
-                                let ent = EntityData {
-                                    balance: tx_value_u128,
-                                    transactions: 1_u64,
-                                };
-                                data.account_holders.insert(to_combined_account, ent);
-                            }
-                            // principal balance
-                            if let Some(pr) = data.principal_holders.get(&tx.to_principal) {
-                                // existing principal
-                                let ent = EntityData {
-                                    balance: pr.balance + tx_value_u128, // Nat
-                                    transactions: pr.transactions + 1_u64,
-                                };
-                                data.principal_holders.insert(tx.to_principal.clone(), ent);
-                            } else {
-                                // new principal
-                                let ent = EntityData {
-                                    balance: tx_value_u128,
-                                    transactions: 1_u64,
-                                };
-                                data.principal_holders.insert(tx.to_principal.clone(), ent);
-                            }
-                        }
-                        "Burn" => {
-                            // account balance
-                            from_combined_account = format!(
-                                "{}.{}",
-                                &tx.from_principal,
-                                &tx.from_account
-                            );
-                            if let Some(ac) = data.account_holders.get(&from_combined_account) {
-                                // existing account
-                                let ent = EntityData {
-                                    balance: ac.balance - tx_value_u128, // Nat
-                                    transactions: ac.transactions + 1_u64,
-                                };
-                                data.account_holders.insert(from_combined_account.clone(), ent);
-                            } else {
-                                log(
-                                    format!("Error: Burn transaction from new account {}", from_combined_account)
-                                );
-                            }
-                            // principal balance
-                            if let Some(pr) = data.principal_holders.get(&tx.from_principal) {
-                                // existing principal
-                                let ent = EntityData {
-                                    balance: pr.balance - tx_value_u128, // Nat
-                                    transactions: pr.transactions + 1_u64,
-                                };
-                                data.principal_holders.insert(tx.from_principal.clone(), ent);
-                            } else {
-                                log(
-                                    format!(
-                                        "Error: Burn transaction from new principal {}",
-                                        tx.from_principal
-                                    )
-                                );
-                                processed_ok = false;
-                            }
-                        }
-                        _ => {
+                            // existing account
+                            let ent = EntityData {
+                                balance: pr.balance - tot_deduction,
+                                transactions: pr.transactions + 1_u64,
+                            };
+                            data.principal_holders.insert(tx.from_principal.clone(), ent);
+                        } else {
                             log(
-                                "Could not process transaction, type is not Mint, Burn or Transaction"
+                                format!(
+                                    "Error: Sent transaction from new unknown principal {}",
+                                    &tx.from_principal
+                                )
+                            );
+                            processed_ok = false;
+                        }
+
+                        // ----- PAYMENT TO
+                        // ----- account balance
+                        to_combined_account = format!(
+                            "{}.{}",
+                            &tx.to_principal,
+                            &tx.to_account
+                        );
+                        if let Some(ac) = data.account_holders.get(&to_combined_account) {
+                            // existing account
+                            let ent = EntityData {
+                                balance: ac.balance + tx_value_u128,
+                                transactions: ac.transactions + 1_u64,
+                            };
+                            data.account_holders.insert(to_combined_account.clone(), ent);
+                        } else {
+                            // new account
+                            let ent = EntityData {
+                                balance: tx_value_u128,
+                                transactions: 1_u64,
+                            };
+                            data.account_holders.insert(to_combined_account, ent);
+                        }
+
+                        // principal balance
+                        if let Some(pr) = data.principal_holders.get(&tx.to_principal) {
+                            // existing account
+                            let ent = EntityData {
+                                balance: pr.balance + tx_value_u128,
+                                transactions: pr.transactions + 1_u64,
+                            };
+                            data.principal_holders.insert(tx.to_principal.clone(), ent);
+                        } else {
+                            // new account
+                            let ent = EntityData {
+                                balance: tx_value_u128,
+                                transactions: 1_u64,
+                            };
+                            data.principal_holders.insert(tx.to_principal.clone(), ent);
+                        }
+                    }
+                    "Mint" => {
+                        // account balance
+                        to_combined_account = format!(
+                            "{}.{}",
+                            &tx.to_principal,
+                            &tx.to_account
+                        );
+                        if let Some(ac) = data.account_holders.get(&to_combined_account) {
+                            // existing account
+                            let ent = EntityData {
+                                balance: ac.balance + tx_value_u128, // Nat
+                                transactions: ac.transactions + 1_u64,
+                            };
+                            data.account_holders.insert(to_combined_account.clone(), ent);
+                        } else {
+                            // new account
+                            let ent = EntityData {
+                                balance: tx_value_u128,
+                                transactions: 1_u64,
+                            };
+                            data.account_holders.insert(to_combined_account, ent);
+                        }
+                        // principal balance
+                        if let Some(pr) = data.principal_holders.get(&tx.to_principal) {
+                            // existing principal
+                            let ent = EntityData {
+                                balance: pr.balance + tx_value_u128, // Nat
+                                transactions: pr.transactions + 1_u64,
+                            };
+                            data.principal_holders.insert(tx.to_principal.clone(), ent);
+                        } else {
+                            // new principal
+                            let ent = EntityData {
+                                balance: tx_value_u128,
+                                transactions: 1_u64,
+                            };
+                            data.principal_holders.insert(tx.to_principal.clone(), ent);
+                        }
+                    }
+                    "Burn" => {
+                        // account balance
+                        from_combined_account = format!(
+                            "{}.{}",
+                            &tx.from_principal,
+                            &tx.from_account
+                        );
+                        if let Some(ac) = data.account_holders.get(&from_combined_account) {
+                            // existing account
+                            let ent = EntityData {
+                                balance: ac.balance - tx_value_u128, // Nat
+                                transactions: ac.transactions + 1_u64,
+                            };
+                            data.account_holders.insert(from_combined_account.clone(), ent);
+                        } else {
+                            log(
+                                format!("Error: Burn transaction from new account {}", from_combined_account)
+                            );
+                        }
+                        // principal balance
+                        if let Some(pr) = data.principal_holders.get(&tx.from_principal) {
+                            // existing principal
+                            let ent = EntityData {
+                                balance: pr.balance - tx_value_u128, // Nat
+                                transactions: pr.transactions + 1_u64,
+                            };
+                            data.principal_holders.insert(tx.from_principal.clone(), ent);
+                        } else {
+                            log(
+                                format!(
+                                    "Error: Burn transaction from new principal {}",
+                                    tx.from_principal
+                                )
                             );
                             processed_ok = false;
                         }
                     }
-                }
-                Err(error) => {
-                    log(
-                        format!("Could not get tx_value_u128 from tx.tx_value (Nat). Error: {}", error)
-                    );
-                    processed_ok = false;
+                    "Approve" => {
+                        // ----- DEBIT FEE ONLY (FROM)
+                        // ----- account balance
+                        from_combined_account = format!(
+                            "{}.{}",
+                            &tx.from_principal,
+                            &tx.from_account
+                        );
+                        if let Some(ac) = data.account_holders.get(&from_combined_account) {
+                            let tot_deduction;
+                            if ac.balance < tx_fee {
+                                tot_deduction = ac.balance; // catch overflows. cant spend more than ac balance.
+                                log(
+                                    format!(
+                                        "Caught overflow from Approve Fee deduction. Account: {}",
+                                        &from_combined_account
+                                    )
+                                );
+                            } else {
+                                tot_deduction = tx_fee;
+                            }
+                            // existing account
+                            let ent = EntityData {
+                                balance: ac.balance - tot_deduction,
+                                transactions: ac.transactions + 1_u64,
+                            };
+                            data.account_holders.insert(from_combined_account.clone(), ent);
+                        } else {
+                            log(
+                                format!(
+                                    "Error: Approve Transaction from new unknown account {}",
+                                    &from_combined_account
+                                )
+                            );
+                            processed_ok = false;
+                        }
+
+                        // principal balance
+                        if let Some(pr) = data.principal_holders.get(&tx.from_principal) {
+                            let tot_deduction;
+                            if pr.balance < tx_fee {
+                                tot_deduction = pr.balance; // catch overflows. cant spend more than ac balance.
+                                log(
+                                    format!(
+                                        "Caught overflow from approve. Principal: {}",
+                                        &tx.from_principal
+                                    )
+                                );
+                            } else {
+                                tot_deduction = tx_fee;
+                            }
+                            // existing account
+                            let ent = EntityData {
+                                balance: pr.balance - tot_deduction,
+                                transactions: pr.transactions + 1_u64,
+                            };
+                            data.principal_holders.insert(tx.from_principal.clone(), ent);
+                        } else {
+                            log(
+                                format!(
+                                    "Error: Approve transaction from new unknown principal {}",
+                                    &tx.from_principal
+                                )
+                            );
+                            processed_ok = false;
+                        }
+                    }
+                    _ => {
+                        log(
+                            "Could not process transaction, type is not Mint, Burn, Approve or Transaction"
+                        );
+                        processed_ok = false;
+                    }
                 }
             }
+            Err(error) => {
+                log(
+                    format!("Could not get tx_value_u128 from tx.tx_value (Nat). Error: {}", error)
+                );
+                processed_ok = false;
+            }
         }
+    }
 
         let key =
             "2vxsx-fae.0000000000000000000000000000000000000000000000000000000000000000".to_string();
         let test1 = data.account_holders
             .get(&key)
             .unwrap_or(&(EntityData { transactions: 0, balance: 0 }));
-        let res = 269_530_001;
+        let res = 269_520_001;
         assert_eq!(test1.balance, res);
 
         let key =
@@ -2275,15 +2489,14 @@ mod tests {
         // Tuple == (Accounts), (Principals)
         let data: (Vec<(String, u64)>, Vec<(String, u64)>) = 
             test_most_active(0, 99);
-            
-        // Most Active Account 
+        // Most Active Account - 10 hits
         assert_eq!(
             data.0[0].0, 
             "2vxsx-fae.0000000000000000000000000000000000000000000000000000000000000000"
         );
         assert_eq!(
             data.0[0].1, 
-            9
+            10
         );
 
         // 7th place is unique with 2 hits
@@ -2303,7 +2516,7 @@ mod tests {
         );
         assert_eq!(
             data.1[0].1, 
-            21
+            22
         );
         assert_eq!(
             data.1[1].0, 

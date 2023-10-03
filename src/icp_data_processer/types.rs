@@ -1,5 +1,6 @@
 use candid::{ CandidType, Deserialize, Nat, Principal };
 use serde::Serialize;
+use serde_bytes::ByteBuf;
 use std::fmt;
 use icrc_ledger_types;
 

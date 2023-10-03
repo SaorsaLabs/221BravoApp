@@ -1,4 +1,4 @@
-// Dynamic Content - 221Bravo App  v0.2.1
+// Dynamic Content - 221Bravo App  v0.3.1
 
 type MemoryStats = record {memory: nat64; heap_memory: nat64};
 
@@ -44,6 +44,10 @@ service : {
     "add_news_item": (text, text, text, text) -> (text); // title, sub, article_url, image_url
     "remove_news_item": (nat64) -> (text); // index from 0
     "read_news_items": () -> (vec NewsItem) query;
+    // research methods
+    "add_research_item": (text, text, text, text) -> (text); // title, sub, article_url, image_url
+    "remove_research_item": (nat64) -> (text); // index from 0
+    "read_research_items": () -> (vec NewsItem) query;
     // projects methods
     "add_project": (nat8, text, text, text, text) -> (text); // bucket_number (from 1), title, sub, project_url, image_url
     "remove_project": (nat64, nat8) -> (text); // index from 0, bucket_number (from 1) 

@@ -97,8 +97,8 @@ async function getVisualBlockData(token, minBlock, maxBlock, startTime, endTime)
                 // Blocks
                 let fm, to, k;
                 for(let i=0; i<dataLen; i++){
-					fm = txDATA.blocks[i].fromAccount;
-					to = txDATA.blocks[i].toAccount;
+					fm = combinePrincipalSubAccount(txDATA.blocks[i].fromPrincipal,txDATA.blocks[i].fromAccount);
+					to = combinePrincipalSubAccount(txDATA.blocks[i].toPrincipal,txDATA.blocks[i].toAccount);
                     for(k=0; k<csnLen; k++){
                         // from
                         if(combinedSavedNames[k][0] == fm) {
@@ -131,7 +131,6 @@ async function getVisualBlockData(token, minBlock, maxBlock, startTime, endTime)
 			jobArray[0] = getUserNamedAccounts(ls.data.user, uniqueACS);
 			jobArray[1] = getPublicNamedAccounts(uniqueACS);
 			let jobArrayDone = await processPromises(jobArray);
-			console.log(jobArrayDone);
 
 			// update links with names 
 			let combinedSavedNames = [];
@@ -231,6 +230,16 @@ function basicAccountTableTX(target, data, token) {
 			targetSub = data[i].toSub;
 			targetName = data[i]?.toName ?? undefined;
 			targetSubName = data[i]?.toSubName ?? undefined;
+		}
+		else if (data[i].type == 'approve' || data[i].type == 'Approve') {
+			shortID = 'Approve';
+			longID = 'ICRC Ledger';
+			longSubID = '';
+			subName = 'undefined';
+			tgt = subHit ? data[i].from : target;
+			targetSub = data[i].fromSub;
+			targetName = data[i]?.fromName ?? undefined;
+			targetSubName = data[i]?.fromSubName ?? undefined;
 		} else {
 			if (direction == 'in') {
 				shortID = data[i]?.fromName ?? shortenString(data[i].from);
@@ -320,6 +329,14 @@ function basicBlockTableTX(data, token, is_icrc) {
 				} else {
 					toShortID = shortenString(data[i].toAccount);
 				}
+			} 
+			else if (data[i].type == 'approve' || data[i].type == 'Approve') {
+				toShortID = 'Approve';
+				if (usePrincipal == true) {
+					fromShortID = shortenString(data[i].fromPrincipal);
+				} else {
+					fromShortID = shortenString(data[i].fromAccount);
+				}
 			} else {
 				if (usePrincipal == true) {
 					fromShortID = data[i]?.fromPrincipalName
@@ -381,6 +398,13 @@ function basicBlockTableTX(data, token, is_icrc) {
 				fromShortSA = '';
 				toShortID = shortenString(data[i].toPrincipal);
 				toShortSA = shortenString(data[i].toAccount);
+			} else if (data[i].type == 'approve' || data[i].type == 'Approve') {
+				toShortID = 'Approve';
+				if (usePrincipal == true) {
+					fromShortID = shortenString(data[i].fromPrincipal);
+				} else {
+					fromShortID = shortenString(data[i].fromAccount);
+				}
 			} else {
 				fromShortID = data[i]?.fromPrincipalName
 					? data[i].fromPrincipalName
@@ -546,7 +570,7 @@ function visualBlockSubTable(target, data, is_icrc) {
 		for (i = 0; i < dataLen; i++) {
 			if (data[i].fromAccount != '' && data[i].fromPrincipal != '') {
 				sACswitchF = data[i]?.fromAccountName ?? shortenString(data[i].fromAccount);
-				sPRswitchF = data[i]?.fromPrincipalName ?? shortenString(data[i].fromPrincipal);
+				sPRswitchF = data[i]?.fromAccountName ?? shortenString(data[i].fromPrincipal);
 			} else {
 				sACswitchF = 'Mint';
 				sPRswitchF = 'Mint';
@@ -554,7 +578,7 @@ function visualBlockSubTable(target, data, is_icrc) {
 
 			if (data[i].toAccount != '' && data[i].toPrincipal != '') {
 				sACswitchT = data[i]?.toAccountName ?? shortenString(data[i].toAccount);
-				sPRswitchT = data[i]?.fromPrincipalName ?? shortenString(data[i].toPrincipal);
+				sPRswitchT = data[i]?.toAccountName ?? shortenString(data[i].toPrincipal);
 			} else {
 				sACswitchT = 'Burn';
 				sPRswitchT = 'Burn';
@@ -663,6 +687,9 @@ function linkedIDTable(data, token) {
 	}
 	return data;
 }
+
+
+
 
 export {
 	getData,

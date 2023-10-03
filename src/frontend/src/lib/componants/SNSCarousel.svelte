@@ -10,6 +10,7 @@
     import catLogo from '$lib/images/projectLogos/catalyzeLogo.png';
     import boomLogo from '$lib/images/projectLogos/BoomLogo.png';
     import icxLogo from '$lib/images/projectLogos/IcxLogo.png';
+    import nuanceLogo from '$lib/images/projectLogos/NuanceLogo.png';
     
     export let titleText = "";
     export let linkTypes = "stats";
@@ -30,6 +31,7 @@
       {idx: 8, image: catLogo, text: "Catalyze"},
       {idx: 9, image: boomLogo, text: "BoomDAO"},
       {idx: 10, image: icxLogo, text: "IC-X"},
+      {idx: 11, image: nuanceLogo, text: "NUANCE"},
     ];
 
     let totalLinks = allLinks?.length ?? 0; 
@@ -46,6 +48,7 @@
       linkURL[8] = "/explore/stats/cat";
       linkURL[9] = "/explore/stats/boom";
       linkURL[10] = "/explore/stats/icx";
+      linkURL[11] = "/explore/stats/nuance";
     }
     if(linkTypes == "search"){
       linkURL[0] = "/search/ckbtc";
@@ -59,6 +62,7 @@
       linkURL[8] = "/search/cat";
       linkURL[9] = "/search/boom";
       linkURL[10] = "/search/icx";
+      linkURL[11] = "/search/nuance";
     }
 
     let startIndex = 0;

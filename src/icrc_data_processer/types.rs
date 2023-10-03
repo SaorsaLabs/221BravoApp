@@ -113,6 +113,7 @@ pub enum TransactionType {
     Transaction,
     Mint,
     Burn,
+    Approve
 }
 impl TransactionType {
     pub fn to_string(&self) -> String {
@@ -120,10 +121,13 @@ impl TransactionType {
             TransactionType::Transaction => "Transaction".to_string(),
             TransactionType::Mint => "Mint".to_string(),
             TransactionType::Burn => "Burn".to_string(),
+            TransactionType::Approve => "Approve".to_string(),
         }
     }
 }
 
+
+// NOTE - For 'Approve' txs to_principal/ to_account relate to the SPENDER. The value is the approval ammount. 
 #[derive(CandidType, Serialize, Deserialize, Clone, Default, Debug)]
 pub struct ProcessedTX {
     pub block: Nat,
@@ -167,7 +171,7 @@ pub struct LogEntry {
 }
 
 // [][] --- ICRC Ledger Types --- [][]
-// Defines types for interacting with the DFINITY implementation of the ICRC-1 / ICRC-3 fungible token standards
+// Defines types for interacting with the DFINITY implementation of the ICRC-1, ICRC-2 & ICRC-3 fungible token standards
 // https://github.com/dfinity/ic/tree/master/packages/icrc-ledger-types
 
 pub type BlockIndex = Nat;
@@ -187,6 +191,7 @@ pub struct Transaction {
     pub mint: Option<Mint>,
     pub burn: Option<Burn>,
     pub transfer: Option<Transfer>,
+    pub approve: Option<Approve>,
     pub timestamp: u64,
 }
 
@@ -202,6 +207,7 @@ pub struct Mint {
 pub struct Burn {
     pub amount: Nat,
     pub from: Account,
+    pub spender: Option<Account>,
     pub memo: Option<Memo>,
     pub created_at_time: Option<u64>,
 }
@@ -211,6 +217,19 @@ pub struct Transfer {
     pub amount: Nat,
     pub from: Account,
     pub to: Account,
+    pub spender: Option<Account>,
+    pub memo: Option<Memo>,
+    pub fee: Option<Nat>,
+    pub created_at_time: Option<u64>,
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct Approve {
+    pub from: Account,
+    pub spender: Account,
+    pub amount: Nat,
+    pub expected_allowance: Option<Nat>,
+    pub expires_at: Option<u64>,
     pub memo: Option<Memo>,
     pub fee: Option<Nat>,
     pub created_at_time: Option<u64>,

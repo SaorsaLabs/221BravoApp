@@ -10,7 +10,7 @@ use crate::custom_types::{
     GetTransactionsRequest, 
     TransactionType, GetTxFromStoreArgs, SmallTX, GetMultipleTxFromStoreArgs, 
     GetTransactionsResponse, QueryTxArchiveFn, ArchivedRange, 
-    GetTransactionsArchiveResponse, Mint, Burn, Account, Transfer, GetMultipleTxFromStoreTimeArgs,
+    GetTransactionsArchiveResponse, Mint, Burn, Account, Transfer, GetMultipleTxFromStoreTimeArgs, Approve,
 };
 
 // Set target canister, call target and tx fee to stable memory
@@ -296,6 +296,16 @@ async fn icrc_transaction_download(start: u128, length: u128, target_canister: S
                                         );
                                         block += Nat::from(1);
                                     }
+                                    if let Some(value) = transaction.approve {
+                                        processed_transactions.push(
+                                            process_approve_transaction(
+                                                value,
+                                                &block,
+                                                &transaction.timestamp
+                                            )
+                                        );
+                                        block += Nat::from(1);
+                                    }
                                 }
                             }
                             Err(err_text) => {
@@ -339,6 +349,17 @@ async fn icrc_transaction_download(start: u128, length: u128, target_canister: S
                             );
                             block_master += Nat::from(1);
                         }
+
+                        if let Some(value) = transaction.approve {
+                            processed_transactions.push(
+                                process_approve_transaction(
+                                    value,
+                                    &block_master,
+                                    &transaction.timestamp
+                                )
+                            );
+                            block_master += Nat::from(1);
+                        }
                     }
 
                     return Some(processed_transactions);
@@ -362,6 +383,12 @@ async fn icrc_transaction_download(start: u128, length: u128, target_canister: S
                         if let Some(value) = transaction.transfer {
                             processed_transactions.push(
                                 process_transfer_transaction(value, &block, &transaction.timestamp)
+                            );
+                            block += Nat::from(1);
+                        }
+                        if let Some(value) = transaction.approve {
+                            processed_transactions.push(
+                                process_approve_transaction(value, &block, &transaction.timestamp)
                             );
                             block += Nat::from(1);
                         }
@@ -406,6 +433,17 @@ async fn icrc_transaction_download(start: u128, length: u128, target_canister: S
                                     if let Some(value) = transaction.transfer {
                                         processed_transactions.push(
                                             process_transfer_transaction(
+                                                value,
+                                                &block,
+                                                &transaction.timestamp
+                                            )
+                                        );
+                                        block += Nat::from(1);
+                                    }
+
+                                    if let Some(value) = transaction.approve {
+                                        processed_transactions.push(
+                                            process_approve_transaction(
                                                 value,
                                                 &block,
                                                 &transaction.timestamp
@@ -549,6 +587,35 @@ fn process_transfer_transaction(tx: Transfer, block: &Nat, timestamp: &u64) -> P
     return ret;
 }
 
+fn process_approve_transaction(tx: Approve, block: &Nat, timestamp: &u64) -> ProcessedTX {
+    let from_ac: Account = tx.from;
+    let from_pr: String = from_ac.owner.to_string();
+    let from_sub: &[u8; 32] = from_ac.effective_subaccount();
+    let from_sub_ac: String = hex::encode(from_sub);
+    let from_combined: String = format!("{}.{}", from_pr, from_sub_ac);
+ 
+
+    let to_ac: Account = tx.spender;
+    let to_pr: String = to_ac.owner.to_string();
+    let to_sub: &[u8; 32] = to_ac.effective_subaccount();
+    let to_sub_ac: String = hex::encode(to_sub);
+    let to_combined: String = format!("{}.{}", to_pr, to_sub_ac);
+
+    let block_u128: u128 = block.0.to_u128().ok_or("cant parse to u128").unwrap(); 
+    let value_u128: u128 = tx.amount.0.to_u128().ok_or("cant parse to u128").unwrap();
+
+    let ret: ProcessedTX = ProcessedTX {
+        block: block_u128,
+        hash: "no-hash".to_string(),
+        tx_type: TransactionType::Approve.to_string(),
+        from_account: from_combined, // This is the FROM account
+        to_account: "ICRC_LEDGER".to_string(),
+        tx_value: value_u128, // This is the approval value !!
+        tx_time: timestamp.to_owned(),
+    };
+    return ret;
+} 
+
 async fn get_tip_of_chain(ledger_id: Principal) -> Result<Nat, String> {
     let req = GetTransactionsRequest {
         start: Nat::from(0),
@@ -639,7 +706,8 @@ pub async fn get_single_tx_from_store(block: u32) -> Option<ProcessedTX> {
                                 0  => {tx_type = "Transaction".to_string()},
                                 1  => {tx_type = "Mint".to_string()},
                                 2  => {tx_type = "Burn".to_string()},
-                                _ =>  {tx_type = "Unknown".to_string()},
+                                3  => {tx_type = "Approve".to_string()},
+                                _  =>  {tx_type = "Unknown".to_string()},
                             }
 
                             let res = ProcessedTX{
@@ -724,6 +792,7 @@ pub async fn get_multiple_txs_from_store(block: Vec<u32>) -> Vec<Option<Processe
                                     0  => {tx_type = "Transaction".to_string()},
                                     1  => {tx_type = "Mint".to_string()},
                                     2  => {tx_type = "Burn".to_string()},
+                                    3  => {tx_type = "Approve".to_string()},
                                     _ =>  {tx_type = "Unknown".to_string()},
                                 }
     
@@ -817,6 +886,7 @@ pub async fn get_multiple_txs_from_store_time(block: Vec<u32>, start: u64, end: 
                                     0  => {tx_type = "Transaction".to_string()},
                                     1  => {tx_type = "Mint".to_string()},
                                     2  => {tx_type = "Burn".to_string()},
+                                    3  => {tx_type = "Approve".to_string()},
                                     _ =>  {tx_type = "Unknown".to_string()},
                                 }
         

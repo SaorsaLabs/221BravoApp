@@ -14,6 +14,7 @@
 	import Button from "../../lib/shared/button.svelte";
 	import MembersLinksCarousel from "../../lib/componants/members/membersLinksCarousel.svelte";
 	import FraudReport from "../../lib/componants/fraudReport.svelte";
+	import ResearchCarousel from "../../lib/componants/members/researchCarousel.svelte";
 
 	let LS = false;
 	let screenSize; 
@@ -103,8 +104,18 @@
 		</ContentBox>
 
 		<ContentBox type="standard-shaddow-dark">
-			Work in Progress...
+			<ResearchCarousel/>
 		</ContentBox>
+
+		<ContentBox type="standard-shaddow-black" addedTopMargin=true >
+			<div style="text-align: center; padding: 4px">
+				<h3 class="gradient-text" id="Report"> <b>Report a Scam/ Fraud</b></h3>
+			</div>
+		</ContentBox>
+
+		<ContentBox type="standard-shaddow-dark">
+			<FraudReport/>
+		</ContentBox>		
 
 		{:else}
 		<!-- NOT A MEMBER -->
@@ -157,17 +168,7 @@
 				</div>
 			</span>
 		</DoubleContentBox>
-		{/if}
-
-		<ContentBox type="standard-shaddow-black" addedTopMargin=true >
-			<div style="text-align: center; padding: 4px">
-				<h3 class="gradient-text" id="Report"> <b>Report a Scam/ Fraud</b></h3>
-			</div>
-		</ContentBox>
-
-		<ContentBox type="standard-shaddow-dark">
-			<FraudReport/>
-		</ContentBox>			
+		{/if}	
 	</span>
 
 	<span slot="foot">

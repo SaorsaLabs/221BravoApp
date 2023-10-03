@@ -1326,7 +1326,7 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
         return true;
     }
 
-    let processed_ok_fn:bool;
+    let mut processed_ok_fn = true;
     processed_ok_fn = RUNTIME_STATE.with(|state| {
         let rts = &mut state.borrow_mut();
         let data = rts.data.borrow_mut();

@@ -158,7 +158,7 @@ async function getData(token, ID, subAccount) { // , min, max, start, end
             // check if search ac is known to the global list
             let globalResLen = jobArrayDone2[1][0]?.length ?? 0;
             for(i=0; i<globalResLen; i++){
-                if (AC == jobArrayDone2[1][0][i][0]) {
+                if (combinedAC == jobArrayDone2[1][0][i][0]) {
                     flags.knownAccount = jobArrayDone2[1][0][i][1];
                 }
             }
@@ -838,10 +838,23 @@ async function getLinkedTokens(searchedToken, ID, icpLinkedPrincipal){
     for(i=0; i<tLen; i++){
         if(canister_ids[i].token != searchedToken){
             if(canister_ids[i].token == "ICP") {
-                // ICP Search
-                // Check if ID is linked to Principal.. then search based on that. 
-                // Also iterate over the ICP accounts to find active ones. 
-                // TODO!
+                // check if principal or ac
+                if(ID.includes("-") && ID.includes(".")){
+                    let PS = parsePrincipalSubAccountString(ID);
+                    let P = PS.principal;
+                    let S = PS.subaccount;
+                    if(S == DEFAULT_SUBACCOUNT ){
+                        // only get ICP Account if search account is the default principal id (Not a subaccount)
+                        let actor = icActor(backendCanisterID, backendCanisterIDL, Frontend_ID);
+                        let res = await actor.get_single_account(P, 0);
+                        let icpActor = icActor(canister_ids[i].index, icpIndexIDL, Frontend_ID);
+                        let res2 = await icpActor.get_overview_by_id(res);
+                        let resLen = res2?.length ?? 0;
+                        if (resLen != 0 ){
+                            icrcObj[canister_ids[i].token] = true;
+                        }
+                    }
+                }
             } else {
                 // ICRC Search
                 let actor = icActor(canister_ids[i].index, icrcIndexIDL, Frontend_ID);

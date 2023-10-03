@@ -6,7 +6,7 @@
     export let selected = 0;
 
     // underline selected
-    let numButtons = 11;
+    let numButtons = 12;
     let opAR = [];
     for(let i = 0; i<numButtons; i++){
         if(selected == i+1){
@@ -115,6 +115,15 @@
                         flat={true} 
                         noBG={true}>
                             IC-X
+                        </Button>
+                    </a>
+                    <span class="pad">|</span>
+                    <a href="/explore/visualblocks/nuance" class={opAR[11]}>
+                        <Button 
+                        slim={true} 
+                        flat={true} 
+                        noBG={true}>
+                            Nuance
                         </Button>
                     </a>
                     <!--<span class="pad"></span>

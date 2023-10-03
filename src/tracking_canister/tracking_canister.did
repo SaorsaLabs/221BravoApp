@@ -1,0 +1,69 @@
+// T/M Canister  v0.2.1
+
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+
+type LogEntry = record {timestamp: text; text: text};
+
+type SmallTX = record {
+    block: nat32;
+    time: nat64;
+    from: opt nat32; 
+    to: opt nat32;
+    tx_type: nat8;
+    value: nat64;
+};
+
+type timeSearchArgs = record {
+    id: text;
+    start: nat64; 
+    end: nat64;
+};
+
+type MixerWorkingStats = record {
+    last_tx_time: nat64;
+    last_run_time: nat64;
+    awaiting_flagging: nat64;
+    is_upto_date: bool;
+};
+
+type ExchangeOverviewTotal = record {
+    name: text; 
+    total_balance: nat64;
+    num_transactions: nat64;
+    total_sent: nat64;
+    num_sent: nat64;
+    total_received: nat64;
+    num_received: nat64;
+};
+
+type ExchangeCollection = record {
+    binance: ExchangeOverviewTotal;
+    kucoin: ExchangeOverviewTotal; 
+    gate: ExchangeOverviewTotal;
+    coinex: ExchangeOverviewTotal;
+    kraken: ExchangeOverviewTotal;
+    bitfinex: ExchangeOverviewTotal;
+    coinbase: ExchangeOverviewTotal; 
+    huobi: ExchangeOverviewTotal
+};
+
+service : {
+    "add_authorised": (text) -> (text);
+    "remove_authorised": (text) -> (text);
+    "get_all_authorised": () -> (vec text) query;
+    "get_canister_name": () -> (text) query;
+    "set_canister_name": (text) -> (text);
+    "are_stats_public": () -> (bool) query;
+    "set_stats_public": (bool) -> (text); 
+    "get_cycles_balance": () -> (nat64) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "get_canister_logs": () -> (vec LogEntry) query;
+    "get_mixer_workings_stats": () -> (MixerWorkingStats) query;
+    "get_exchange_data": () -> (ExchangeCollection) query;
+    
+    // Timer Methods
+    "stop_all_timers": () -> (text);
+    "check_and_start_mixer_timer": (nat64) -> (text);
+    "check_and_start_exchange_timer": (nat64) -> (text);
+}
+

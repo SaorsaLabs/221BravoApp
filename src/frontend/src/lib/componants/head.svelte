@@ -24,7 +24,7 @@
     .head{
         flex: auto;
         background-color: rgb(0, 0, 0);
-         height: 61px;  /*keep row the same*/
+         height: 65px;  /*keep row the same*/
          min-width: 700px;
          border-top: 0;
          border-left: 0;

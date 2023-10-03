@@ -12,10 +12,10 @@
 		processTopBurnData,
 		getICRC_TotalSupply } from '../../../../lib/code/fetchStats.js';
 	import Loading from "../../../../lib/shared/loading.svelte";
-	import ckBTCLogo from '$lib/images/ckBTC_logo.svg';
+	import projectLogo from '$lib/images/projectLogos/NuanceLogo.png';
     import TopHolderTable from "../../../../lib/componants/statsComponsnts/topHolderTable.svelte";
     import HeadCards from "../../../../lib/componants/statsComponsnts/headCards.svelte";
-	import { ckBTC_decimals } from "../../../../lib/code/constants";
+	import { NUANCE_decimals } from "../../../../lib/code/constants";
 	import Button from "../../../../lib/shared/button.svelte";
 	import TopTxTable from "../../../../lib/componants/statsComponsnts/topTxTable.svelte";
 	import MintBurnDonutChart from "../../../../lib/componants/charts/mintBurnDonutChart.svelte";
@@ -23,12 +23,11 @@
 	import HiddenContent from "../../../../lib/componants/hiddenContent.svelte";
 	import { authStore, authTrigger } from "../../../../lib/stores/authStore";
 	import { browser } from '$app/environment';
-    import DailyActive from "../../../../lib/componants/statsComponsnts/dailyActive.svelte";
+	import DailyActive from "../../../../lib/componants/statsComponsnts/dailyActive.svelte";
 	import WebLinksTable from "../../../../lib/componants/statsComponsnts/webLinksTable.svelte";
 	import SnsCarousel from "../../../../lib/componants/SNSCarousel.svelte";
 	import StatsSubHead from "../../../../lib/componants/statsComponsnts/statsSubHead.svelte";
 	
-
 	let LS = false;
     // Logged In? 
     authTrigger.subscribe(value =>{
@@ -40,22 +39,22 @@
         }
     });
 
-	let decimals  = ckBTC_decimals;
+	let decimals  = NUANCE_decimals;
     let vPower = 1/Math.pow(10, decimals);
-	let token = "CKBTC";
+	let token = "NUANCE";
 
 	let socials = [
-		{platform: "twitter", url: "https://twitter.com/dfinity"},
-		{platform: "openchat", url: "https://oc.app/group/zcm6o-qqaaa-aaaar-af4wa-cai"},
-		{platform: "dscvr", url: "https://dscvr.one/p/ckbtc"},
+		{platform: "twitter", url: "https://twitter.com/nuancedapp"},
+		{platform: "dscvr", url: "https://dscvr.one/p/nuance"},
+		{platform: "distrikt", url: "https://distrikt.app/u/Nuance_Official"}
 	];
-	let canisterDashboard = "https://dashboard.internetcomputer.org/bitcoin";
-	let whitepaperURL = "https://medium.com/dfinity/chain-key-bitcoin-a-decentralized-bitcoin-twin-ceb8f4ddf95e";
-	let githubURL = "https://github.com/dfinity/ic/tree/d2b3c3ee60b87b8d456f91ffb234f09b799770de/rs/bitcoin/ckbtc";
-	let teamWebsite = "https://dfinity.org/";
-	let marketplace = "https://app.sonic.ooo/swap";
-	let marketplace2 = "https://iclight.io/ICDex/ckBTC/ICP";
-	let marketplace3 = "https://app.icpswap.com/swap";
+	let canisterDashboard = "https://dashboard.internetcomputer.org/sns/rzbmc-yiaaa-aaaaq-aabsq-cai";
+	let whitepaperURL = "https://nuance.xyz/publication/nuance/white-paper";
+	let githubURL = "https://github.com/Aikindapps/Nuance/";
+	let teamWebsite = "https://nuance.xyz/";
+	let marketplace = "";
+	let marketplace2 = "";
+	let marketplace3 = "";
 
 	let promise = getStats();
 	let hourlyData;
@@ -90,7 +89,6 @@
 	let supChangePctH, supChangePctD;
 
 	async function getStats(){
-
 		let i;
 		// HOURLY STATS
 		hourlyData = await getICRC_Stats(token, "hourly");
@@ -264,9 +262,8 @@
 			burn: topBurnDaily,
 		};
 	}
-	
-	
 </script>
+
 <svelte:head>
 	<title>Stats : {token}</title>
 	<meta name="description" content="Internet Computer Statistics" />
@@ -275,7 +272,7 @@
 <LayoutCombine>
 	<span slot="head">
 		<Head/>
-		<StatsSubHead selected="2" />
+		<StatsSubHead selected="12" />
 	</span>
 
 	<span slot="body">
@@ -284,7 +281,7 @@
 				<table style="width: 100%">
 					<tr>
 						<td style="width: 70px;">
-							<img class="headAlign" src={ckBTCLogo} alt="ckBTC Logo" width="50px"/>
+							<img class="headAlign" src={projectLogo} alt="Catalyze Logo" width="50px"/>
 						</td>
 						<td >
 							<p class="tokenTextHead">{token}</p>
@@ -292,9 +289,9 @@
 						<td class="box" style="width: 100%">
 							<HeadCards 
 								token={token} 
-								tradePair={"CKBTC/ICP"} 
-								searchURL={"/search/ckbtc"} 
-								tradeURL={"https://iclight.io/ICDex/ckBTC/ICP"}
+								tradePair={"NUANCE/ICP"} 
+								searchURL={"/search/nuance"} 
+								tradeURL={"https://iclight.io/ICDex/NUANCE/ICP"}
 								is_icrc={true}
 								quoteCurrency={"icp"}
 							/>
@@ -315,7 +312,7 @@
 					dailyData={dailyExport} 
 					hours={hourLen} 
 					days={dayLen} 
-					token={"ckBTC"}
+					token={token}
 				/>
 			{/await}
 		</ContentBox>
@@ -434,7 +431,7 @@
 		{#if LS == false || LS == "false"} 
 			<ContentBox type={"standard-shaddow-black"}>
 				<div style="padding:5px;"> 
-					<HiddenContent>Become a member to see {token} top holders and total active daily users </HiddenContent>
+					<HiddenContent>Become a member to see top {token} holders</HiddenContent>
 				</div>
 			</ContentBox>
 			{:else}
@@ -459,13 +456,14 @@
 						</tr>
 					</table>
 					{#if showTopHolder == "accounts"}
-						<TopHolderTable data={topAccounts} isIcrc={true} showSubAccounts={true} token={"CKBTC"}/>
+						<TopHolderTable data={topAccounts} isIcrc={true} showSubAccounts={true} token={token}/>
 					{:else}
-						<TopHolderTable data={topPrincipals} isIcrc={true} showSubAccounts={false} token={"CKBTC"}/>
+						<TopHolderTable data={topPrincipals} isIcrc={true} showSubAccounts={false} token={token}/>
 					{/if}
 				{/await}
 			</ContentBox>
 		{/if}
+
 
 		<!-- Daily Active Accounts (Snapshot Canister) -->
 		{#if LS == true || LS == "true"} 
@@ -473,7 +471,8 @@
 				{#await promise}
 					<Loading/>
 				{:then}
-					<DailyActive token={token} is_icrc={true}/>
+					<!-- Note name on snapshot canister is not in CAPS -->
+					<DailyActive token={"NUANCE"} is_icrc={true}/>
 				{/await}
 			</ContentBox>
 		{/if}
@@ -495,8 +494,7 @@
 			<SnsCarousel/>
 		</ContentBox>
 
-	<!-- end body slot -->
-	</span> 
+	</span>
 
 	<span slot="foot">
 		<Footer/>

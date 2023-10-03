@@ -38,6 +38,11 @@ export const dynamicContentIDL = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'add_research_item' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'are_stats_public' : IDL.Func([], [IDL.Bool], ['query']),
     'get_all_authorised' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'get_canister_logs' : IDL.Func([], [IDL.Vec(LogEntry)], ['query']),
@@ -46,6 +51,7 @@ export const dynamicContentIDL = ({ IDL }) => {
     'get_memory_stats' : IDL.Func([], [MemoryStats], ['query']),
     'read_all_project_buckets' : IDL.Func([], [ProjectCollection], ['query']),
     'read_news_items' : IDL.Func([], [IDL.Vec(NewsItem)], ['query']),
+    'read_research_items' : IDL.Func([], [IDL.Vec(NewsItem)], ['query']),
     'read_single_project_bucket' : IDL.Func(
         [IDL.Nat8],
         [IDL.Vec(ProjectCard)],
@@ -54,6 +60,7 @@ export const dynamicContentIDL = ({ IDL }) => {
     'remove_authorised' : IDL.Func([IDL.Text], [IDL.Text], []),
     'remove_news_item' : IDL.Func([IDL.Nat64], [IDL.Text], []),
     'remove_project' : IDL.Func([IDL.Nat64, IDL.Nat8], [IDL.Text], []),
+    'remove_research_item' : IDL.Func([IDL.Nat64], [IDL.Text], []),
     'set_canister_name' : IDL.Func([IDL.Text], [IDL.Text], []),
     'set_stats_public' : IDL.Func([IDL.Bool], [IDL.Text], []),
   });

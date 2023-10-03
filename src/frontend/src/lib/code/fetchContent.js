@@ -14,6 +14,18 @@ async function get_all_news(){
     return ret;
 }
 
+async function get_all_research(){
+    const ID = getIdentity();
+    let actor = icActor(dynamicContentCanister, dynamicContentIDL, ID);
+    let news = await actor.read_research_items();
+    let ret = news.reverse();
+    let retLen = ret.length ?? 0;
+    for(let i=0; i<retLen; i++){
+        ret[i].idx = i;
+    }
+    return ret;
+}
+
 async function get_all_projects(){
     const ID = getIdentity();
     let actor = icActor(dynamicContentCanister, dynamicContentIDL, ID);
@@ -31,5 +43,6 @@ async function get_single_project(bucket){
 export {
     get_all_news,
     get_all_projects,
-    get_single_project
+    get_single_project,
+    get_all_research
 }

@@ -479,6 +479,7 @@ pub enum TransactionType {
     Transaction,
     Mint,
     Burn,
+    Approve
 }
 impl TransactionType {
     pub fn to_string(&self) -> String {
@@ -486,6 +487,7 @@ impl TransactionType {
             TransactionType::Transaction => "Transaction".to_string(),
             TransactionType::Mint => "Mint".to_string(),
             TransactionType::Burn => "Burn".to_string(),
+            TransactionType::Approve => "Approve".to_string(),
         }
     }
 }
@@ -551,6 +553,15 @@ impl AccountTree {
                 ac.overview.debit_account(stx.time, stx.value, self.transaction_fee);
             },
             None => { log("Error - cannot send from a non-existent account (process_transfer_from)"); },
+        }
+    }
+
+    pub fn process_approve_from(&mut self, account_ref: &u32, stx: &SmallTX ){
+        match self.accounts.get_mut(account_ref) {
+            Some(mut ac) => {
+                ac.overview.debit_account(stx.time, 0, self.transaction_fee);
+            },
+            None => { log("Error - cannot send from a non-existent account (process_approve_from)"); },
         }
     }
 
@@ -710,7 +721,7 @@ pub struct AccountData {
  }
 
 // [][] -- DFINITY ICRC TYPES -- [][]
- // Types created by Dfinity for interacting with ICP Ledger
+ // Types created by Dfinity for interacting with ICP Ledger (ICRC1/ ICRC2/ ICRC3)
  // https://github.com/dfinity/ic/blob/master/rs/rosetta-api/icp_ledger/src/lib.rs#L739
  
 pub type BlockIndex = Nat;
@@ -723,13 +734,14 @@ pub struct GetBlocksRequest {
     pub length: Nat,
 }
 
-// Representation of a Transaction which supports the Icrc1 Standard functionalities
+// Representation of a Transaction which supports the Icrc1 & Icrc2 Standard functionalities
 #[derive(CandidType, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Transaction {
     pub kind: String,
     pub mint: Option<Mint>,
     pub burn: Option<Burn>,
     pub transfer: Option<Transfer>,
+    pub approve: Option<Approve>,
     pub timestamp: u64,
 }
 
@@ -745,6 +757,7 @@ pub struct Mint {
 pub struct Burn {
     pub amount: Nat,
     pub from: Account,
+    pub spender: Option<Account>,
     pub memo: Option<Memo>,
     pub created_at_time: Option<u64>,
 }
@@ -754,6 +767,19 @@ pub struct Transfer {
     pub amount: Nat,
     pub from: Account,
     pub to: Account,
+    pub spender: Option<Account>,
+    pub memo: Option<Memo>,
+    pub fee: Option<Nat>,
+    pub created_at_time: Option<u64>,
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct Approve {
+    pub from: Account,
+    pub spender: Account,
+    pub amount: Nat,
+    pub expected_allowance: Option<Nat>,
+    pub expires_at: Option<u64>,
     pub memo: Option<Memo>,
     pub fee: Option<Nat>,
     pub created_at_time: Option<u64>,
