@@ -1,0 +1,66 @@
+// Flags/ Fraud Report Canister - 221Bravo App  v0.1.4
+
+type MemoryStats = record {memory: nat64; heap_memory: nat64};
+
+type LogEntry = record {timestamp: text; text: text};
+
+type FraudReport = record {
+    account: text;
+    evidence: text;
+    urls: text;
+    submitter: text;
+};
+
+type FlagData = variant {
+  GenesisFlag : record { id: text; flag_from: nat64; time_added: nat64; text: text};
+  FraudFlag: record { id: text; flag_from: nat64; time_added: nat64; link: text; flagged_by: text };
+  MixerFlag: record { id: text; flag_from: nat64; time_added: nat64; text: text; level: nat8};
+  CommunityFlag: record {id: text; flag_from: nat64; time_added: nat64; text: text; link: text; number_of_flags: nat32 };
+  SARFlag: record { id: text; flag_from: nat64; time_added: nat64; link: text; flagged_by: text };
+};
+
+type FlagStats = record {
+    genesis_count: nat64;
+    fraud_count: nat64;
+    mixer_count: nat64;
+    community_count: nat64;
+    sar_count: nat64
+};
+
+type MixerLinkInput = record {
+    id: text; 
+    from: nat64;
+    text: text;
+    level: nat8;
+};
+
+service : {
+    "add_authorised": (text) -> (text);
+    "remove_authorised": (text) -> (text);
+    "get_all_authorised": () -> (vec text) query;
+    "get_canister_name": () -> (text) query;
+    "set_canister_name": (text) -> (text);
+    "are_stats_public": () -> (bool) query;
+    "set_stats_public": (bool) -> (text); 
+    "get_cycles_balance": () -> (nat64) query;
+    "get_memory_stats": () -> (MemoryStats) query;
+    "get_canister_logs": () -> (vec LogEntry) query;
+    // fraud methods
+    "add_fraud_report": (text, text, text, text) -> (text); // account, evidence, urls, submitter
+    "remove_fraud_report": (nat64) -> (text); // index from 0
+    "read_fraud_reports": () -> (vec FraudReport) query;
+    // flags methods
+    "add_genesis_flag": (text, nat64, text) -> (text); // a/c, flag_from, free text
+    "remove_genesis_flag": (text) -> (text);           // a/c
+    "add_fraud_flag": (text, nat64, text, text, text) -> (text); // a/c, flag_from, free text, link text, flagged_by
+    "remove_fraud_flag": (text) -> (text);                 // a/c
+    "add_mixer_flag": (text, nat64, text, nat8) -> (text); // a/c, flag_from, free text, level (how far removed from root)
+    "remove_mixer_flag": (text) -> (text);             // a/c
+    "add_community_flag": (text, nat64, text, text, nat32) -> (text); // a/c, flag_from, free_text, link, num of flags
+    "remove_community_flag": (text) -> (text);         // a/c
+    "add_sar_flag": (text, nat64, text, text, text) -> (text); // a/c, flag_from, free text, link text, flagged_by
+    "remove_sar_flag": (text) -> (text);                 // a/c
+    "get_flags": (text) -> (opt vec FlagData) query;   // a/c
+    "add_multiple_mixer_flags": (vec MixerLinkInput) -> (text); 
+    "get_flag_stats": () -> (FlagStats) query;
+}

@@ -1,0 +1,16 @@
+[package]
+name = "flags_canister"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+path = "lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+ic-cdk = "0.10.0"
+ic-cdk-macros = "0.7.1"
+candid = "0.9.5"
+serde = "1.0.159"
+ic-stable-memory = "0.4"
