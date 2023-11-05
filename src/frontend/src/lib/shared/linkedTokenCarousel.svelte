@@ -12,6 +12,7 @@
     import catLogo from '$lib/images/projectLogos/catalyzeLogo.png';
     import boomLogo from '$lib/images/projectLogos/BoomLogo.png';
     import icxLogo from '$lib/images/projectLogos/IcxLogo.png';
+    import nuanceLogo from '$lib/images/projectLogos/NuanceLogo.png';
     
     export let linkedTokenData;
     export let searchedPrincipal = "";
@@ -31,6 +32,7 @@
     {idx: 8, image: catLogo, text: "Catalyze", ticker: "CAT", link: "/search/cat"},
     {idx: 9, image: boomLogo, text: "BoomDAO", ticker: "BOOM", link: "/search/boom"},
     {idx: 10, image: icxLogo, text: "IC-X", ticker: "ICX", link: "/search/icx"},
+    {idx: 11, image: nuanceLogo, text: "NUANCE", ticker: "NUANCE", link: "/search/nuance"},
     ];
 
     let icpAccount = "";

@@ -80,7 +80,7 @@
                 </a>
             </td>
             <td class="alignSelf"> 
-                <a href="/search/icp">
+                <a href="/search/token/ICP">
                 <Button type="head" 
                 flat={true} 
                 noBG={true}>

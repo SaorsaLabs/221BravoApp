@@ -145,21 +145,15 @@
                        </div>
                     </td>
                     <td>
-                        {#if TKN.token == "SNS1"}
-                            {"DRAGGINZ"}
-                        {:else if TKN.token == "CAT"}
-                            {"CATALYZE"}
-                        {:else}
-                            {TKN.token}
-                        {/if}
+                        {TKN.shortName}
                     </td>
                     <td>{TKN.holders}</td>
                     <td>{TKN.transactions}</td>
                     <td>{TKN.active}</td>
                     <td>
-                        <a href="./explore/stats/{TKN.link}/"><Button type="blueTP" slim={true} flat={true} noBG={false} >Token {@html "<br>"} Stats</Button></a> 
-                        <a href="./explore/visualblocks/{TKN.link}/"><Button type="blueTP" slim={true} flat={true} noBG={false} >Visual {@html "<br>"} Explorer</Button></a>
-                        <a href="./search/{TKN.link}/"><Button type="blueTP" slim={true} flat={true} noBG={false} > Search {@html "<br>"} Token </Button></a>
+                        <a href="./explore/stats/token/{TKN.link}/"><Button type="blueTP" slim={true} flat={true} noBG={false} >Token {@html "<br>"} Stats</Button></a> 
+                        <a href="./explore/visualblocks/token/{TKN.link}/"><Button type="blueTP" slim={true} flat={true} noBG={false} >Visual {@html "<br>"} Explorer</Button></a>
+                        <a href="./search/token/{TKN.link}/"><Button type="blueTP" slim={true} flat={true} noBG={false} > Search {@html "<br>"} Token </Button></a>
                     </td>
                 </tr>	
             {/each}

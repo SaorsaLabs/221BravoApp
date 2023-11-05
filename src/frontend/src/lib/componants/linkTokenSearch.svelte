@@ -1,9 +1,9 @@
 <script>
 	import Button from "../../lib/shared/button.svelte";
     import { browser } from '$app/environment';
-    import { getAllLinkedTokens } from '../code/searchRequest_v2';
+    import { getAllLinkedTokens } from '../code/searchRequest_v3';
     import { parsePrincipalSubAccountString } from "../code/utils";
-    import LinkedTokenCarousel from "../shared/linkedTokenCarousel.svelte";
+    import LinkedTokenCarousel from "../shared/linkedTokenCarousel_v2.svelte";
     import Loading from "../shared/loading.svelte";
 
     export let inputType = 'both';
@@ -58,7 +58,6 @@
         if(!error){
             searchActive = true;
             searchResult = await getAllLinkedTokens(inptAC, inptSA, false);
-            console.log(searchResult);
             if (Object.keys(searchResult?.linkedTokens.ICRC).length == 0) { 
                 resText = 'Search returned 0 results'; 
             }

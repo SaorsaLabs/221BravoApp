@@ -7,7 +7,7 @@ import { icpIndexIDL } from './IDL/icpIndex.js';
 import { combinePrincipalSubAccount, processPromises, parsePrincipalSubAccountString, getUniqueValues } from './utils.js';
 import { authStore } from '../stores/authStore.js';
 
-async function getData(token, ID, subAccount) { // , min, max, start, end
+async function getData(token, ID, subAccount) { 
     // destructure if needed
     if (ID.includes('.', 0)){
         let ds = parsePrincipalSubAccountString(ID);
@@ -888,13 +888,16 @@ async function getAllLinkedTokens(ID, sub, returnData){
     let icrcID = combinePrincipalSubAccount(ID, sub);
     if(ID.includes("-")){
         // search by principal
-        account = await getDefaultAccountFromPrincipal(ID);
-        let actor = icActor(canister_ids[0].index, icpIndexIDL, Frontend_ID);
-        let res = await actor.get_overview_by_id(account); 
-        let resLen = res?.length ?? 0;
-        if (resLen != 0 ){
-            if(returnData == true) retData.push({token: "ICP" , data: res});
-            icrcObj["ICP"] = true;
+        if(sub == DEFAULT_SUBACCOUNT){
+            // only do ICP account if sub account is default!
+            account = await getDefaultAccountFromPrincipal(ID);
+            let actor = icActor(canister_ids[0].index, icpIndexIDL, Frontend_ID);
+            let res = await actor.get_overview_by_id(account); 
+            let resLen = res?.length ?? 0;
+            if (resLen != 0 ){
+                if(returnData == true) retData.push({token: "ICP" , data: res});
+                icrcObj["ICP"] = true;
+            }
         }
         for(i=1; i<tLen; i++){ // index 0 already done.
             let actor = icActor(canister_ids[i].index, icrcIndexIDL, Frontend_ID);
@@ -932,7 +935,39 @@ async function getAllLinkedTokens(ID, sub, returnData){
     } else {
         return {linkedTokens: combined}; // for linked token search (index.html)
     }
-}   
+}
+
+// For Combined Search (Members)
+async function searchAllLinkedTokens(ID, sub){
+    let tLen = canister_ids.length ?? 0;
+    let i;
+    let combinedCalls = [];
+    let combinedCallsRes = [];
+    let icrcObj = {};
+    let retData = [];
+    let account; 
+
+
+    for(i=0; i<tLen; i++){ // index 0 already done.
+        combinedCalls[i] = getData(canister_ids[i].token, ID, sub);
+    }
+    combinedCallsRes = await processPromises(combinedCalls);
+
+    let ccResLen = combinedCallsRes.length ?? 0;
+    let returnAR = [];
+    for(i=0; i<ccResLen; i++){
+        if (combinedCallsRes[i] != "nothing-found"){
+            returnAR.push(
+                {
+                    token: canister_ids[i].token,
+                    tokenData: combinedCallsRes[i]
+                }
+            );
+        }
+    }
+
+    return returnAR;
+}  
 
 async function checkNFTs(ID){
     let nftData;
@@ -1072,6 +1107,7 @@ export {
     getUserNamedAccounts,
     getPublicNamedAccounts,
     checkFlags,
-    submitFraudReport
+    submitFraudReport,
+    searchAllLinkedTokens
 };
 

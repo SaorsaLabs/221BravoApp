@@ -51,7 +51,7 @@ if (data.direction == 'out') {
                 {#if data.direction == 'in'}
                     From: {data.longID}
                     {#if data.longID != null && data.longID != "null"}
-                        <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.longID} icrcAccount={false}/>
                         <SaveButton text={data.longID} icrcAccount={false}/>
                     {/if}
@@ -62,7 +62,7 @@ if (data.direction == 'out') {
                     {@html "<br>"}
                     A/C: {data.longSubID}
                     {#if data.longSubID != null && data.longSubID != "null"}
-                        <a href="/search/ID/{data.token}?id={data.longSubID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longSubID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.longSubID} icrcAccount={false}/>
                         <SaveButton text={data.longSubID} icrcAccount={false}/>
                     {/if}
@@ -73,7 +73,7 @@ if (data.direction == 'out') {
                 {:else}
                     From: {data.target}
                     {#if data.target != null && data.target != "null"}
-                        <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.target} icrcAccount={false}/>
                         <SaveButton text={data.target} icrcAccount={false}/>
                     {/if}
@@ -84,7 +84,7 @@ if (data.direction == 'out') {
                     {@html "<br>"}
                     A/C: {data.targetSub}
                     {#if data.targetSub != null && data.targetSub != "null"}
-                        <a href="/search/ID/{data.token}?id={data.targetSub}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.targetSub}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.targetSub} icrcAccount={false}/>
                         <SaveButton text={data.targetSub} icrcAccount={false}/>
                     {/if}
@@ -102,7 +102,7 @@ if (data.direction == 'out') {
                 {#if data.direction == 'in'}
                     To: {data.target}
                     {#if data.target != null && data.target != "null"}
-                        <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.target} icrcAccount={false}/>
                         <SaveButton text={data.target} icrcAccount={false}/>
                     {/if}
@@ -113,7 +113,7 @@ if (data.direction == 'out') {
                     {@html "<br>"}
                     A/C: {data.targetSub}
                     {#if data.targetSub != null && data.targetSub != "null"}
-                        <a href="/search/ID/{data.token}?id={data.targetSub}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.targetSub}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.targetSub} icrcAccount={false}/>
                         <SaveButton text={data.targetSub} icrcAccount={false}/>
                     {/if}
@@ -124,7 +124,7 @@ if (data.direction == 'out') {
                 {:else}
                     To: {data.longID}
                     {#if data.longID != null && data.longID != "null"}
-                        <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.longID} icrcAccount={false}/>
                         <SaveButton text={data.longID} icrcAccount={false}/>
                     {/if}
@@ -135,7 +135,7 @@ if (data.direction == 'out') {
                     {@html "<br>"}
                     A/C: {data.longSubID}
                     {#if data.longSubID != null && data.longSubID != "null"}
-                        <a href="/search/ID/{data.token}?id={data.longSubID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longSubID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.longSubID} icrcAccount={false}/>
                         <SaveButton text={data.longSubID} icrcAccount={false}/>
                     {/if}
@@ -188,7 +188,7 @@ if (data.direction == 'out') {
                         {#if data.direction == 'in'}
                             From: {data.longID}
                             {#if data.longID != null && data.longID != "null"}
-                                <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                                <a href="/search/token/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                                 <CopyButton text={data.longID} icrcAccount={false}/>
                                 <SaveButton text={data.longID} icrcAccount={false}/>
                             {/if}
@@ -199,7 +199,7 @@ if (data.direction == 'out') {
                         {:else}
                             From: {data.target}
                             {#if data.target != null && data.target != "null"}
-                                <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                                <a href="/search/token/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                                 <CopyButton text={data.target} icrcAccount={false}/>
                                 <SaveButton text={data.target} icrcAccount={false}/>
                             {/if}
@@ -217,7 +217,7 @@ if (data.direction == 'out') {
                         {#if data.direction == 'in'}
                             To: {data.target}
                             {#if data.target != null && data.target != "null"}
-                                <a href="/search/ID/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                                <a href="/search/token/{data.token}?id={data.target}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                                 <CopyButton text={data.target} icrcAccount={false}/>
                                 <SaveButton text={data.target} icrcAccount={false}/>
                             {/if}
@@ -228,7 +228,7 @@ if (data.direction == 'out') {
                         {:else}
                             To: {data.longID}
                             {#if data.longID != null && data.longID != "null"}
-                                <a href="/search/ID/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                                <a href="/search/token/{data.token}?id={data.longID}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                                 <CopyButton text={data.longID} icrcAccount={false}/>
                                 <SaveButton text={data.longID} icrcAccount={false}/>
                             {/if}
@@ -280,7 +280,7 @@ if (data.direction == 'out') {
                     <div class="col textAdj">
                             From: {data.fromAccount}
                             {#if data.fromAccount != null && data.fromAccount != "null"}
-                                <a href="/search/ID/{data.token}?id={data.fromAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                                <a href="/search/token/{data.token}?id={data.fromAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                                 <CopyButton text={data.fromAccount} icrcAccount={false}/>
                                 <SaveButton text={data.fromAccount} icrcAccount={false}/>
                             {/if}
@@ -296,7 +296,7 @@ if (data.direction == 'out') {
                     <div class="col textAdj bottomRule">
                             To: {data.toAccount}
                             {#if data.toAccount != null && data.toAccount != "null"}
-                                <a href="/search/ID/{data.token}?id={data.toAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                                <a href="/search/token/{data.token}?id={data.toAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                                 <CopyButton text={data.toAccount} icrcAccount={false}/>
                                 <SaveButton text={data.toAccount} icrcAccount={false}/>
                             {/if}
@@ -351,7 +351,7 @@ if (data.direction == 'out') {
                         From: Mint Transaction
                     {/if}
                     {#if data.fromPrincipal != null && data.fromPrincipal != "null" && data.fromPrincipal != "N/A"}
-                        <a href="/search/ID/{data.token}?id={data.fromPrincipal}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.fromPrincipal}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.fromPrincipal} icrcAccount={false}/>
                         <SaveButton text={data.fromPrincipal} icrcAccount={false}/>
                     {/if}
@@ -362,7 +362,7 @@ if (data.direction == 'out') {
                     {@html "<br>"}
                     A/C: {data.fromAccount}
                     {#if data.fromAccount != null && data.fromAccount != "null" && data.fromAccount != "N/A"}
-                        <a href="/search/ID/{data.token}?id={data.fromAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.fromAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.fromAccount} icrcAccount={false}/>
                         <SaveButton text={data.fromAccount} icrcAccount={false}/>
                     {/if}
@@ -382,7 +382,7 @@ if (data.direction == 'out') {
                         To : Burn Transaction
                     {/if}
                     {#if data.toPrincipal != null && data.toPrincipal != "null" && data.toPrincipal != "N/A"}
-                        <a href="/search/ID/{data.token}?id={data.toPrincipal}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.toPrincipal}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.toPrincipal} icrcAccount={false}/>
                         <SaveButton text={data.toPrincipal} icrcAccount={false}/>
                     {/if}
@@ -393,7 +393,7 @@ if (data.direction == 'out') {
                     {@html "<br>"}
                     A/C: {data.toAccount}
                     {#if data.toAccount != null && data.toAccount != "null" && data.toAccount != "N/A"}
-                        <a href="/search/ID/{data.token}?id={data.toAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.toAccount}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton text={data.toAccount} icrcAccount={false}/>
                         <SaveButton text={data.toAccount} icrcAccount={false}/>
                     {/if}
@@ -444,8 +444,8 @@ if (data.direction == 'out') {
                 <div class="col textAdj">
                     {#if data.direction == 'in'}
                         From: {data?.longAC ?? "Mint Account"}
-                        {#if data.longAC != null && data.longAC != "null"}
-                            <a href="/search/ID/{data.token}?id={data.longAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        {#if data.longAC != null && data.longAC != "Unknown"}
+                            <a href="/search/token/{data.token}?id={data.longAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.longAC} icrcAccount={false}/>
                             <SaveButton text={data.longAC} icrcAccount={false}/>
                         {/if}
@@ -456,7 +456,7 @@ if (data.direction == 'out') {
                         {#if data.longPR != null && data.longPR != "null" && data.longPR != "Unknown"}
                             {@html "<br>"}
                             {data.longPR}
-                            <a href="/search/ID/{data.token}?id={data.longPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.longPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.longPR} icrcAccount={false}/>
                             <SaveButton text={data.longPR} icrcAccount={false}/>
                         {/if}
@@ -467,7 +467,7 @@ if (data.direction == 'out') {
                     {:else}
                         From: {data?.targetAC ?? "Mint Account"}
                         {#if data.targetAC != null && data.targetAC != "null"}
-                            <a href="/search/ID/{data.token}?id={data.targetAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.targetAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.targetAC} icrcAccount={false}/>
                             <SaveButton text={data.targetAC} icrcAccount={false}/>
                         {/if}
@@ -478,7 +478,7 @@ if (data.direction == 'out') {
                         {#if data.targetPR != null && data.targetPR != "null" && data.targetPR != "Unknown"}
                             {@html "<br>"}
                             {data.targetPR}
-                            <a href="/search/ID/{data.token}?id={data.targetPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.targetPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.targetPR} icrcAccount={false}/>
                             <SaveButton text={data.targetPR} icrcAccount={false}/>
                         {/if}
@@ -497,7 +497,7 @@ if (data.direction == 'out') {
                     {#if data.direction == 'in'}
                         To: {data?.targetAC ?? "Burn Account"}
                         {#if data.targetAC != null && data.targetAC != "null"}
-                            <a href="/search/ID/{data.token}?id={data.targetAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.targetAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.targetAC} icrcAccount={false}/>
                             <SaveButton text={data.targetAC} icrcAccount={false}/>
                         {/if}
@@ -508,7 +508,7 @@ if (data.direction == 'out') {
                         {#if data.targetPR != null && data.targetPR != "null" && data.targetPR != "Unknown"}
                             {@html "<br>"}
                             {data.targetPR}
-                            <a href="/search/ID/{data.token}?id={data.targetPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.targetPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.targetPR} icrcAccount={false}/>
                             <SaveButton text={data.targetPR} icrcAccount={false}/>
                         {/if}
@@ -519,7 +519,7 @@ if (data.direction == 'out') {
                     {:else}
                         To: {data?.longAC ??  "Burn Account"}
                         {#if data.longAC != null && data.longAC != "null"}
-                            <a href="/search/ID/{data.token}?id={data.longAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.longAC}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.longAC} icrcAccount={false}/>
                             <SaveButton text={data.longAC} icrcAccount={false}/>
                         {/if}
@@ -530,7 +530,7 @@ if (data.direction == 'out') {
                         {#if data.longPR != null && data.longPR != "null" && data.longPR != "Unknown"}
                             {@html "<br>"}
                             {data.longPR}
-                            <a href="/search/ID/{data.token}?id={data.longPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.longPR}&sub=''" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton text={data.longPR} icrcAccount={false}/>
                             <SaveButton text={data.longPR} icrcAccount={false}/>
                         {/if}
@@ -585,7 +585,7 @@ if (data.direction == 'out') {
                     From: {data.longID}
                     <!-- search icon -->
                     {#if data.longID != null && data.longID != "null" && data.longSubID == DEFAULT_SUBACCOUNT}
-                        <a href="/search/ID/{data.token}?id={data.longID}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longID}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.longID} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.longID} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
@@ -598,7 +598,7 @@ if (data.direction == 'out') {
                     <!-- sub account -->
                     {#if data.longSubID != DEFAULT_SUBACCOUNT && data.longSubID != null && data.longSubID != "null"}
                     sub-ac: {data.longSubID}
-                        <a href="/search/ID/{data.token}?id={data.longID}&sub={data.longSubID}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longID}&sub={data.longSubID}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.longID} text2 ={data.longSubID}/>
                         <SaveButton icrcAccount={true} text={data.longID} text2={data.longSubID} />
                     {/if}
@@ -611,7 +611,7 @@ if (data.direction == 'out') {
                     <!-- principal -->
                     From: {data.target}
                     {#if data.target != null && data.target != "null" && data.targetSub == DEFAULT_SUBACCOUNT}   
-                        <a href="/search/ID/{data.token}?id={data.target}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.target}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.target} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.target} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
@@ -624,7 +624,7 @@ if (data.direction == 'out') {
                     <!-- sub account -->
                     {#if data.targetSub != null && data.targetSub != "null" && data.targetSub != DEFAULT_SUBACCOUNT}
                     sub-ac: {data.targetSub}
-                        <a href="/search/ID/{data.token}?id={data.target}&sub={data.targetSub}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.target}&sub={data.targetSub}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.target} text2 ={data.targetSub}/>
                         <SaveButton icrcAccount={true} text={data.target} text2={data.targetSub} />
                     {/if}
@@ -644,7 +644,7 @@ if (data.direction == 'out') {
                     <!-- principal -->
                     To: {data.target}
                     {#if data.target != null && data.target != "null" && data.targetSub == DEFAULT_SUBACCOUNT}   
-                        <a href="/search/ID/{data.token}?id={data.target}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.target}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.target} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.target} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
@@ -659,7 +659,7 @@ if (data.direction == 'out') {
                         data.targetSub != DEFAULT_SUBACCOUNT
                     }
                     sub-ac: {data.targetSub}
-                        <a href="/search/ID/{data.token}?id={data.target}&sub={data.targetSub}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.target}&sub={data.targetSub}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.target} text2 ={data.targetSub}/>
                         <SaveButton icrcAccount={true} text={data.target} text2={data.targetSub} />
                     {/if}
@@ -673,7 +673,7 @@ if (data.direction == 'out') {
                     To: {data.longID}
                     <!-- search icon -->
                     {#if data.longID != null && data.longID != "null" && data.longSubID == DEFAULT_SUBACCOUNT}
-                        <a href="/search/ID/{data.token}?id={data.longID}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/></a>
+                        <a href="/search/token/{data.token}?id={data.longID}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/></a>
                         <CopyButton icrcAccount={true} text={data.longID} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.longID} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
@@ -686,7 +686,7 @@ if (data.direction == 'out') {
                     <!-- sub account -->
                     {#if data.longSubID != DEFAULT_SUBACCOUNT && data.longSubID != null && data.longSubID != "null"}
                     sub-ac: {data.longSubID}
-                        <a href="/search/ID/{data.token}?id={data.longID}&sub={data.longSubID}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/></a>
+                        <a href="/search/token/{data.token}?id={data.longID}&sub={data.longSubID}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/></a>
                         <CopyButton icrcAccount={true} text={data.longID} text2 ={data.longSubID}/>
                         <SaveButton icrcAccount={true} text={data.longID} text2={data.longSubID} />
                     {/if}
@@ -743,7 +743,7 @@ if (data.direction == 'out') {
                         From: Mint Transaction
                     {/if}
                     {#if data.fromPrincipal != null && data.fromPrincipal != "null" && data.fromPrincipal != "N/A" && data.fromAccount == DEFAULT_SUBACCOUNT}
-                        <a href="/search/ID/{data.token}?id={data.fromPrincipal}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.fromPrincipal}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.fromPrincipal} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.fromPrincipal} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
@@ -755,7 +755,7 @@ if (data.direction == 'out') {
                     {#if data.fromAccount != DEFAULT_SUBACCOUNT}
                     A/C: {data.fromAccount}
                         {#if data.fromAccount != null && data.fromAccount != "null" && data.fromAccount != "N/A"}
-                            <a href="/search/ID/{data.token}?id={data.fromPrincipal}&sub={data.fromAccount}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/></a>
+                            <a href="/search/token/{data.token}?id={data.fromPrincipal}&sub={data.fromAccount}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/></a>
                             <CopyButton icrcAccount={true} text={data.fromPrincipal} text2 ={data.fromAccount}/>
                             <SaveButton icrcAccount={true} text={data.fromPrincipal} text2={data.fromAccount} />
                         {/if}
@@ -776,7 +776,7 @@ if (data.direction == 'out') {
                         To : Burn Transaction
                     {/if}
                     {#if data.toPrincipal != null && data.toPrincipal != "null" && data.toPrincipal != "N/A" && data.toAccount == DEFAULT_SUBACCOUNT}
-                        <a href="/search/ID/{data.token}?id={data.toPrincipal}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.toPrincipal}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.toPrincipal} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.toPrincipal} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
@@ -788,7 +788,7 @@ if (data.direction == 'out') {
                     {#if data.toAccount != DEFAULT_SUBACCOUNT}
                         A/C: {data.toAccount}
                         {#if data.toAccount != null && data.toAccount != "null" && data.toAccount != "N/A"}
-                            <a href="/search/ID/{data.token}?id={data.toPrincipal}&sub={data.toAccount}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                            <a href="/search/token/{data.token}?id={data.toPrincipal}&sub={data.toAccount}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                             <CopyButton icrcAccount={true} text={data.toPrincipal} text2 ={data.toAccount}/>
                             <SaveButton icrcAccount={true} text={data.toPrincipal} text2={data.toAccount} />
                         {/if}
@@ -843,20 +843,14 @@ if (data.direction == 'out') {
                     From: {data?.longPR ?? "Mint Account"}
                     <!-- search icon -->
                     {#if data.longPR != null && data.longPR != "null" && data.longAC == DEFAULT_SUBACCOUNT}
-                        <a href="/search/ID/{data.token}?id={data.longPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.longPR} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.longPR} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
-                    <!-- principal has name? -->
-                    {#if data.shortPR != undefined && !data?.shortPR?.includes("...") && data.shortPR !="Unknown"} 
-                    {@html "<br>"}
-                        <p style="margin-left:22px; margin-bottom:0px;">{data.shortPR}</p>
-                    {/if}
-                    {@html "<br>"}
                     <!-- sub account -->
                     {#if data.longAC != DEFAULT_SUBACCOUNT && data.longAC != null && data.longAC != "Mint/ Burning Account"}
                     sub-ac: {data?.longAC ?? "Mint Account"}
-                        <a href="/search/ID/{data.token}?id={data.longPR}&sub={data.longAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longPR}&sub={data.longAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.longPR} text2 ={data.longAC}/>
                         <SaveButton icrcAccount={true} text={data.longPR} text2={data.longAC} />
                     {/if}
@@ -869,20 +863,14 @@ if (data.direction == 'out') {
                     <!-- principal -->
                     From: {data?.targetPR ?? "Mint Account"}
                     {#if data.targetPR != null && data.targetPR != "null" && data.targetAC == DEFAULT_SUBACCOUNT}   
-                        <a href="/search/ID/{data.token}?id={data.targetPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.targetPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.targetPR} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.targetPR} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
-                    <!-- principal has name? -->
-                    {#if data.targetPRName != undefined && !data?.targetPRName?.includes("...") && data.targetPRName != "Unknown"}
-                    {@html "<br>"}
-                        <p style="margin-left:22px; margin-bottom:0px;">{data.targetPRName}</p>
-                    {/if}
-                    {@html "<br>"}
                     <!-- sub account -->
                     {#if data.targetAC != null && data.targetAC != "Mint/ Burning Account" && data.targetAC != DEFAULT_SUBACCOUNT}
                     sub-ac: {data?.targetAC ?? "Mint Account"}
-                        <a href="/search/ID/{data.token}?id={data.targetPR}&sub={data.targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.targetPR}&sub={data.targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.targetPR} text2 ={data.targetAC}/>
                         <SaveButton icrcAccount={true} text={data.targetPR} text2={data.targetAC} />
                     {/if}
@@ -902,22 +890,16 @@ if (data.direction == 'out') {
                     <!-- principal -->
                     To: {data?.targetPR ?? "Burn Account"}
                     {#if data.targetPR != null && data.targetPR != "null" && data.targetAC == DEFAULT_SUBACCOUNT}   
-                        <a href="/search/ID/{data.token}?id={data.targetPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.targetPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.targetPR} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.targetPR} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
-                    <!-- principal has name? -->
-                    {#if data.targetPRName != undefined && !data?.targetPRName?.includes("...") && data.targetPRName !="Unknown"}
-                    {@html "<br>"}
-                        <p style="margin-left:22px; margin-bottom:0px;">{data.targetPRName}</p>
-                    {/if}
-                    {@html "<br>"}
                     <!-- sub account -->
                     {#if data.targetAC != null && data.targetAC != "Mint/ Burning Account" &&
                         data.targetAC != DEFAULT_SUBACCOUNT
                     }
                     sub-ac: {data?.targetAC ?? "Burn Account"}
-                        <a href="/search/ID/{data.token}?id={data.targetPR}&sub={data.targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.targetPR}&sub={data.targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.targetPR} text2 ={data.targetAC}/>
                         <SaveButton icrcAccount={true} text={data.targetPR} text2={data.targetAC} />
                     {/if}
@@ -931,20 +913,14 @@ if (data.direction == 'out') {
                     To: {data?.longPR ?? "Burn Account"}
                     <!-- search icon -->
                     {#if data.longPR != null && data.longPR != "null" && data.longAC == DEFAULT_SUBACCOUNT}
-                        <a href="/search/ID/{data.token}?id={data.longPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longPR}&sub={DEFAULT_SUBACCOUNT}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.longPR} text2 ={DEFAULT_SUBACCOUNT}/>
                         <SaveButton icrcAccount={true} text={data.longPR} text2={DEFAULT_SUBACCOUNT} />
                     {/if}
-                    <!-- principal has name? -->
-                    {#if data.shortPR != undefined && !data?.shortPR?.includes("...") && data.shortPR !="Unknown"} 
-                    {@html "<br>"}
-                        <p style="margin-left:22px; margin-bottom:0px;">{data.shortPR}</p>
-                    {/if}
-                    {@html "<br>"}
                     <!-- sub account -->
                     {#if data.longAC != DEFAULT_SUBACCOUNT && data.longAC != null && data.longAC != "Mint/ Burning Account"}
                     sub-ac: {data?.longAC ?? "Burn Account"}
-                        <a href="/search/ID/{data.token}?id={data.longPR}&sub={data.longAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+                        <a href="/search/token/{data.token}?id={data.longPR}&sub={data.longAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
                         <CopyButton icrcAccount={true} text={data.longPR} text2 ={data.longAC}/>
                         <SaveButton icrcAccount={true} text={data.longPR} text2={data.longAC} />
                     {/if}

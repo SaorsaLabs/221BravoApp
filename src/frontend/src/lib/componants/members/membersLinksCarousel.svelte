@@ -25,7 +25,7 @@
     if(mode == "tools"){
       projectArray = [
         {id: 0, title: "Members Chat", linkUrl: "/members/chat", image: mChat},
-        {id: 1, title: "Visual Explorer", linkUrl: "/explore/visualblocks/icp", image: visual},
+        {id: 1, title: "Visual Explorer", linkUrl: "/explore/visualblocks/token/ICP", image: visual},
       ]
       totalLinks = projectArray?.length ?? 0;
     }

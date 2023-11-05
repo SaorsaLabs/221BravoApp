@@ -9,10 +9,15 @@ import snsLogo from '$lib/images/SNS1_Logo.png';
 import modLogo from '$lib/images/projectLogos/ModClub.png';
 import catLogo from '$lib/images/projectLogos/catalyzeLogo.png';
 import boomLogo from '$lib/images/projectLogos/BoomLogo.png'; 
-import icxLogo from '$lib/images/projectLogos/IcxLogo.png';    
+import icxLogo from '$lib/images/projectLogos/IcxLogo.png';
+import nuanceLogo from '$lib/images/projectLogos/NuanceLogo.png';
+import sonicLogo from   '$lib/images/projectLogos/sonicLogo.png';
+import talLogo from   '$lib/images/projectLogos/TalLogo.png'; 
 
 export let token;
 export let width; // eg "100%" , "50px"
+
+$: token;
 
 </script>
 
@@ -30,12 +35,21 @@ export let width; // eg "100%" , "50px"
     <img src={ghostLogo} alt='Token Logo' width="{width}"/>
 {:else if token == "SNS1"}
     <img src={snsLogo} alt='Token Logo' width="{width}"/>
+    <!-- MODCLUB need depricated! -->
 {:else if token == "MODCLUB"}
     <img src={modLogo} alt='Token Logo' width="{width}"/>
+{:else if token == "MOD"}
+<img src={modLogo} alt='Token Logo' width="{width}"/>
 {:else if token == "CAT"}
     <img src={catLogo} alt='Token Logo' width="{width}"/>
 {:else if token == "BOOM"}
     <img src={boomLogo} alt='Token Logo' width="{width}"/>
 {:else if token == "ICX"}
     <img src={icxLogo} alt='Token Logo' width="{width}"/>
+{:else if token == "NUA"}
+<img src={nuanceLogo} alt='Token Logo' width="{width}"/>
+{:else if token == "SONIC"}
+<img src={sonicLogo} alt='Token Logo' width="{width}"/>
+{:else if token == "TAL"}
+<img src={talLogo} alt='Token Logo' width="{width}"/>
 {/if}

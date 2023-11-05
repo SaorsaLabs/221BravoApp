@@ -2,17 +2,16 @@
 	import LayoutCombine from "../../../../lib/componants/layoutCombine.svelte";
 	import Head from "../../../../lib/componants/head.svelte";
 	import Footer from "../../../../lib/componants/footer.svelte";
-    import SearchSubHead from "../../../../lib/componants/searchSubHead.svelte";
+    import DynamicSubHead from "$lib/componants/dynamicSubHead_v2.svelte";
     import ContentBox from "../../../../lib/shared/contentBox.svelte";
 	import SearchForm from "../../../../lib/componants/searchForm.svelte";
     import SearchOverview from "../../../../lib/componants/searchOverview.svelte";
-    import TxAcTable from "../../../../lib/componants/txAcTable.svelte";
+    import TxAcTable from "../../../../lib/componants/txAcTable_v2.svelte";
 	import Loading from "../../../../lib/shared/loading.svelte";
 	import HiddenContent from "../../../../lib/componants/hiddenContent.svelte";
 	import FlagsTable from "../../../../lib/componants/flagsTable.svelte";
 	import LinksTable from "../../../../lib/componants/linksTable.svelte";
-	import { basicAccountTableTX, linkedIDTable} from '../../../../lib/code/searchRequest.js';
-	import { getData } from '../../../../lib/code/searchRequest_v2.js'
+	import { getData, processAccountTXS, linkedIDTable } from '../../../../lib/code/searchRequest_v3.js'
     import { onMount } from "svelte";
     import {_slugData} from './+page';
 	import {authStore, authTrigger} from "../../../../lib/stores/authStore.js";
@@ -132,7 +131,7 @@
 			}
 
         // TX Table
-        txTableProcessed = basicAccountTableTX(searchResults.primaryAccount,searchResults.tokenTXS,token);
+        txTableProcessed = processAccountTXS(searchResults.primaryAccount,searchResults.tokenTXS,token);
 		linkedTableProcessed = linkedIDTable(searchResults.linkedIdStats,_slugData.token);
 
         hideResultDivs = false;
@@ -148,7 +147,7 @@
 <LayoutCombine>
 	<span slot="head">
 		<Head/>
-		<SearchSubHead selected={headSelected}/>
+		<DynamicSubHead selected={token} on:click={handleSubHeadClick}/>
 	</span>
 
 	<span slot="body">

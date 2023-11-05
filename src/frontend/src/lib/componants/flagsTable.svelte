@@ -4,7 +4,7 @@ import Modal from "../shared/modal.svelte";
 import search from "$lib/images/search.png";
 import SaveButton from "../shared/saveButton.svelte";
 import CopyButton from "../shared/copyButton.svelte";
-import LinkedTokenCarousel from "../shared/linkedTokenCarousel.svelte";
+import LinkedTokenCarousel from "../shared/linkedTokenCarousel_v2.svelte";
 import { parsePrincipalSubAccountString } from '../code/utils.js';
 
 export let flagData = {};

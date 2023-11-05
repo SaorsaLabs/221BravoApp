@@ -20,6 +20,11 @@ export const backendCanisterIDL = ({ IDL }) => {
   const LogEntry = IDL.Record({ 'text' : IDL.Text, 'timestamp' : IDL.Text });
   return IDL.Service({
     'add_authorised' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'encrypt' : IDL.Func(
+      [IDL.Text],
+      [IDL.Text],
+      ['query'],
+    ),
     'add_new_user' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'add_public_named_accounts' : IDL.Func(
         [IDL.Text, IDL.Text],

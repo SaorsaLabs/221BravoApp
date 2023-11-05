@@ -9,6 +9,11 @@
         <div class="row" style="padding-bottom: 15px; padding-top: 5px">
             <div class="col alignLeft">
                 ©️ Copyright Saorsa Labs 2023
+                {@html "<br/>"}
+                <span class="terms">
+                    IMPORTANT: All information can be inaccurate, {@html "<br>"}
+                    please read our <a href="/misc/disclaimer/">Terms and Conditions</a>
+                </span>
             </div>
             <div class="col alignCentre">
                 Powered By
@@ -46,5 +51,13 @@
     .alignRight{
         text-align: right;
         color: rgba(255, 255, 255, 0.605);
+    }
+    .terms{
+        text-align: right;
+        color: rgba(255, 255, 255, 0.605);
+        font-size: smaller;
+    }
+    a{
+        color: azure;
     }
 </style>

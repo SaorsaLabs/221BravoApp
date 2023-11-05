@@ -179,7 +179,6 @@
                 {TX.shortSA}
                 {/if}
             {/if}
-
         </td>
         <td>{TX.transactions}</td>
         <td>{TX.grossValue}</td>

@@ -1,4 +1,4 @@
-import { DOMAIN } from '../code/constants.js';
+import { DEFAULT_SUBACCOUNT, DOMAIN } from '../code/constants.js';
 import { authStore } from '../stores/authStore.js';
 import { shortenString, parsePrincipalSubAccountString, getUniqueValues, combinePrincipalSubAccount, processPromises } from '../code/utils.js';
 import { getUserNamedAccounts, getPublicNamedAccounts } from './searchRequest_v2.js';
@@ -174,6 +174,8 @@ async function getVisualBlockData(token, minBlock, maxBlock, startTime, endTime)
 }
 
 function basicAccountTableTX(target, data, token) {
+	// NOTE target2 is used for Combined search where TXS are coming from ICRC + ICP ledgers. 
+	// target2 will be the ICP account if one is found.
 
 	let dataLen = data?.length ?? 0;
 	let i;
@@ -292,6 +294,157 @@ function basicAccountTableTX(target, data, token) {
 		};
 		counter++;
 	}
+	OP.reverse();
+	return OP;
+}
+
+// for combined search (members only)
+function basicAccountTableCombinedTX(target, data, target2) {
+	// NOTE target2 is used for Combined search where TXS are coming from ICRC + ICP ledgers. 
+	// target2 will be the ICP account if one is found.
+
+
+	let dataLen = data?.length ?? 0;
+	let i;
+	let shortID, shortSA;
+	let longID;
+	let longSubID, subName;
+	let targetSub, targetName, targetSubName;
+	let tgt;
+	let direction;
+	let OP = [];
+	let counter = 1;
+	let t1, tDate, tTime;
+	let subHit;
+	let target_icrc = target.includes('.');
+	let principal = '';
+	let subaccount = '';
+	let is_icrc = false;
+	if (target_icrc) {
+		let parse = parsePrincipalSubAccountString(target);
+		principal = parse.principal;
+		subaccount = parse.subaccount;
+	}
+
+	// SORT DATA BY TIME
+	data.sort((a, b) => a.timeMilli - b.timeMilli);
+
+	for (i = 0; i < dataLen; i++) {
+
+		// is ICRC
+		is_icrc = data[i].to.includes('-');
+
+		//direction
+		if (data[i].to == target || data[i].to == target2 || (data[i].to == principal && data[i].toSub == subaccount) ) direction = 'in';
+		else direction = 'out';
+		
+
+		// shortAC
+		if (data[i].type == 'burn' || data[i].type == 'Burn') {
+
+			shortID = 'Burn';
+			longID = 'Burn Account';
+			longSubID = 'Burn Account';
+			subName = undefined;
+			tgt = subHit ? data[i].from : target;
+			targetSub = data[i].fromSub;
+			targetName = data[i]?.fromName ?? undefined;
+			targetSubName = data[i]?.fromSubName ?? undefined;
+
+		} else if (data[i].type == 'mint' || data[i].type == 'Mint') {
+			shortID = 'Mint';
+			longID = 'Minting Account';
+			longSubID = 'Minting Account';
+			subName = undefined;
+			tgt = subHit ? data[i].to : target;
+			targetSub = data[i].toSub;
+			targetName = data[i]?.toName ?? undefined;
+			targetSubName = data[i]?.toSubName ?? undefined;
+		}
+		else if (data[i].type == 'approve' || data[i].type == 'Approve') {
+			shortID = 'Approve';
+			longID = 'ICRC Ledger';
+			longSubID = '';
+			subName = 'undefined';
+			tgt = subHit ? data[i].from : target;
+			targetSub = data[i].fromSub;
+			targetName = data[i]?.fromName ?? undefined;
+			targetSubName = data[i]?.fromSubName ?? undefined;
+		} else {
+			if (direction == 'in' && is_icrc == true) {
+				shortID = data[i]?.fromName ?? shortenString(data[i].from);
+				longID = data[i].from;
+				longSubID = data[i].fromSub;
+				subName = undefined;
+				shortSA = (data[i].fromSub != DEFAULT_SUBACCOUNT) ? shortenString(data[i].fromSub) : undefined;
+				tgt = data[i].to;
+				targetSub = data[i].toSub;
+				targetName = data[i]?.toName ?? undefined;
+				targetSubName = data[i]?.toSubName ?? undefined;
+			}
+			if (direction == 'in' && is_icrc == false) {
+				shortID = data[i]?.fromName ?? shortenString(data[i].from);
+				longID = data[i].from;
+				longSubID = undefined;
+				subName = undefined;
+				shortSA = undefined;
+				tgt = data[i].to;
+				targetSub = undefined;
+				targetName = data[i]?.toName ?? undefined;
+				targetSubName = undefined;
+			}
+			if (direction == 'out' && is_icrc == true) {
+				shortID = data[i]?.toName ?? shortenString(data[i].to);
+				longID = data[i].to;
+				longSubID = data[i].toSub;
+				subName = data[i]?.toSubName ?? undefined;
+				shortSA = subName ?? shortenString(data[i].toSub);
+				tgt = data[i].from;
+				targetSub = data[i].fromSub;
+				targetName = data[i]?.fromName ?? undefined;
+				targetSubName = data[i]?.fromSubName ?? undefined;
+			}
+			if (direction == 'out' && is_icrc == false) {
+				shortID = data[i]?.toName ?? shortenString(data[i].to);
+				longID = data[i].to;
+				longSubID = undefined;
+				subName = undefined;
+				shortSA = undefined;
+				tgt = data[i].from;
+				targetSub = undefined;
+				targetName = data[i]?.fromName ?? undefined;
+				targetSubName = undefined;
+			}
+		}
+
+		// Time
+		const options = { dateStyle: 'long', timeZone: 'UTC' };
+		const options2 = { timeStyle: 'long', timeZone: 'UTC' };
+		t1 = new Date(data[i].timeMilli);
+		tDate = t1.toLocaleString('en-GB', options); /// number.toLocaleString('en-US')
+		tTime = t1.toLocaleString('en-GB', options2); //
+		OP[i] = {
+			counter: counter,
+			date: tDate,
+			time: tTime,
+			shortID: shortID,
+			shortSA: shortSA,
+			direction: direction,
+			value: data[i].value,
+			hash: data[i].hash,
+			block: data[i].block,
+			longID: longID,
+			longSubID: longSubID,
+			subName: subName,
+			target: tgt,
+			targetSub: targetSub,
+			targetName: targetName,
+			targetSubName: targetSubName,
+			token: data[i].token
+		};
+		counter++;
+	}
+
 	OP.reverse();
 	return OP;
 }
@@ -533,7 +686,6 @@ function visualBlockSubTable(target, data, is_icrc) {
 				targetAC = target;
 				targetACName = data[i]?.fromAccountName ?? 'Unknown';
 				targetPR = data[i]?.fromPrincipal ?? 'N/A';
-
 				targetPRName = data[i]?.fromPrincipalName ?? 'Unknown';
 			}
 
@@ -699,5 +851,6 @@ export {
 	linkedIDTable,
 	getLatestBlockData,
 	getVisualBlockData,
-	visualBlockSubTable
+	visualBlockSubTable,
+	basicAccountTableCombinedTX
 };

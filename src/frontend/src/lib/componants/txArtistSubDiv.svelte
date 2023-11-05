@@ -14,7 +14,6 @@ let dataOP = [];
 
 function update(data){
 	dataOP = data;
-	console.log("DATA :: ", dataOP[0]);
 }
 export let popupType = "visualMap";
 </script>
@@ -25,7 +24,7 @@ export let popupType = "visualMap";
 			
 			<p class="textPad" style="padding-top:15px;"> Account Clicked : {dataOP[0]?.targetAC ?? "Mint/Burn Account"}
 			{#if dataOP[0]?.targetAC != null && dataOP[0]?.targetAC != "null" && dataOP[0]?.targetAC != "Unknown"}
-				<a href="/search/ID/{dataOP[0].token}?id={dataOP[0]?.targetAC}&sub=None" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+				<a href="/search/token/{dataOP[0].token}?id={dataOP[0]?.targetAC}&sub=None" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
 				<CopyButton icrcAccount={false} text={dataOP[0]?.targetAC}/>
 				<SaveButton icrcAccount={false} text={dataOP[0].targetAC} />
 				<span class="textPad" style="color:aqua;"> {dataOP[0]?.targetACName}</span>
@@ -45,7 +44,7 @@ export let popupType = "visualMap";
 			<p class="textPad" style="padding-top:15px;"> Principal : {dataOP[0]?.targetPR ?? "Mint/Burn Account"}
 				{#if dataOP[0]?.targetPR != null && dataOP[0]?.targetPR != "null" && dataOP[0]?.targetPR != "Unknown"}
 					{#if dataOP[0]?.targetAC == "0000000000000000000000000000000000000000000000000000000000000000"}
-						<a href="/search/ID/{dataOP[0].token}?id={dataOP[0].targetPR}&sub={dataOP[0].targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+						<a href="/search/token/{dataOP[0].token}?id={dataOP[0].targetPR}&sub={dataOP[0].targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
 						<CopyButton icrcAccount={true} text={dataOP[0].targetPR} text2={dataOP[0].targetAC}/>
 						<SaveButton icrcAccount={true} text={dataOP[0].targetPR} text2={dataOP[0].targetAC} />
 						<span class="textPad" style="color:aqua; margin-bottom: 10px;"> {dataOP[0]?.targetACName}</span>
@@ -56,7 +55,7 @@ export let popupType = "visualMap";
 			{#if dataOP[0]?.targetAC != "0000000000000000000000000000000000000000000000000000000000000000"}
 			<p class="textPad" style="padding-bottom: 10px;"> Account Clicked : {dataOP[0]?.targetAC ?? "Mint/ Burn Account"}
 			{#if dataOP[0]?.targetAC != null && dataOP[0]?.targetAC != "Mint/ Burning Account" && dataOP[0]?.targetAC != "Unknown"}
-				<a href="/search/ID/{dataOP[0].token}?id={dataOP[0].targetPR}&sub={dataOP[0].targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
+				<a href="/search/token/{dataOP[0].token}?id={dataOP[0].targetPR}&sub={dataOP[0].targetAC}" target="_blank"> <img class="search" src={search} alt="search" width="20px" style="margin-left:5px"/> </a>
 				<CopyButton icrcAccount={true} text={dataOP[0].targetPR} text2={dataOP[0].targetAC}/>
 				<SaveButton icrcAccount={true} text={dataOP[0].targetPR} text2={dataOP[0].targetAC} />
 				<span class="textPad" style="color:aqua;"> {dataOP[0]?.targetACName}</span>

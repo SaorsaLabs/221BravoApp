@@ -12,15 +12,6 @@ const load = async ({ params, url }) => {
 		id,
 		sub
 	};
-
-	// console.log("Slug : ", data);
-	// console.log("ID : ", id);
-	// console.log("X : ", x);
-	//<a href="/page/{href}?id={id}">
-	// let res = {
-	//   token,
-	//   id
-	// };
 };
 
 export { _slugData, load };

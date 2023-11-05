@@ -12,18 +12,19 @@
 	import SnsCarousel from "../lib/componants/SNSCarousel.svelte";
 	import NewsCarousel from "../lib/componants/newsCarousel.svelte";
 	import LinkTokenSearch from "../lib/componants/linkTokenSearch.svelte";
-	import { basicBlockTableTX } from '../lib/code/searchRequest';
-	import { getLatestBlockData } from '../lib/code/searchRequest_v2.js';
-	import TxBlockTable from "../lib/componants/txBlockTable.svelte";
-	import { canister_ids } from '../lib/code/constants.js';
+	import { getLatestBlockData, processBlockTXS } from '../lib/code/searchRequest_v3.js';
+	import TxBlockTable from "../lib/componants/txBlockTable_v2.svelte";
   	import Loading from "../lib/shared/loading.svelte";
+  import { getAllTokenData } from "../lib/code/utils";
 
 	let screenSize; 
-	let tokenSelected = "ICP";
+	let tokenSelected = "ICP"; // Which token is called on page-load. 
 	let blockTableProcessed;
 	let blockTableLoading = true;
+	let tokenData;
 	let promise = loadStuff();
 	async function loadStuff(){
+		tokenData = getAllTokenData();
 		await latestBlocksClick(tokenSelected);
 		blockTableLoading = false;
 	}
@@ -31,7 +32,7 @@
 	async function latestBlocksClick(token){
 		blockTableLoading = true;
 		let blockSearchResults = await getLatestBlockData(500,token);
-		blockTableProcessed = basicBlockTableTX(blockSearchResults.blocks,token, true);
+		blockTableProcessed = processBlockTXS(blockSearchResults.blocks);
 		tokenSelected = token;
 		blockTableLoading = false;
 	}
@@ -42,7 +43,9 @@
 
 <svelte:head>
 	<title>Home - 221Bravo App</title>
-	<meta name="description" content="Home for ICP Data-Detectives" />
+	<meta name="description" content="221Bravo.app : Home for ICP Data-Detectives" />
+	<meta name="description" content="221Bravo - Multi Token Blockchain Explorer built on the Internet Computer" />
+	<meta name="keywords" content="ICP, Internet Computer, ICP Blockchain, Blockchain Explorer, ckBTC" />
 </svelte:head>
 
 <LayoutCombine>
@@ -93,26 +96,12 @@
 				<table style="width: 100%;">
 					<tr>
 						<td>
-							{#each canister_ids as BTN}
+							{#each tokenData as BTN}
 								<span style="padding: 5px;">
-									{#if BTN.token == "SNS1"}
-										{#if BTN.token == tokenSelected}
-											<Button slim={true} type={"orange"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"DRAGGINZ"}</Button>
-										{:else}
-											<Button slim={true} type={"blueTP"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"DRAGGINZ"}</Button>
-										{/if}
-									{:else if BTN.token == "CAT"}
-										{#if BTN.token == tokenSelected}
-											<Button slim={true} type={"orange"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"CATALYZE"}</Button>
-										{:else}
-											<Button slim={true} type={"blueTP"} on:click={()=>{latestBlocksClick(BTN.token)}}>{"CATALYZE"}</Button>
-										{/if}
+									{#if BTN.ticker == tokenSelected}
+											<Button slim={true} type={"orange"} on:click={()=>{latestBlocksClick(BTN.ticker)}}>{BTN.shortName}</Button>
 									{:else}
-										{#if BTN.token == tokenSelected}
-											<Button slim={true} type={"orange"} on:click={()=>{latestBlocksClick(BTN.token)}}>{BTN.token}</Button>
-										{:else}
-											<Button slim={true} type={"blueTP"} on:click={()=>{latestBlocksClick(BTN.token)}}>{BTN.token}</Button>
-										{/if}
+										<Button slim={true} type={"blueTP"} on:click={()=>{latestBlocksClick(BTN.ticker)}}>{BTN.shortName}</Button>
 									{/if}
 								</span>
 							{/each}
@@ -124,14 +113,11 @@
 								<div style="padding:40px"><Loading/></div>
 							{:else}
 								{#if tokenSelected != "ICP"}
-								<TxBlockTable txData={blockTableProcessed.blocks} perPage={5} is_icrc={true} popupType={'icrcBlock'}/>
-								{:else}
 								<!-- not icrc but needs is_icrc true to show a/c -->
+								<TxBlockTable txData={blockTableProcessed.blocks} perPage={5}/>
+								{:else}
 								<TxBlockTable 
 									txData={blockTableProcessed.blocks} 
-									popupType={'noPrincipalBlock'}
-									usePrincipal={false}
-									is_icrc={false} 
 									perPage={5}
 								/>	
 								{/if}

@@ -1,3 +1,5 @@
+import tokenJSON from '../data/tokens.json';
+
 function millisToDate(epochMillis) {
 	let t1, tDate;
 	const options = { dateStyle: 'long', timeZone: 'UTC' };
@@ -52,6 +54,8 @@ function parsePrincipalSubAccountString(str) {
 }
 
 function shortenString(str) {
+	if (str == undefined) return undefined;
+
 	if (str.length < 15) {
 		return str;
 	} else {
@@ -78,6 +82,27 @@ async function processPromises(arrayOfPromises) {
     return responses;
 }
 
+function getTokenData(TICKER){
+	let data = tokenJSON;
+	let len = data.length ?? 0;
+	let retData; 
+	let foundOne = false;
+	for(let i = 0; i< len; i++){
+		if(data[i].ticker == TICKER) {
+			retData = data[i];
+			foundOne = true;
+			break;
+		}
+	}
+	if (foundOne == true) return retData;
+	else return "Could not find a matching token";
+}
+
+function getAllTokenData(){
+	let data = tokenJSON;
+	return data;
+}
+
 export {
 	millisToDate,
 	millisToTime,
@@ -86,5 +111,7 @@ export {
 	combinePrincipalSubAccount,
 	shortenString,
 	processPromises,
-	getUniqueValues
+	getUniqueValues,
+	getTokenData,
+	getAllTokenData
 };

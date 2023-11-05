@@ -6,9 +6,10 @@ import {
 	ICP_ledgerCanister,
 	ICP_decimals,
 	ICRC_SnapshotCanister,
-	ICP_SnapshotCanister
+	ICP_SnapshotCanister,
+	trackingCanister
 } from './constants.js';
-import { parsePrincipalSubAccountString, shortenString, processPromises } from './utils.js';
+import { parsePrincipalSubAccountString, shortenString, processPromises, getAllTokenData } from './utils.js';
 import { icrcDataIDL } from './IDL/icrcDataProcessor.js';
 import { icpDataIDL } from './IDL/icpDataProcessor.js';
 import { icrcLedgerIDL } from './IDL/icrcLedger.js';
@@ -16,17 +17,20 @@ import { icpLedgerIDL } from './IDL/icpLedger.js';
 import { swapsIDL } from './IDL/icLightSwaps.js';
 import { snapshotIDL } from './IDL/snapshot.js';
 import { icpSnapshotIDL } from './IDL/icpSnapshot.js';
+import { trackingIDL } from './IDL/tracking.js';
 
 const canisterIDS = canister_ids;
 
 // ICRC Stats
 async function getICRC_Stats(token, timescale) {
 	const ID = getIdentity();
+	const tokens = getAllTokenData();
+	let tLen = tokens.length ?? 0;
 	let known = false;
 	let searchCanister;
-	for (let i = 0; i < canisterIDS.length; i++) {
-		if (token == canisterIDS[i].token) {
-			searchCanister = canisterIDS[i].canister;
+	for (let i = 0; i < tLen; i++) {
+		if (token == tokens[i].ticker) {
+			searchCanister = tokens[i].stats221B;
 			known = true;
 		}
 	}
@@ -63,11 +67,13 @@ async function getICRC_Stats(token, timescale) {
 
 async function getICRC_TotalHolders(token) {
 	const ID = getIdentity();
+	const tokens = getAllTokenData();
+	let tLen = tokens.length ?? 0;
 	let known = false;
 	let searchCanister;
-	for (let i = 0; i < canisterIDS.length; i++) {
-		if (token == canisterIDS[i].token) {
-			searchCanister = canisterIDS[i].canister;
+	for (let i = 0; i < tLen; i++) {
+		if (token == tokens[i].ticker) {
+			searchCanister = tokens[i].stats221B;
 			known = true;
 		}
 	}
@@ -82,16 +88,18 @@ async function getICRC_TotalHolders(token) {
 
 async function getICRC_TopHolders(token, numberOfReturns) {
 	if (numberOfReturns == 0 || !numberOfReturns) numberOfReturns = 10;
+	const tokens = getAllTokenData();
+	let tLen = tokens.length ?? 0;
 	let stats;
 	let vPower;
 	const ID = getIdentity();
 	let known = false;
 	let searchCanister;
 	let searchDecimals;
-	for (let i = 0; i < canisterIDS.length; i++) {
-		if (token == canisterIDS[i].token) {
-			searchCanister = canisterIDS[i].canister;
-			searchDecimals = canisterIDS[i].decimals;
+	for (let i = 0; i < tLen; i++) {
+		if (token == tokens[i].ticker) {
+			searchCanister = tokens[i].stats221B;
+			searchDecimals = tokens[i].decimals;
 			known = true;
 		}
 	}
@@ -176,15 +184,17 @@ async function getICRC_TopHolders(token, numberOfReturns) {
 }
 
 async function getICRC_TotalSupply(token) {
+	let tokens = getAllTokenData();
+	let tLen = tokens.length ?? 0;
 	let ret = 0;
 	let stats, vPower;
 	let known = false;
 	let searchCanister;
 	let searchDecimals;
-	for (let i = 0; i < canisterIDS.length; i++) {
-		if (token == canisterIDS[i].token) {
-			searchCanister = canisterIDS[i].ledger;
-			searchDecimals = canisterIDS[i].decimals;
+	for (let i = 0; i < tLen; i++) {
+		if (token == tokens[i].ticker) {
+			searchCanister = tokens[i].tokenLedger;
+			searchDecimals = tokens[i].decimals;
 			known = true;
 		}
 	}
@@ -349,7 +359,7 @@ function processTopBurnData(canisterTxs, decimals, token) {
 }
 
 // ICP Stats
-async function getICP_Stats(timescale) {
+async function getICP_Stats(token, timescale) {
 	const ID = getIdentity();
 	if (timescale == 'hourly') {
 		let actor = icActor(ICP_dataCanister, icpDataIDL, ID);
@@ -364,14 +374,14 @@ async function getICP_Stats(timescale) {
 	}
 }
 
-async function getICP_TotalHolders() {
+async function getICP_TotalHolders(token) {
 	const ID = getIdentity();
 	let actor = icActor(ICP_dataCanister, icpDataIDL, ID);
 	let stats = await actor.get_total_holders();
 	return stats;
 }
 
-async function getICP_TopHolders(numberOfReturns) {
+async function getICP_TopHolders(token, numberOfReturns) {
 	if (numberOfReturns == 0 || !numberOfReturns) numberOfReturns = 10;
 	let stats;
 	let vPower;
@@ -409,7 +419,7 @@ async function getICP_TopHolders(numberOfReturns) {
 	return processed;
 }
 
-async function getICP_TotalSupply() {
+async function getICP_TotalSupply(token) {
 	let ret = 0;
 	let stats, vPower;
 	let actor = icActor(ICP_ledgerCanister, icpLedgerIDL);
@@ -556,7 +566,7 @@ async function getPriceData(tokenPair) {
 		    let API_KEY =  import.meta.env.VITE_CMC_KEY;
 		    let ID = "8916";
 		    const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=${ID}&CMC_PRO_API_KEY=${API_KEY}`;
-		    const response = await fetch(url);
+		    const response = await fetch(url, {  method: 'GET', mode: 'no-cors'});
 		    const resJS = await response.json();
 		    let res = {
 		        price: resJS.data['8916'].quote.USD.price.toFixed(2),
@@ -565,14 +575,16 @@ async function getPriceData(tokenPair) {
 		    }
 		   return res;
 		} catch (error) {
-		    console.log(error);
+		    //console.log(error);
 		    return {price: 0, change: 0, dollar: 0};
 		}
 	 }
 }
 
 async function getTokenTableData(){
-	let loopLen = canister_ids.length ?? 0;
+
+	let tokens = getAllTokenData();
+	let loopLen = tokens.length ?? 0;
 	let promAR = [];
 	let compAR;
 	let resOBJ;
@@ -580,15 +592,15 @@ async function getTokenTableData(){
 	let resTKN = [];
 	let pos = 0;
 	for(let i=0; i<loopLen; i++){
-		if(canister_ids[i].token == "ICP"){
+		if(tokens[i].ticker == "ICP"){
 			// ICP STATS
-			promAR[pos] = getICP_TotalHolders();
-			promAR[pos+1] = getICP_Stats('hourly');
-			resTKN.push(canister_ids[i].token);
+			promAR[pos] = getICP_TotalHolders(tokens[i].ticker);
+			promAR[pos+1] = getICP_Stats(tokens[i].ticker, 'hourly');
+			resTKN.push(tokens[i].ticker);
 		} else {
 			// ICRC STATS
-			promAR[pos] = getICRC_TotalHolders(canister_ids[i].token);
-			promAR[pos+1] = getICRC_Stats(canister_ids[i].token, 'hourly');
+			promAR[pos] = getICRC_TotalHolders(tokens[i].ticker);
+			promAR[pos+1] = getICRC_Stats(tokens[i].ticker, 'hourly');
 		}
 		pos+=2;
 	}
@@ -597,10 +609,11 @@ async function getTokenTableData(){
 	let cnt = 0;
 	let cARLen = compAR.length ?? 0;
 	for(let i=0; i<cARLen; i+=2){
-			let lc = canister_ids[cnt].token.toLowerCase();
+			let lc = tokens[cnt].ticker;
 			resOBJ = {
 				link: lc,
-				token: canister_ids[cnt].token,
+				token: tokens[cnt].ticker,
+				shortName: tokens[cnt].shortName,
 				holders: Number(compAR[i].accounts),
 				transactions: Number(compAR[i+1].total_transaction_count),
 				active: Number(compAR[i+1].total_unique_accounts),
@@ -619,6 +632,14 @@ async function getExchangeBalances(num_to_return){
 	let actor = icActor(ICP_SnapshotCanister, icpSnapshotIDL, ID);
 	stats = await actor.get_exchange_snapshots(num_to_return);
 	
+	return stats;
+}
+
+async function getLiveExchangeBalances(){
+	const ID = getIdentity();
+	let stats;
+	let actor = icActor(trackingCanister, trackingIDL, ID);
+	stats = await actor.get_exchange_data();
 	return stats;
 }
 
@@ -641,5 +662,6 @@ export {
 	getICRC_SnapshotQuickStats,
 	getICP_SnapshotQuickStats,
 	getTokenTableData,
-	getExchangeBalances
+	getExchangeBalances,
+	getLiveExchangeBalances
 };
