@@ -182,7 +182,7 @@ fn init() {
         "ADMIN_PRINCIPAL_HERE".to_string()
     ); // Saorsa Dev
     data.authorised.push(
-        "FRONTEND_PRINCIPAL_HERE".to_string()
+        "FRONTENT_PRINCIPAL_HERE".to_string()
     ); // frontend
     data.first_run = true;
     data.canister_settings.stats_are_public = true;
@@ -853,15 +853,27 @@ async fn icp_transaction_download(start: u64, length: u64) -> Option<Vec<Process
                                                             block += Nat::from(1);
                                                         }
                                                         OperationEnum::Approve {
-                                                            fee,
                                                             from,
-                                                            allowance_e8s,
-                                                            expires_at,
                                                             spender,
+                                                            allowance,
+                                                            allowance_e8s,
+                                                            expected_allowance,
+                                                            expires_at,
+                                                            fee
                                                         } => {
-                                                            log(
-                                                                format!("Approve opersion. Block: {}", block)
+                                                            let input = (
+                                                                hex::encode(from),
+                                                                allowance.e8s,
                                                             );
+                                                            processed_transactions.push(
+                                                                process_approve_transaction(
+                                                                    input,
+                                                                    &block,
+                                                                    &block_data.timestamp.timestamp_nanos,
+                                                                    &hash
+                                                                )
+                                                            );
+                                                            block += Nat::from(1);
                                                         }
                                                         OperationEnum::TransferFrom {
                                                             to,
@@ -964,13 +976,27 @@ async fn icp_transaction_download(start: u64, length: u64) -> Option<Vec<Process
                                         block_master += Nat::from(1);
                                     }
                                     OperationEnum::Approve {
-                                        fee,
                                         from,
-                                        allowance_e8s,
-                                        expires_at,
                                         spender,
+                                        allowance,
+                                        allowance_e8s,
+                                        expected_allowance,
+                                        expires_at,
+                                        fee
                                     } => {
-                                        log(format!("Approve opersion. Block: {}", block_master));
+                                        let input = (
+                                            hex::encode(from),
+                                            allowance.e8s,
+                                        );
+                                        processed_transactions.push(
+                                            process_approve_transaction(
+                                                input,
+                                                &block_master,
+                                                &block_data.timestamp.timestamp_nanos,
+                                                &hash
+                                            )
+                                        );
+                                        block_master += Nat::from(1);
                                     }
                                     OperationEnum::TransferFrom {
                                         to,
@@ -1053,13 +1079,27 @@ async fn icp_transaction_download(start: u64, length: u64) -> Option<Vec<Process
                                         block += Nat::from(1);
                                     }
                                     OperationEnum::Approve {
-                                        fee,
                                         from,
-                                        allowance_e8s,
-                                        expires_at,
                                         spender,
+                                        allowance,
+                                        allowance_e8s,
+                                        expected_allowance,
+                                        expires_at,
+                                        fee
                                     } => {
-                                        log(format!("Approve opersion. Block: {}", block));
+                                        let input = (
+                                            hex::encode(from),
+                                            allowance.e8s,
+                                        );
+                                        processed_transactions.push(
+                                            process_approve_transaction(
+                                                input,
+                                                &block,
+                                                &block_data.timestamp.timestamp_nanos,
+                                                &hash
+                                            )
+                                        );
+                                        block += Nat::from(1);
                                     }
                                     OperationEnum::TransferFrom {
                                         to,
@@ -1124,7 +1164,7 @@ async fn icp_transaction_download(start: u64, length: u64) -> Option<Vec<Process
                                                                 )
                                                             );
                                                             block += Nat::from(1);
-                                                        }
+                                                        },
                                                         OperationEnum::Mint { to, amount } => {
                                                             let input = (
                                                                 hex::encode(to),
@@ -1139,7 +1179,7 @@ async fn icp_transaction_download(start: u64, length: u64) -> Option<Vec<Process
                                                                 )
                                                             );
                                                             block += Nat::from(1);
-                                                        }
+                                                        },
                                                         OperationEnum::Transfer {
                                                             from,
                                                             to,
@@ -1160,18 +1200,30 @@ async fn icp_transaction_download(start: u64, length: u64) -> Option<Vec<Process
                                                                 )
                                                             );
                                                             block += Nat::from(1);
-                                                        }
+                                                        },
                                                         OperationEnum::Approve {
-                                                            fee,
                                                             from,
-                                                            allowance_e8s,
-                                                            expires_at,
                                                             spender,
+                                                            allowance,
+                                                            allowance_e8s,
+                                                            expected_allowance,
+                                                            expires_at,
+                                                            fee
                                                         } => {
-                                                            log(
-                                                                format!("Approve opersion. Block: {}", block)
+                                                            let input = (
+                                                                hex::encode(from),
+                                                                allowance.e8s,
                                                             );
-                                                        }
+                                                            processed_transactions.push(
+                                                                process_approve_transaction(
+                                                                    input,
+                                                                    &block,
+                                                                    &block_data.timestamp.timestamp_nanos,
+                                                                    &hash
+                                                                )
+                                                            );
+                                                            block += Nat::from(1);
+                                                        },
                                                         OperationEnum::TransferFrom {
                                                             to,
                                                             fee,
@@ -1310,6 +1362,27 @@ fn process_transfer_transaction(
     return ret;
 }
 
+fn process_approve_transaction(
+    data: (String, u64),
+    block: &Nat,
+    timestamp: &u64,
+    hash: &String
+) -> ProcessedTX {
+
+    let (from_account, tx_value) = data;
+    let block_u128 = block.0.to_u128().ok_or("cant parse to u128").unwrap(); 
+    let ret = ProcessedTX {
+        block: block.to_owned(),
+        hash: hash.to_owned(),
+        tx_type: TransactionType::Approve.to_string(),
+        from_account: from_account, 
+        to_account: "ICP_LEDGER".to_string(),
+        tx_value: Nat::from(tx_value), // This is the approve value
+        tx_time: timestamp.to_owned(),
+    };
+    return ret;
+}
+
 async fn get_tip_of_chain(ledger_id: Principal) -> Result<u64, String> {
     let req = GetTransactionsRequest {
         start: 0_u64,
@@ -1423,7 +1496,38 @@ async fn update_balances(tx_array: &Vec<ProcessedTX>) -> bool {
                                     )
                                 );
                             }
-                        }
+                        },
+                        "Approve" => {
+                            // ----- DEBIT FEE ONLY (FROM)
+                            if let Some(ac) = data.account_holders.get(&tx.from_account) {
+                                let tot_deduction;
+                                if ac.balance < tx_fee {
+                                    tot_deduction = ac.balance; // catch overflows. cant spend more than ac balance.
+                                    log(
+                                        format!(
+                                            "Caught overflow from Approve (fee only). Account: {}",
+                                            &tx.from_account
+                                        )
+                                    );
+                                } else {
+                                    tot_deduction = tx_fee;
+                                }
+                                // existing account
+                                let ent: EntityData = EntityData {
+                                    balance: ac.balance - tot_deduction,
+                                    transactions: ac.transactions + 1_u64,
+                                };
+                                data.account_holders.insert(tx.from_account.clone(), ent);
+                            } else {
+                                log(
+                                    format!(
+                                        "Error: Approve Transaction from new unknown account {}",
+                                        &tx.from_account
+                                    )
+                                );
+                                processed_ok = false;
+                            }
+                        },
                         _ => {
                             log(
                                 "Could not process transaction, type is not Mint, Burn or Transaction"
@@ -1492,6 +1596,9 @@ async fn calculate_time_stats(
                             transaction_count += 1_u128;
                             transaction_value += &value_u128;
                             all_transactions.push(tx.clone());
+                        }
+                        if tx.tx_type == "Approve" {
+                            // Do Nothing at the moment. 
                         }
                         total_value += &value_u128;
                         total_txs += 1_u128;

@@ -105,6 +105,7 @@ pub enum TransactionType {
     Transaction,
     Mint,
     Burn,
+    Approve
 }
 impl TransactionType {
     pub fn to_string(&self) -> String {
@@ -112,6 +113,7 @@ impl TransactionType {
             TransactionType::Transaction => "Transaction".to_string(),
             TransactionType::Mint => "Mint".to_string(),
             TransactionType::Burn => "Burn".to_string(),
+            TransactionType::Approve => "Approve".to_string(),
         }
     }
 }
@@ -167,7 +169,7 @@ pub struct GetTransactionsRequest {
 
 pub type BlockIndex = u64;
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, Default)]
 pub struct Tokens {
     /// Number of 10^-8 Tokens.
     /// Named because the equivalent part of a Bitcoin is called a Satoshi
@@ -208,11 +210,15 @@ pub enum OperationEnum {
         fee: Tokens,
     },
     Approve {
-        fee: Tokens,
         from: Vec<u8>,
-        allowance_e8s: i128,
-        expires_at: Option<TimeStamp>,
         spender: Vec<u8>,
+        #[serde(default)]
+        allowance_e8s : i128,
+        #[serde(default)]
+        allowance: Tokens,
+        expected_allowance: Option<Tokens>,
+        expires_at: Option<TimeStamp>,
+        fee: Tokens,
     },
     TransferFrom {
         to: Vec<u8>,

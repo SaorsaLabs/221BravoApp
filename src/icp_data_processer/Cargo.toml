@@ -9,11 +9,11 @@ path = "lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-ic-cdk = "0.9.2"
-ic-cdk-macros = "0.7.1"
-candid = "0.8.4"
+ic-cdk = "0.11.3"
+ic-cdk-macros = "0.8.1"
+candid = "0.9.9"
 serde = "1.0.159"
-ic-cdk-timers = "0.4.0"
+ic-cdk-timers = "0.5.1"
 serde_bytes = "0.11.9"
 sha2 = "0.10.6"
 hex = { version = "0.4.3", features = ["serde"] }
@@ -21,4 +21,4 @@ crc32fast = "1.2"
 num-traits = "0.2.15"
 icrc-ledger-types = { path = "../icrc-ledger-types" }
 ciborium = "0.2.1"
-ic-stable-structures = "0.5.6"
+ic-stable-structures = "0.6.0"
