@@ -24,6 +24,21 @@ use constants::MAX_BLOCKS_TO_RETURN;
 // [][] ---  Methods --- [][]
 // [][] ---------------- [][]
 
+// get block by block number ✔️
+// get multi blocks by block number ✔️
+// get latest blocks (x upto 20k) ✔️
+// get overview ✔️
+// get full account raw/ processed ✔️
+// get ac links (+Raw) ✔️
+// get ac transactions ✔️
+// get working stats
+// set target canisters ✔️
+// ref to id?  ✔️
+// id to ref? ✔️
+// set timer ✔️
+// stop timer ✔️
+
+
 // Set target canister and tx store canister
 #[update]
 async fn set_target_canister(principal_id: String, store_id: String, self_id: String) -> String {
@@ -51,7 +66,7 @@ fn get_latest_transactions(number_txs: u32) -> Vec<ProcessedTX> {
 }
 
 // get single tx from store (all accounts)
-#[update]//#[query(composite = true)]
+#[update] 
 async fn get_tx(block: u32) -> Option<ProcessedTX> {
     // check authorised
     STABLE_STATE.with(|state| {
@@ -63,7 +78,7 @@ async fn get_tx(block: u32) -> Option<ProcessedTX> {
 }
 
 // get multiple tx from store (all accounts)
-#[update]//#[query(composite = true)]
+#[update]
 async fn get_multiple_tx(block_vec: Vec<u32>) -> Vec<ProcessedTX> {
     // check authorised
     STABLE_STATE.with(|state| {
@@ -78,7 +93,7 @@ async fn get_multiple_tx(block_vec: Vec<u32>) -> Vec<ProcessedTX> {
 }
 
 // get full account info by u32 ref
-#[update]//#[query(composite = true)]
+#[update]
 async fn get_full_from_ref(id_ref: u32) -> Option<FullDataResponse> {
     // check authorised
     STABLE_STATE.with(|state| {
@@ -120,7 +135,7 @@ async fn get_full_from_ref(id_ref: u32) -> Option<FullDataResponse> {
 }
 
 // full response from u32 Ref in unprocessed format 
-#[query]//#[query(composite = true)]
+#[update]
 async fn get_full_from_ref_raw(id_ref: u32) -> Option<FullDataResponseRaw> {
     // check authorised
     STABLE_STATE.with(|state| {
@@ -133,7 +148,7 @@ async fn get_full_from_ref_raw(id_ref: u32) -> Option<FullDataResponseRaw> {
 }
 
 // get full account info by ID (account string)
-#[update]//#[query(composite = true)]
+#[update]
 async fn get_full_from_id(id_string: String) -> Option<FullDataResponse> {
     // check authorised
    STABLE_STATE.with(|state| {
@@ -178,7 +193,7 @@ async fn get_transactions_time_id(args: TimeSearchArgs) -> Option<Vec<ProcessedT
     state.borrow().as_ref().unwrap().canister_data
     .check_authorised(ic_cdk::caller().to_text());
     });
-    log(format!("SEARCH :: {}, {}, {}", args.id, args.start, args.end ));
+    //log(format!("SEARCH :: {}, {}, {}", args.id, args.start, args.end ));
     let block_refs: Option<Vec<u32>> = STABLE_STATE.with(|s|{
         s.borrow().as_ref().unwrap().get_transactions_by_id(&args.id)
     });
@@ -194,7 +209,7 @@ async fn get_transactions_time_id(args: TimeSearchArgs) -> Option<Vec<ProcessedT
 }
 
 // full response from ID String in unprocessed format 
-#[query]//#[query(composite = true)]
+#[update]
 async fn get_full_from_id_raw(id_string: String) -> Option<FullDataResponseRaw> {
     // check authorised
     STABLE_STATE.with(|state| {
@@ -337,7 +352,7 @@ async fn get_transactions_from_id(id_string: String) -> Option<Vec<ProcessedTX>>
 }
 
 // Account transactions ID (raw)
-#[query]
+#[update]
 fn get_transactions_from_id_raw(id_string: String) -> Option<Vec<u32>> {
     // check authorised
    STABLE_STATE.with(|state| {
@@ -382,7 +397,7 @@ async fn get_transactions_from_ref(id_ref: u32) -> Option<Vec<ProcessedTX>> {
 }
 
 // Account transactions by Ref (raw)
-#[query]
+#[update]
 fn get_transactions_from_ref_raw(id_ref: u32) -> Option<Vec<u32>> {
     // check authorised
    STABLE_STATE.with(|state| {
@@ -402,7 +417,7 @@ fn get_transactions_from_ref_raw(id_ref: u32) -> Option<Vec<u32>> {
 }
 
 // ID to Ref 
-#[query]
+#[update]
 fn get_id_from_ref(id_ref: u32) -> Option<String> {
     // check authorised
    STABLE_STATE.with(|state| {
@@ -420,7 +435,7 @@ fn get_id_from_ref(id_ref: u32) -> Option<String> {
 }
 
 // Ref to ID
-#[query]
+#[update]
 fn get_ref_from_id(id_string: String) -> Option<u32> {
     // check authorised
    STABLE_STATE.with(|state| {
@@ -541,6 +556,12 @@ fn start_processing_timer(secs: u64) {
     TIMER_STATE.with(|timer_ids| timer_ids.borrow_mut().push(timer_id));
 }
 
+#[update]
+async fn test_call() -> String {
+    schedule_data_processing().await;
+    return "COMPLETE".to_string();
+}
+
 async fn schedule_data_processing() {
     // check if busy
     let busy = STABLE_STATE.with(|s|{
@@ -627,6 +648,9 @@ async fn task_manager(task_number: u8){
 
 #[update]
 async fn self_call0(){
+    if ic_cdk::api::caller() != ic_cdk::api::id() {
+        ic_cdk::trap("This method can only be called by this canister");
+    }
     //[][] --- Process to SmallTX and Store --- [][]
     process_to_small_tx();  
     let update_store = send_stx_to_store().await;
@@ -641,6 +665,9 @@ async fn self_call0(){
 }
 #[update]
 async fn self_call1(){
+    if ic_cdk::api::caller() != ic_cdk::api::id() {
+        ic_cdk::trap("This method can only be called by this canister");
+    }
     process_smtx_to_index().await;  
 }
 
@@ -836,6 +863,19 @@ fn get_memory_stats() -> MemoryData {
     return ret;
 }
 
+// for manually allowing upgrades if the canister gets stuck
+#[update]
+fn admin_set_is_busy(input: bool) -> String {
+    // check admin
+    STABLE_STATE.with(|state| {
+    state.borrow().as_ref().unwrap().canister_data
+    .check_admin(ic_cdk::caller().to_text());
+    });
+    STABLE_STATE.with(|s|{
+        s.borrow_mut().as_mut().unwrap().canister_data.working_stats.is_busy = input;
+     });
+    return "Busy state updated".to_string();
+}
 
 // [][] -------------------------------- [][]
 // [][] --- Canister Setup/ Upgrades --- [][]
@@ -1016,6 +1056,36 @@ mod tests {
         // check block
         assert_eq!(burn_stx.block, burn_ptx.block as u32);
 
+
+        // APPROVE TYPE
+        // Processed TX 30
+        let first_ptx = RUNTIME_STATE.with(|state| {
+            state.borrow().temp_vec_ptx[30].clone()
+        });
+
+        // Small TX 0
+        let first_stx = RUNTIME_STATE.with(|state| {
+            state.borrow().temp_vec_stx[30].clone()
+        });
+
+        // from account to u32 ref (using Directory)
+        let id_ref_from = STABLE_STATE.with(|s|{
+            let ac = first_ptx.from_account;
+             s.borrow().as_ref().unwrap()
+            .directory_data.get_ref(&ac).unwrap().clone()
+        });
+
+        // check from ac on Small TX = from ac on Processed TX
+        assert_eq!(first_stx.from.unwrap(), id_ref_from);
+        // check time
+        assert_eq!(first_stx.time, first_stx.time);
+        // check type
+        assert_eq!(first_stx.tx_type, 3_u8); // 0 = transfer, 1 = Mint, 2 = Burn, 3 = Approve
+        // check value
+        assert_eq!(first_stx.value, first_ptx.tx_value as u64);
+        // check block
+        assert_eq!(first_stx.block, first_ptx.block as u32);
+
         // check input length == output length.
         // Processed TX 0
         let ptx_len = RUNTIME_STATE.with(|state| {
@@ -1031,6 +1101,10 @@ mod tests {
 
     #[test]
     fn test_calculate_balances(){
+
+        // NOTE - This test will fail unless the async is removed from process_smtx_to_index.. the async has been added
+        //        as the function is called by a IC 'Self-call' method. 
+
         // init test Stable/ Runtime state
         test_state_init();
 
@@ -1061,17 +1135,17 @@ mod tests {
         // First Active 
         assert_eq!(&res1.as_ref().unwrap().overview.first_active, &1_687_939_200_000_000_000);
         // Last Active 
-        assert_eq!(&res1.as_ref().unwrap().overview.last_active, &1_688_888_888_888_888_888);
+        assert_eq!(&res1.as_ref().unwrap().overview.last_active, &1_888_888_888_888_888_888);
         // Sent Count
-        assert_eq!(&res1.as_ref().unwrap().overview.sent.0, &6);
+        assert_eq!(&res1.as_ref().unwrap().overview.sent.0, &7);
         // Sent Value
-        assert_eq!(&res1.as_ref().unwrap().overview.sent.1, &730560000);
+        assert_eq!(&res1.as_ref().unwrap().overview.sent.1, &730570000);
         // Received Count
         assert_eq!(&res1.as_ref().unwrap().overview.received.0, &4);
         // Received Value
         assert_eq!(&res1.as_ref().unwrap().overview.received.1, &101000090001);
         // Balance
-        assert_eq!(&res1.as_ref().unwrap().overview.balance, &100_269_530_001);
+        assert_eq!(&res1.as_ref().unwrap().overview.balance, &100_269_520_001);
         // Link Data
         let LD1 = LinkData{ 
             linked_from: 1687988709540000000, linked_id: 1, number_txs: 2, gross: 100090000, net: -99910000 };
@@ -1089,7 +1163,7 @@ mod tests {
             linked_from: 1687988718000000000, linked_id: 8, number_txs: 1, gross: 30000000, net: -30000000 };
         assert_eq!(&res1.as_ref().unwrap().links[4], &LD5);
         // Blocks
-        let blocks = Vec::from([0, 10, 11, 15, 17, 20, 23, 27, 28, 29]);
+        let blocks = Vec::from([0, 10, 11, 15, 17, 20, 23, 27, 28, 29, 30]);
         assert_eq!(&res1.as_ref().unwrap().blocks, &blocks);
     }
 

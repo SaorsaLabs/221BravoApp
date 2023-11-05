@@ -331,15 +331,27 @@ async fn icp_transaction_download(start: u64, length: u64, target_canister: Stri
                                                             block += Nat::from(1);
                                                         }
                                                         OperationEnum::Approve {
-                                                            fee,
                                                             from,
-                                                            allowance_e8s,
-                                                            expires_at,
                                                             spender,
+                                                            allowance,
+                                                            allowance_e8s,
+                                                            expected_allowance,
+                                                            expires_at,
+                                                            fee
                                                         } => {
-                                                            log(
-                                                                format!("Approve opersion. Block: {}", block)
+                                                            let input = (
+                                                                hex::encode(from),
+                                                                allowance.e8s,
                                                             );
+                                                            processed_transactions.push(
+                                                                process_approve_transaction(
+                                                                    input,
+                                                                    &block,
+                                                                    &block_data.timestamp.timestamp_nanos,
+                                                                    &hash
+                                                                )
+                                                            );
+                                                            block += Nat::from(1);
                                                         }
                                                         OperationEnum::TransferFrom {
                                                             to,
@@ -442,13 +454,27 @@ async fn icp_transaction_download(start: u64, length: u64, target_canister: Stri
                                         block_master += Nat::from(1);
                                     }
                                     OperationEnum::Approve {
-                                        fee,
                                         from,
-                                        allowance_e8s,
-                                        expires_at,
                                         spender,
+                                        allowance,
+                                        allowance_e8s,
+                                        expected_allowance,
+                                        expires_at,
+                                        fee
                                     } => {
-                                        log(format!("Approve opersion. Block: {}", block_master));
+                                        let input = (
+                                            hex::encode(from),
+                                            allowance.e8s,
+                                        );
+                                        processed_transactions.push(
+                                            process_approve_transaction(
+                                                input,
+                                                &block_master,
+                                                &block_data.timestamp.timestamp_nanos,
+                                                &hash
+                                            )
+                                        );
+                                        block_master += Nat::from(1);
                                     }
                                     OperationEnum::TransferFrom {
                                         to,
@@ -531,13 +557,27 @@ async fn icp_transaction_download(start: u64, length: u64, target_canister: Stri
                                         block += Nat::from(1);
                                     }
                                     OperationEnum::Approve {
-                                        fee,
                                         from,
-                                        allowance_e8s,
-                                        expires_at,
                                         spender,
+                                        allowance,
+                                        allowance_e8s,
+                                        expected_allowance,
+                                        expires_at,
+                                        fee
                                     } => {
-                                        log(format!("Approve opersion. Block: {}", block));
+                                        let input = (
+                                            hex::encode(from),
+                                            allowance.e8s,
+                                        );
+                                        processed_transactions.push(
+                                            process_approve_transaction(
+                                                input,
+                                                &block,
+                                                &block_data.timestamp.timestamp_nanos,
+                                                &hash
+                                            )
+                                        );
+                                        block += Nat::from(1);
                                     }
                                     OperationEnum::TransferFrom {
                                         to,
@@ -640,15 +680,27 @@ async fn icp_transaction_download(start: u64, length: u64, target_canister: Stri
                                                             block += Nat::from(1);
                                                         }
                                                         OperationEnum::Approve {
-                                                            fee,
                                                             from,
-                                                            allowance_e8s,
-                                                            expires_at,
                                                             spender,
+                                                            allowance,
+                                                            allowance_e8s,
+                                                            expected_allowance,
+                                                            expires_at,
+                                                            fee
                                                         } => {
-                                                            log(
-                                                                format!("Approve opersion. Block: {}", block)
+                                                            let input = (
+                                                                hex::encode(from),
+                                                                allowance.e8s,
                                                             );
+                                                            processed_transactions.push(
+                                                                process_approve_transaction(
+                                                                    input,
+                                                                    &block,
+                                                                    &block_data.timestamp.timestamp_nanos,
+                                                                    &hash
+                                                                )
+                                                            );
+                                                            block += Nat::from(1);
                                                         }
                                                         OperationEnum::TransferFrom {
                                                             to,
@@ -791,6 +843,27 @@ fn process_transfer_transaction(
     return ret;
 }
 
+fn process_approve_transaction(
+    data: (String, u64),
+    block: &Nat,
+    timestamp: &u64,
+    hash: &String
+) -> ProcessedTX {
+
+    let (from_account, tx_value) = data;
+    let block_u128 = block.0.to_u128().ok_or("cant parse to u128").unwrap(); 
+    let ret = ProcessedTX {
+        block: block_u128,
+        hash: hash.to_owned(),
+        tx_type: TransactionType::Approve.to_string(),
+        from_account: from_account, 
+        to_account: "ICP_LEDGER".to_string(),
+        tx_value: tx_value as u128, // This is the approve value
+        tx_time: timestamp.to_owned(),
+    };
+    return ret;
+}
+
 
 // [][] ------------------------------ [][]
 // [][] --- Fetch from Block Store --- [][]
@@ -849,6 +922,7 @@ pub async fn get_single_tx_from_store(block: u32) -> Option<ProcessedTX> {
                                 0  => {tx_type = "Transaction".to_string()},
                                 1  => {tx_type = "Mint".to_string()},
                                 2  => {tx_type = "Burn".to_string()},
+                                3  => {tx_type = "Approve".to_string()},
                                 _ =>  {tx_type = "Unknown".to_string()},
                             }
 
@@ -934,6 +1008,7 @@ pub async fn get_multiple_txs_from_store(block: Vec<u32>) -> Vec<Option<Processe
                                     0  => {tx_type = "Transaction".to_string()},
                                     1  => {tx_type = "Mint".to_string()},
                                     2  => {tx_type = "Burn".to_string()},
+                                    3  => {tx_type = "Approve".to_string()},
                                     _ =>  {tx_type = "Unknown".to_string()},
                                 }
     
@@ -1028,6 +1103,7 @@ pub async fn get_multiple_txs_from_store_time(block: Vec<u32>, start: u64, end: 
                                     0  => {tx_type = "Transaction".to_string()},
                                     1  => {tx_type = "Mint".to_string()},
                                     2  => {tx_type = "Burn".to_string()},
+                                    3  => {tx_type = "Approve".to_string()},
                                     _ =>  {tx_type = "Unknown".to_string()},
                                 }
 

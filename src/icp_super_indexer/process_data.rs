@@ -86,6 +86,16 @@ pub async fn process_smtx_to_index(){
                         .processed_data.process_block(&from_ref, tx.block)});
                     // Note - No links to process as linked account is ICP LEDGER
                 }, 
+                 // Approve 
+                 3  => {
+                    // process overview
+                    STABLE_STATE.with(|s|{s.borrow_mut().as_mut().unwrap()
+                        .processed_data.process_approve_from(&from_ref, &tx)});
+                    // process blocks
+                    STABLE_STATE.with(|s|{s.borrow_mut().as_mut().unwrap()
+                        .processed_data.process_block(&from_ref, tx.block)});
+                    // Note - No links to process as linked account is SPENDER Account
+                }, 
                 _ =>  {log(format!("Error - unknown tx type (process_smtx_to_index). Type: {}", tx.tx_type))},
             }
         }
@@ -121,6 +131,8 @@ pub async fn process_smtx_to_index(){
                 }, 
                 // Burn - do nothing tx is to ICP LEDGER
                 2  => {}, 
+                // Approve - do nothing. To a/c is the spender ac.  
+                3  => {},
                 _ =>  {log(format!("Error - unknown tx type (process_smtx_to_index). Type: {}", tx.tx_type))},
             }
         }

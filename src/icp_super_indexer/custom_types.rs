@@ -7,7 +7,7 @@ use ic_stable_memory::primitive::s_ref::SRef;
 use num_traits::ops::overflowing;
 use serde::Serialize;
 use ic_stable_memory::{derive::{StableType, AsFixedSizeBytes}, AsFixedSizeBytes, collections::{SHashMap, SVec}};
-use ic_stable_memory::SBox;
+
 
 use crate::utils::{idkey_to_string, string_to_idkey, log};
 use crate::constants::{ MAX_BLOCKS_RETAINED, VERSION };
@@ -413,6 +413,10 @@ impl WorkingStats {
         };
         return ret;
     }
+    pub fn admin_set_is_busy(&mut self, input: bool) -> String {
+        self.is_busy = input;
+        return "is_busy has been updated".to_string();
+    }
 }
 
 // Adds version number to the response
@@ -443,7 +447,7 @@ pub struct TimeSearchArgs {
     pub end: u64, 
 }
 
-#[derive(CandidType, StableType, CandidAsDynSizeBytes, Deserialize, Serialize, Clone, Default, Debug, PartialEq, Eq)]
+#[derive(CandidType, StableType, Deserialize, Serialize, Clone, Default, Debug, PartialEq, Eq)] //CandidAsDynSizeBytes test remove.. 15/10
 pub struct ProcessedTX {
     pub block: u128,
     pub hash: String,
@@ -474,6 +478,7 @@ pub enum TransactionType {
     Transaction,
     Mint,
     Burn,
+    Approve
 }
 impl TransactionType {
     pub fn to_string(&self) -> String {
@@ -481,6 +486,7 @@ impl TransactionType {
             TransactionType::Transaction => "Transaction".to_string(),
             TransactionType::Mint => "Mint".to_string(),
             TransactionType::Burn => "Burn".to_string(),
+            TransactionType::Approve => "Approve".to_string(),
         }
     }
 }
@@ -548,6 +554,15 @@ impl AccountTree {
             None => { log("Error - cannot send from a non-existent account (process_transfer_from)"); },
         }
     }
+
+    pub fn process_approve_from(&mut self, account_ref: &u32, stx: &SmallTX ){
+        match self.accounts.get_mut(account_ref) {
+            Some(mut ac) => {
+                ac.overview.debit_account(stx.time, 0, self.transaction_fee);
+            },
+            None => { log("Error - cannot send from a non-existent account (process_approve_from)"); },
+        }
+    } 
 
     // only call this after process transfers - this ensures links/ blocks are init.. NEEDED??
     // ** direction 1 = inbound (ie account_ref is to) -1 = outbound (ie account_ref is from) ** IMPORTANT! 
@@ -716,7 +731,7 @@ pub struct AccountData {
  
  pub type BlockIndex = u64;
  
- #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+ #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Default)]
  pub struct Tokens {
      /// Number of 10^-8 Tokens.
      /// Named because the equivalent part of a Bitcoin is called a Satoshi
@@ -756,13 +771,28 @@ pub struct AccountData {
          amount: Tokens,
          fee: Tokens,
      },
-     Approve {
-         fee: Tokens,
-         from: Vec<u8>,
-         allowance_e8s: i128,
-         expires_at: Option<TimeStamp>,
-         spender: Vec<u8>,
-     },
+     // old approve
+    //  Approve {
+    //     from: Vec<u8>,
+    //     spender: Vec<u8>,
+    //     allowance: Tokens,
+    //     expected_allowance: Option<Tokens>,
+    //     expires_at: Option<TimeStamp>,
+    //     fee: Tokens,
+    // },
+    // new approve 
+    Approve {
+        from: Vec<u8>,
+        spender: Vec<u8>,
+        #[serde(default)]
+        allowance_e8s : i128,
+        #[serde(default)]
+        allowance: Tokens,
+        expected_allowance: Option<Tokens>,
+        expires_at: Option<TimeStamp>,
+        fee: Tokens,
+    },
+    // appears to be depricated
      TransferFrom {
          to: Vec<u8>,
          fee: Tokens,

@@ -308,8 +308,8 @@ pub fn state_init(){
     stable_memory_init();
     // init stable state
     let mut stable_data = Main::default();
-    let default_authorised = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
-    let saorsa_admin:IDKey = string_to_idkey(&"ADMIN_PRINCIPAL_HERE".to_string()).unwrap();
+    let default_authorised = string_to_idkey(&"DEV_PRINCIPAL_HERE".to_string()).unwrap();
+    let saorsa_admin:IDKey = string_to_idkey(&"DEV_PRINCIPAL_HERE".to_string()).unwrap();
     let default_canister_name = string_to_idkey(&"Name Me Please!".to_string()).unwrap();
     stable_data.canister_data.authorised.push(default_authorised).expect("Out of memory");
     stable_data.canister_data.authorised.push(saorsa_admin.clone()).expect("Out of memory");
@@ -363,5 +363,5 @@ pub fn state_post_upgrade(){
     RUNTIME_STATE.with(|s| {
         *s.borrow_mut() = rstate;
       });
-    log("Canister has been ungraded");
+    log("Canister has been upgraded");
 }

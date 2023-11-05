@@ -45,13 +45,14 @@ pub fn test_data() -> Vec<ProcessedTX> {
     // (1)
     // 220c3a33f90601896e26f76fa619fe288742df1fa75426edfaf759d39f2455a5
     // END Balance: 100_269_530_001
+    // END Balance: 100_269_520_001 (with new approve)
     // OVERVIEW
     //    first_active: 1687939200000000000, 
     //    last_active: 1688888888888888888, 
-    //    sent: (6, 730560000), 
+    //    sent: (7, 730570000), 
     //    received: (4, 101000090001),
-    //    balance: 100269530001, 
-    // txs: transfer 8, burn 0, mint 2;
+    //    balance: 100269520001, 
+    // txs: transfer 8, burn 0, mint 2, approve 1;
     //
     // (2)
     // 24879af686568e7e95846e91dc364ee910b7156ddcca9882e0e42b6cd1273da6
@@ -460,6 +461,18 @@ pub fn test_data() -> Vec<ProcessedTX> {
             to_account: "220c3a33f90601896e26f76fa619fe288742df1fa75426edfaf759d39f2455a5".to_string(),
             tx_value: 1_000_000_000,
             tx_time: 1_688_888_888_888_888_888
+        }
+    );
+
+    txs.push(
+        ProcessedTX {
+            block: 30,
+            hash: "No-hash".to_string(),
+            tx_type: "Approve".to_string(),
+            from_account: "220c3a33f90601896e26f76fa619fe288742df1fa75426edfaf759d39f2455a5".to_string(),
+            to_account: "ICP_LEDGER".to_string(),
+            tx_value: 1_000_000_000,
+            tx_time: 1_888_888_888_888_888_888
         }
     );
 
