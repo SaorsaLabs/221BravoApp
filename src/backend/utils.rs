@@ -1,5 +1,5 @@
 use core::num;
-
+use magic_crypt::{new_magic_crypt, MagicCryptTrait};
 use candid::Principal;
 
 use crate::account_identifier::{ AccountIdentifier, Subaccount };
@@ -48,6 +48,18 @@ pub fn get_multiple_subaccounts_from_principal(
     return output;
 }
 
-// LOG
+// decrypt account
+pub fn decrypt_account(input: String) -> String {
+    let passphrase = "REMOVED_FROM_REPO"; 
+    let mc = new_magic_crypt!(passphrase, 256);
+        mc.decrypt_base64_to_string(input).unwrap()
+}
 
-// CYCLES/ STORAGE ETC
+// encrypt account
+pub fn encrypt_account(input: String) -> String {
+    let passphrase = "REMOVED_FROM_REPO"; 
+    let mc = new_magic_crypt!(passphrase, 256);
+        mc.encrypt_str_to_base64(input)
+}
+
+

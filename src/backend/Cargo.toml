@@ -17,3 +17,4 @@ sha2 = "0.10.6"
 hex = { version = "0.4.3", features = ["serde"] }
 crc32fast = "1.2"
 ic-cdk-timers = "0.4.0"
+magic-crypt = "3.1.12"

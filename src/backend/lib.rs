@@ -7,11 +7,13 @@ use candid::{ CandidType, Principal };
 use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
-use types::{ UserData, UserRank, MemoryData, LogEntry, CanisterSettings };
+use types::{ UserData, UserRank, MemoryData, LogEntry, CanisterSettings, CanisterInfoResponse, CanisterInfoRequest };
 use utils::{
     validate_caller,
     get_subaccount_from_principal,
     get_multiple_subaccounts_from_principal,
+    decrypt_account,
+    encrypt_account
 };
 use ic_cdk_timers::TimerId;
 use std::time::Duration;
@@ -120,10 +122,10 @@ fn init() {
     // init main data state
     let mut data = Data::default();
     data.authorised.push(
-        "DEVELOPER_PRINCIPAL_HERE".to_string()
+        "ADMIN_PRINCIPAL_HERE".to_string()
     ); // Saorsa Dev
     data.authorised.push(
-        "FRONTEND_PRINCIPAL_ID_HERE".to_string()
+        "FRONTEND_PRINCIPAL_HERE".to_string()
     ); // frontend
     data.genesis_updating = false;
     let runtime_state = RuntimeState { data };
@@ -162,13 +164,36 @@ fn post_upgrade() {
 // [][] ---- Query/ Update Functions ---- [][]
 // [][] --------------------------------- [][]
 
+
+#[query] // Not on DID
+fn decrypt (input: String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    let ret = decrypt_account(input);
+    return ret;
+}
+
+
+#[query] // Not on DID
+fn encrypt (input: String) -> String {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    let ret = encrypt_account(input);
+    return ret;
+}
+
 #[query]
 fn get_user_data(user_account: String) -> Option<UserData> {
     RUNTIME_STATE.with(|state| {
         let s = state.borrow();
         s.data.check_authorised(ic_cdk::caller().to_text());
     });
-    RUNTIME_STATE.with(|state| get_user_data_impl(user_account, &state.borrow()))
+    let ac = decrypt_account(user_account);
+    RUNTIME_STATE.with(|state| get_user_data_impl(ac, &state.borrow()))
 }
 fn get_user_data_impl(user_account: String, runtime_state: &RuntimeState) -> Option<UserData> {
     RUNTIME_STATE.with(|state| {
@@ -201,7 +226,8 @@ fn get_user_named_accounts(owner_account: String, query_vec: Vec<String>) -> Opt
         let s = state.borrow();
         s.data.check_authorised(ic_cdk::caller().to_text());
     });
-    RUNTIME_STATE.with(|state| get_user_named_accounts_impl(owner_account, query_vec, &state.borrow()))
+    let oa = decrypt_account(owner_account);
+    RUNTIME_STATE.with(|state| get_user_named_accounts_impl(oa, query_vec, &state.borrow()))
 }
 fn get_user_named_accounts_impl(owner_account: String, query_vec: Vec<String>, runtime_state: &RuntimeState) -> Option<Vec<(String, String)>> {
    let mut ret: Vec<(String, String)> = Vec::new();
@@ -230,7 +256,8 @@ fn get_all_user_named_accounts(owner_account: String) -> Option<Vec<(String, Str
         let s = state.borrow();
         s.data.check_authorised(ic_cdk::caller().to_text());
     });
-    RUNTIME_STATE.with(|state| get_all_user_named_accounts_impl(owner_account, &state.borrow()))
+    let oa = decrypt_account(owner_account);
+    RUNTIME_STATE.with(|state| get_all_user_named_accounts_impl(oa, &state.borrow()))
 }
 fn get_all_user_named_accounts_impl(owner_account: String, runtime_state: &RuntimeState) -> Option<Vec<(String, String)>> {
    let mut ret: Vec<(String, String)> = Vec::new();
@@ -247,7 +274,6 @@ fn get_all_user_named_accounts_impl(owner_account: String, runtime_state: &Runti
    if hits == true {return Some(ret);} else { return None };
 }
 
-
 // add user named account
 #[update]
 fn add_user_named_accounts(owner_account: String, save_account: String, save_name:String) -> String {
@@ -255,7 +281,8 @@ fn add_user_named_accounts(owner_account: String, save_account: String, save_nam
         let s = state.borrow();
         s.data.check_authorised(ic_cdk::caller().to_text());
     });
-    RUNTIME_STATE.with(|state| add_user_named_accounts_impl(owner_account, save_account, save_name, &mut state.borrow_mut()))
+    let oa = decrypt_account(owner_account);
+    RUNTIME_STATE.with(|state| add_user_named_accounts_impl(oa, save_account, save_name, &mut state.borrow_mut()))
 }
 fn add_user_named_accounts_impl(owner_account: String, save_account: String, save_name: String, runtime_state: &mut RuntimeState) -> String {
     
@@ -278,7 +305,8 @@ fn remove_user_named_account(owner_account: String, save_account: String) -> Str
         let s = state.borrow();
         s.data.check_authorised(ic_cdk::caller().to_text());
     });
-    RUNTIME_STATE.with(|state| remove_user_named_accounts_impl(owner_account, save_account, &mut state.borrow_mut()))
+    let oa = decrypt_account(owner_account);
+    RUNTIME_STATE.with(|state| remove_user_named_accounts_impl(oa, save_account, &mut state.borrow_mut()))
 }
 fn remove_user_named_accounts_impl(owner_account: String, save_account: String, runtime_state: &mut RuntimeState) -> String {
     match runtime_state.data.users.get_mut(&owner_account) {
@@ -346,6 +374,25 @@ fn remove_public_named_accounts_impl(save_account: String, runtime_state: &mut R
         Some(v) => {  return "ID Removed from public account list".to_string(); },
         None => { return "ID isnt in the public list - cannot remove".to_string(); }
     }
+}
+
+// get ALL public named accounts (For Management Canister)
+#[query]
+fn get_all_public_named_accounts() -> Option<Vec<(String, String)>> {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
+    RUNTIME_STATE.with(|state| get_all_public_named_accounts_impl( &state.borrow()))
+}
+fn get_all_public_named_accounts_impl( runtime_state: &RuntimeState) -> Option<Vec<(String, String)>> {
+    let mut ret:Vec<(String, String)> = Vec::new();
+    for (key, value) in runtime_state.data.public_accounts.iter() {
+        ret.push((key.clone(), value.clone()));
+    }
+    let mut hits: bool = false;
+    if ret.len() > 0 { hits = true };
+    if hits == true { return Some(ret); } else { return None };
 }
 
 #[update]
@@ -558,7 +605,7 @@ async fn is_genesis_holder_impl(input_id: String) -> bool {
 }
 
 
-#[query]// not public 
+#[query] // not on DID file
 fn get_user_count() -> usize {
     RUNTIME_STATE.with(|state| {
         let s = state.borrow();
@@ -570,105 +617,35 @@ fn get_user_count() -> usize {
 }
 
 
-// #[query]
-// fn read_genesis_holders() -> Vec<(u32, String)> {
-//     RUNTIME_STATE.with(|state| {
-//         let s = state.borrow();
-//         s.data.check_authorised(ic_cdk::caller().to_text());
-//     });
-//     RUNTIME_STATE.with(|state| read_genesis_holders_impl(&state.borrow()))
-// }
-// fn read_genesis_holders_impl(runtime_state: &RuntimeState) -> Vec<(u32, String)> {
-//     let v = runtime_state.data.authorised.clone();
-//     validate_caller(ic_cdk::caller().to_text(), v); // is authorised?
-//     let ret = runtime_state.data.genesis_holders.to_owned();
-//     return ret;
-// }
+#[update] // not on DID file
+async fn get_canister_history(target_canister: String) -> CanisterInfoResponse {
+    RUNTIME_STATE.with(|state| {
+        let s = state.borrow();
+        s.data.check_authorised(ic_cdk::caller().to_text());
+    });
 
-// [][] ------------------------- [][]
-// [][] ---- Timer Functions ---- [][]
-// [][] ------------------------- [][]
+    let pr = Principal::from_text(target_canister).unwrap();
+    let mgt = Principal::from_text("aaaaa-aa").unwrap();
 
-// #[update]
-// fn stop_all_timers() -> String {
-//     RUNTIME_STATE.with(|state| {
-//         let s = state.borrow();
-//         s.data.check_authorised(ic_cdk::caller().to_text());
-//     });
+    let args = CanisterInfoRequest { 
+        canister_id: pr, 
+        num_requested_changes: None,
+    };
 
-//     TIMER_IDS.with(|timer_ids| {
-//         let vec1: &mut std::cell::RefMut<Vec<TimerId>> = &mut timer_ids.borrow_mut();
-//         for i in vec1.iter() {
-//             ic_cdk_timers::clear_timer(*i);
-//             // ic_cdk::println!("Length : {}", vec1.len());
-//             // ic_cdk::println!("{:?}", i)
-//         }
-//         vec1.clear();
-//     });
-//     RUNTIME_STATE.with(|state| {
-//         state.borrow_mut().data.genesis_updating = false;
-//     });
-//     log("All timers stopped");
-//     return String::from("All Timers Stopped");
-// }
+    let res: Result<(CanisterInfoResponse,), (ic_cdk::api::call::RejectionCode, String)> 
+    = ic_cdk::call(mgt, "canister_info", (args,)).await;
 
-// #[update]
-// fn check_and_start_genesis_timer(secs: u64) -> String {
-//     RUNTIME_STATE.with(|state| {
-//         let s = state.borrow();
-//         s.data.check_authorised(ic_cdk::caller().to_text());
-//     });
+    match res {
+        Ok(v) => {
+            return v.0;
+        },
+        Err(error) => {
+            ic_cdk::trap("Error - call failed.. ");
+        },
+    }
+    
+}
 
-//     let ret: String;
-//     let is_running = RUNTIME_STATE.with(|state| {
-//         return state.borrow().data.genesis_updating;
-//     });
-
-//     if is_running == true {
-//         ret = String::from("Genesis holder update timer is already running");
-//     } else {
-//         start_genesis_holder_timer(secs);
-//         RUNTIME_STATE.with(|state| {
-//             state.borrow_mut().data.genesis_updating = true;
-//         });
-//         ret = String::from("Genesis holder update timer has been started");
-//         let lg = format!("Started Timer to fetch Genesis holders: {} seconds interval", secs);
-//         log(lg);
-//         log(format!("Cycles Balance : {}", get_cycles_balance()));
-//     }
-//     return ret;
-// }
-
-// fn start_genesis_holder_timer(secs: u64) {
-//     RUNTIME_STATE.with(|state| {
-//         let s = state.borrow();
-//         s.data.check_authorised(ic_cdk::caller().to_text());
-//     });
-
-//     let secs = Duration::from_secs(secs);
-//     let timer_id = ic_cdk_timers::set_timer_interval(secs, || ic_cdk::spawn(get_genesis_holders()));
-//     TIMER_IDS.with(|timer_ids| timer_ids.borrow_mut().push(timer_id));
-//     // To drive an async function to completion inside the timer handler,
-//     // use `ic_cdk::spawn()`, for example:
-//     // Non async = //ic_cdk_timers::set_timer_interval(secs, get_genesis_holders);
-// }
-
-// async fn get_genesis_holders() -> () {
-//     let target: Principal = candid::Principal
-//         ::from_text("t555s-uyaaa-aaaal-qbjsa-cai")
-//         .unwrap();
-//     let (vec1,): (Vec<(u32, String)>,) = ic_cdk::api::call
-//         ::call(target, "getRegistry", ()).await
-//         .unwrap();
-//     ic_cdk::println!("{:?}", vec1);
-//     RUNTIME_STATE.with(|state| update_genesis_holders(vec1, &mut state.borrow_mut()))
-// }
-
-// fn update_genesis_holders(latest_holders: Vec<(u32, String)>, runtime_state: &mut RuntimeState) {
-//     runtime_state.data.genesis_holders = latest_holders;
-//     log("Genesis II holders updated");
-//     log(format!("Cycles Balance : {}", get_cycles_balance()));
-// }
 
 // [][] ------------------------ [][]
 // [][] --- Canister Metrics --- [][]
