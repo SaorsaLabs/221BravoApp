@@ -633,6 +633,10 @@ async fn task_manager(task_number: u8) -> bool {
 #[update]
 async fn self_call0(){
     //[][] --- Process to SmallTX and Store --- [][]
+    if ic_cdk::api::caller() != ic_cdk::api::id() {
+        ic_cdk::trap("This method can only be called by this canister");
+    }
+
     process_to_small_tx();  
     let update_store = send_stx_to_store().await;
     match update_store {
@@ -646,12 +650,23 @@ async fn self_call0(){
 }
 #[update]
 async fn self_call1(){
+    if ic_cdk::api::caller() != ic_cdk::api::id() {
+        ic_cdk::trap("This method can only be called by this canister");
+    }
+
     process_smtx_to_index().await;  
 }
 
 // [][] --------------------------- [][]
 // [][] --- Canister Management --- [][]
 // [][] --------------------------- [][]
+
+#[update]
+async fn admin_debug_call() {
+    schedule_data_processing().await;
+}
+
+
 #[update]
 fn force_reset_busy() -> String {
     // check admin

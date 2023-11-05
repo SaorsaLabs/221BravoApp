@@ -1,5 +1,5 @@
 #![warn(non_snake_case)]
-pub const VERSION: &str = "0.4.1";
+pub const VERSION: &str = "0.4.2";
 pub const MAX_TOTAL_DOWNLOAD: usize = 10_000; 
 pub const MAX_TRANSACTION_BATCH_SIZE: usize = 1000;
 pub const MAX_LOGS: usize = 250;
