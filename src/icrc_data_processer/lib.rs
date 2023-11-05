@@ -183,11 +183,11 @@ fn init() {
     let mut data = Data::default();
     data.authorised.push("2vxsx-fae".to_string());
     data.authorised.push(
-        "ADMIN_PRINCIPAL_HERE".to_string()
-    ); // 
+        "DEV_PRINCIPAL_HERE".to_string()
+    ); 
     data.authorised.push(
         "FRONTEND_PRINCIPAL_HERE".to_string()
-    ); //
+    ); 
     data.canister_settings.stats_are_public = true;
     data.canister_settings.stats_return_length = STATS_RETURN_LENGTH;
     data.first_run = true;
